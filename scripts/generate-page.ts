@@ -262,6 +262,10 @@ const run = async () => {
   const args = process.argv.slice(2);
   if (args.length < 2) {
     console.error('Usage: tsx scripts/generate-page.ts <date> <branch> [interesting-keywords]');
+    console.error('');
+    console.error('Examples:');
+    console.error('  tsx scripts/generate-page.ts 2025-11-09 main');
+    console.error('  tsx scripts/generate-page.ts 2025-11-09 main "performance,security"');
     process.exit(1);
   }
 
@@ -327,7 +331,9 @@ const run = async () => {
     
     console.log(`✓ Filtered to ${relevantCommitsCount} relevant commits out of ${totalCommitsCount} total`);
     console.log(`  Filtered out: ${totalCommitsCount - relevantCommitsCount} commits`);
-    console.log('Step 3/5: Generating summary with Gemini AI...');
+    console.log('Step 3/5: Generating summary with AI...');
+    console.log('  Using agentic approach with dynamic commit detail fetching');
+    console.log('  Automatic chunking will be used if commit count exceeds limits');
 
     const summaryContent = await generateSummary(
       filteredCommits, 
