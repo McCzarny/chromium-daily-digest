@@ -96,9 +96,11 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
         - **points**: Array of summary points, each with:
           - **text**: Concise summary using markdown. Use \`code\` for file paths. Be specific about what changed based on the details you gathered.
           - **commits**: Array of full commit hashes this point relates to
+          - **isBreaking**: Boolean (optional) - Set to true if this change is BREAKING for projects using Chromium. Breaking changes include: API removals, signature changes, behavior changes that require code updates, removed flags, deprecated features being removed, or changes to public interfaces.
           
 3.  **Content Prioritization:**
     *   ${keywordsText}
+    *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true.
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     *   Use the get_commit_details function to provide accurate, detailed summaries
@@ -242,7 +244,7 @@ export async function generateSummary(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): Promise<StructuredSummary> {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5;
   const RETRY_DELAY_MS = 60000;
   const MAX_ITERATIONS = 10;
   
@@ -281,6 +283,8 @@ export async function generateSummary(
 You are creating a final daily summary for Chromium changes on ${date} (${branch} branch).
 
 Below are pre-analyzed summaries of different parts of the day's commits. Synthesize these into a final structured summary.
+Focus on changes that can impact developers working on Chromium-based projects.
+Especially look for BREAKING CHANGES or things that require code updates, or allowing improvements to existing code.
 
 **Pre-analyzed Summaries:**
 ${chunkSummaries.map((s, i) => `\n=== Chunk ${i + 1} ===\n${s}`).join('\n')}
@@ -418,12 +422,15 @@ ${interestingKeywords.trim() ? `- Keywords of Interest: ${interestingKeywords}` 
       "points": [
         {
           "text": "Summary text with markdown formatting",
-          "commits": ["full_commit_hash1", "full_commit_hash2"]
+          "commits": ["full_commit_hash1", "full_commit_hash2"],
+          "isBreaking": true  // ONLY if this is a breaking change for Chromium-based projects
         }
       ]
     }
   ]
 }
+
+IMPORTANT: Mark changes as isBreaking: true if they are API removals, signature changes, behavior changes requiring code updates, removed flags, or deprecated features being removed.
 
 Provide ONLY the JSON object, no other text.`
         }]
@@ -454,7 +461,8 @@ Provide ONLY the JSON object, no other text.`
                           commits: {
                             type: Type.ARRAY,
                             items: { type: Type.STRING }
-                          }
+                          },
+                          isBreaking: { type: Type.BOOLEAN }
                         },
                         required: ["text", "commits"]
                       }

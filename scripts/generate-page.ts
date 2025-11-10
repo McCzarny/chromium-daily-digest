@@ -22,7 +22,9 @@ const createHtmlPage = (
   };
 
   const renderPointText = (text: string): string => {
-    return text.replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`);
+    return text
+      .replace(/\*\*BREAKING CHANGE\*\*/g, `<strong class="text-red-400 font-bold">BREAKING CHANGE</strong>`)
+      .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`);
   };
 
   const categoriesHtml = summary.categories.map(category => `
@@ -31,6 +33,7 @@ const createHtmlPage = (
       <ul class="list-disc list-inside space-y-3">
         ${category.points.map(point => `
           <li class="text-gray-300">
+            ${point.isBreaking ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>` : ''}
             ${renderPointText(point.text)}
             ${point.commits.map(hash => `
               <a href="${GITHUB_COMMIT_URL}${hash}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(${hash.substring(0, 7)})</a>
@@ -126,8 +129,9 @@ const updateIndexPage = async (outputDir: string) => {
         
         // Extract the entire summary content (title, overview, and all categories)
         const titleMatch = content.match(/<h2 class="text-3xl font-bold text-white mb-6">(.*?)<\/h2>/s);
-        const overviewSectionMatch = content.match(/<div class="bg-gray-800 p-4 rounded-lg mb-6 shadow-inner border border-gray-700">(.*?)<\/div>\s*<\/div>/s);
-        const categoriesSectionMatch = content.match(/<\/div>\s*<\/div>\s*(<div>.*?)<details class="mt-12/s);
+        const overviewSectionMatch = content.match(/<div class="bg-gray-800 p-4 rounded-lg mb-6 shadow-inner border border-gray-700">(.*?)<\/div>/s);
+        // Capture all category sections between overview and the "All Commits" details section
+        const categoriesSectionMatch = content.match(/<\/div>\s*<\/div>\s*((?:<div>[\s\S]*?<\/div>\s*)+)<details class="mt-12/s);
         
         const title = titleMatch ? titleMatch[1] : 'Summary';
         const overviewSection = overviewSectionMatch ? overviewSectionMatch[1] : '';

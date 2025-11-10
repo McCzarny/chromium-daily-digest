@@ -2,7 +2,7 @@ import { GitilesCommit } from '../types';
 
 const API_BASE_URL = 'https://api.github.com/repos/chromium/chromium/commits';
 const MAX_PAGES = 3; // Fetch up to 3 pages of commits (300 total)
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 1000;
 
 // A minimal type for the commit list API response.

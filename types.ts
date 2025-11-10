@@ -23,6 +23,7 @@ export interface GitilesLog {
 export interface SummaryPoint {
   text: string;
   commits: string[]; // Array of commit hashes related to this point
+  isBreaking?: boolean; // Flag for breaking changes
 }
 
 export interface SummaryCategory {

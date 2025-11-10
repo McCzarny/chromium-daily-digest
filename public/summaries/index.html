@@ -43,11 +43,51 @@
             <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
             <div class="text-gray-300">A total of 107 commits were made to the 'main' branch. After filtering, 17 relevant commits were analyzed. The day's changes span from commit <a href="https://github.com/chromium/chromium/commit/96c4358140904e9f8e25b742ddbd629b2817b968" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(96c4358)</a> to <a href="https://github.com/chromium/chromium/commit/cfa4cb1e7a35b21ae07d3079ceca88de72934bde" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(cfa4cb1)</a>.
               <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Performance</h3>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Blink Engine</h3>
       <ul class="list-disc list-inside space-y-3">
         
           <li class="text-gray-300">
-            Introduces a new mechanism to defer navigations until a "site familiarity" verdict is computed. This verdict, based on browsing history and Safe Browsing data, determines whether V8 optimizations are enabled for a given site. The goal is to enhance security and performance by selectively applying optimizations. The change adds <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">SiteFamiliarityProcessSelectionDeferringCondition</code> to control process selection during navigation.
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>
+            <strong class="text-red-400 font-bold">BREAKING CHANGE</strong>: The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">setHitTestRegions</code> API for the experimental HTML-in-canvas feature has been removed from <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CanvasRenderingContext2D</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WebGLRenderingContext</code>, and related interfaces. Hit testing is now always-on and driven by CSS transforms, simplifying the API surface but requiring developers to migrate away from the explicit hit testing registration.
+            
+              <a href="https://github.com/chromium/chromium/commit/3a9e6b2c1238fd6644b17b46871734821e4a04c9" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3a9e6b2)</a>
+            
+          </li>
+        
+          <li class="text-gray-300">
+            
+            The DOM Storage backend is updated with a new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WriteMetadata()</code> method in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LocalStorageLevelDB</code>. This change helps manage metadata like last-access and last-modified times more efficiently, particularly for storage areas that are loaded but not written to.
+            
+              <a href="https://github.com/chromium/chromium/commit/64b770d8741a2e8f5e699a5df6b7c4bf42262149" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(64b770d)</a>
+            
+          </li>
+        
+          <li class="text-gray-300">
+            
+            For developers using the WebNN API, a new command-line switch, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--webnn-ort-ep-device</code>, has been introduced. This allows forcing the ONNX Runtime to use a specific execution provider device, aiding in testing and debugging.
+            
+              <a href="https://github.com/chromium/chromium/commit/98e6bd58d27b18315538221a7444af55f9601de5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(98e6bd5)</a>
+            
+          </li>
+        
+          <li class="text-gray-300">
+            
+            To better align with web specifications, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NavigatorPlugins</code> has been refactored from a partial interface into an interface mixin. This is a code health improvement with no expected change in behavior.
+            
+              <a href="https://github.com/chromium/chromium/commit/5a21b9acb11871058a1ad1e0c74c5c11c4400619" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(5a21b9a)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">V8 JavaScript Engine</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li class="text-gray-300">
+            
+            A new 'site familiarity' heuristic has been introduced to determine whether to enable V8 optimizations. Navigations may now be briefly deferred while Chromium checks browsing history and Safe Browsing lists to classify a site. Unfamiliar sites may have V8 optimizations disabled, trading some performance for increased security and stability. This behavior is controlled by user settings.
             
               <a href="https://github.com/chromium/chromium/commit/9beb38036b1d0c27a836afdf3d4e6b0ef6296708" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(9beb380)</a>
             
@@ -57,27 +97,14 @@
     </div>
   
     <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Blink Engine</h3>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">UI/UX</h3>
       <ul class="list-disc list-inside space-y-3">
         
           <li class="text-gray-300">
-            Major update to the HTML-in-Canvas feature: the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">setHitTestRegions</code> API has been removed in favor of always-on hit testing based on CSS transforms. This simplifies the API for developers and is a necessary step to better support features like anchor positioning for custom form controls.
             
-              <a href="https://github.com/chromium/chromium/commit/3a9e6b2c1238fd6644b17b46871734821e4a04c9" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3a9e6b2)</a>
+            A potential crash in the omnibox has been fixed. A null check was added for the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">expandedSearchboxShowVoiceSearch</code> flag in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui/webui/resources/cr_components/searchbox/searchbox.ts</code> to prevent an assertion failure.
             
-          </li>
-        
-          <li class="text-gray-300">
-            Refactors Local Storage by implementing <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LocalStorageLevelDB::WriteMetadata()</code>. This new method centralizes the process of writing metadata, such as last-access and last-modified times, to the underlying LevelDB database. This improves the structure of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LocalStorageImpl</code> when handling map unloading and metadata updates.
-            
-              <a href="https://github.com/chromium/chromium/commit/64b770d8741a2e8f5e699a5df6b7c4bf42262149" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(64b770d)</a>
-            
-          </li>
-        
-          <li class="text-gray-300">
-            Aligns with the HTML specification by converting the partial interface for <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NavigatorPlugins</code> into an interface mixin. This is a structural code health improvement with no change in behavior, made possible by recent updates to the IDL compiler.
-            
-              <a href="https://github.com/chromium/chromium/commit/5a21b9acb11871058a1ad1e0c74c5c11c4400619" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(5a21b9a)</a>
+              <a href="https://github.com/chromium/chromium/commit/f519a526c83bf457065de61f418255ba169ef0d5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(f519a52)</a>
             
           </li>
         
@@ -89,21 +116,16 @@
       <ul class="list-disc list-inside space-y-3">
         
           <li class="text-gray-300">
-            Fixes a crash in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--single-process</code> mode by adding a null-pointer check for <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RendererMemoryCoordinatorPolicy</code>, which does not exist in this mode.
+            
+            Fixed a null pointer access crash that could occur in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--single-process</code> mode when accessing the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RendererMemoryCoordinatorPolicy</code> in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">content/renderer/renderer_blink_platform_impl.cc</code>.
             
               <a href="https://github.com/chromium/chromium/commit/7b5a317e8802f404d6da16e8decf443a20f7cdd1" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7b5a317)</a>
             
           </li>
         
           <li class="text-gray-300">
-            Prevents a potential crash in the omnibox (realbox) by handling a null case for the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">expandedSearchboxShowVoiceSearch</code> flag in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui/webui/resources/cr_components/searchbox/searchbox.ts</code>.
             
-              <a href="https://github.com/chromium/chromium/commit/f519a526c83bf457065de61f418255ba169ef0d5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(f519a52)</a>
-            
-          </li>
-        
-          <li class="text-gray-300">
-            The logic for <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IsShareImageEnabledForProfile</code> is updated to correctly check for managed accounts, ensuring enterprise policies are respected for this feature.
+            The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IsShareImageEnabledForProfile</code> check now correctly accounts for managed accounts, fixing a bug where sharing might be incorrectly disabled.
             
               <a href="https://github.com/chromium/chromium/commit/903dd228f0427add65654464634f23e892241a85" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(903dd22)</a>
             
@@ -117,14 +139,8 @@
       <ul class="list-disc list-inside space-y-3">
         
           <li class="text-gray-300">
-            Adds a new command-line switch, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--webnn-ort-ep-device</code>, allowing developers to force the WebNN service to use a specific ONNX Runtime execution provider device. This provides fine-grained control for testing and debugging on specific hardware like a particular GPU.
             
-              <a href="https://github.com/chromium/chromium/commit/98e6bd58d27b18315538221a7444af55f9601de5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(98e6bd5)</a>
-            
-          </li>
-        
-          <li class="text-gray-300">
-            Improves debugging of the compositor by printing the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">background-color</code> of a layer when dumping the layer tree.
+            The debugging utility for dumping the layer tree has been improved; it now prints the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">background-color</code> of each layer, providing more context for developers.
             
               <a href="https://github.com/chromium/chromium/commit/905c6824549ca189264fd7d4c0c8368f4adaac89" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(905c682)</a>
             
@@ -138,32 +154,26 @@
       <ul class="list-disc list-inside space-y-3">
         
           <li class="text-gray-300">
-            A large-scale code cleanup removes superfluous <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">#include</code> statements for <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">file_util.h</code> across more than 20 directories, improving build hygiene.
             
-              <a href="https://github.com/chromium/chromium/commit/502b6c6b6ba9f62ddc2d8a8b39d024627950edb8" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(502b6c6)</a>
-            
-          </li>
-        
-          <li class="text-gray-300">
-            Continues the migration of network-stack Java tests from JUnit's <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Assert.assertThat</code> to the more readable <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Truth</code> framework.
+            Android networking tests in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">net/android/junit/</code> are being migrated from <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Assert.assertThat</code> to the more readable Truth assertion framework.
             
               <a href="https://github.com/chromium/chromium/commit/594a5acd180702bd6e257e8dd6018332713759e2" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(594a5ac)</a>
             
           </li>
         
           <li class="text-gray-300">
-            A new helper method, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ButtonTestApi::NotifyMouseClick</code>, is introduced to simplify UI testing by allowing the triggering of button clicks without constructing a full <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">MouseEvent</code>.
+            
+            A new helper method, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ButtonTestApi::NotifyMouseClick</code>, has been added to simplify the creation of button click events in UI tests.
             
               <a href="https://github.com/chromium/chromium/commit/0db0398e14e5e5ad998ce7e3dfe9e8b5abb8ea47" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(0db0398)</a>
             
           </li>
         
           <li class="text-gray-300">
-            A new Web Platform Test (WPT) import (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">f62764048</code>) and updates to test expectations were landed.
             
-              <a href="https://github.com/chromium/chromium/commit/cfa4cb1e7a35b21ae07d3079ceca88de72934bde" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(cfa4cb1)</a>
+            A large number of files were cleaned up to remove superfluous includes of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base/files/file_util.h</code>, improving build hygiene.
             
-              <a href="https://github.com/chromium/chromium/commit/f3b75cf6f855beece49267f19f2eeb6488ee8a47" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(f3b75cf)</a>
+              <a href="https://github.com/chromium/chromium/commit/502b6c6b6ba9f62ddc2d8a8b39d024627950edb8" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(502b6c6)</a>
             
           </li>
         
