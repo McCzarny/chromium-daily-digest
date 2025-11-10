@@ -63,6 +63,7 @@ const createHtmlPage = (
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summary | ${date}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -73,8 +74,13 @@ const createHtmlPage = (
 <body class="bg-gray-900 text-gray-200 font-sans">
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
-        <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
-        <p class="text-gray-400">Summary for ${date} on branch '${branch}'</p>
+        <div class="flex items-center space-x-3">
+          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
+            <p class="text-gray-400">Summary for ${date} on branch '${branch}'</p>
+          </div>
+        </div>
       </div>
     </header>
     <main class="container mx-auto px-4 py-8">
@@ -141,6 +147,7 @@ const updateIndexPage = async (outputDir: string) => {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -152,8 +159,13 @@ const updateIndexPage = async (outputDir: string) => {
 <body class="bg-gray-900 text-gray-200 font-sans">
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
-        <h1 class="text-3xl font-bold text-white tracking-tight">Chromium Daily Summaries</h1>
-        <p class="text-gray-400 mt-1">Latest Chromium commits summarized daily</p>
+        <div class="flex items-center space-x-3">
+          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-10 w-10" />
+          <div>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Chromium Daily Summaries</h1>
+            <p class="text-gray-400 mt-1">Latest Chromium commits summarized daily</p>
+          </div>
+        </div>
       </div>
     </header>
     <main class="container mx-auto px-4 py-8">
@@ -208,9 +220,14 @@ const updateIndexPage = async (outputDir: string) => {
           }
         });
         
-        document.getElementById('current-page').textContent = page;
-        document.getElementById('prev-btn').disabled = page === 1;
-        document.getElementById('next-btn').disabled = page === totalPages;
+        // Only update pagination controls if they exist
+        const currentPageEl = document.getElementById('current-page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        if (currentPageEl) currentPageEl.textContent = page;
+        if (prevBtn) prevBtn.disabled = page === 1;
+        if (nextBtn) nextBtn.disabled = page === totalPages;
         
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -250,6 +267,15 @@ const run = async () => {
 
   const [date, branch, interestingKeywords = ''] = args;
   
+  // Bot author emails to ignore
+  const IGNORED_BOT_EMAILS = [
+    'bling-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com',
+    'chromeos-ci-prod@chromeos-bot.iam.gserviceaccount.com',
+    'chromium-autoroll@skia-public.iam.gserviceaccount.com',
+    'chromium-internal-autoroll@skia-corp.google.com.iam.gserviceaccount.com',
+    'mdb.chrome-pki-metadata-release-jobs@google.com',
+  ];
+  
   const githubToken = process.env.SECRET_GITHUB_TOKEN;
   if (githubToken) {
     console.log('Using GitHub token for authentication to avoid rate limits.');
@@ -275,9 +301,10 @@ const run = async () => {
     const filteredCommits = allCommits.filter(commit => {
       const message = commit.message;
       const firstLine = message.split('\n')[0];
+      const authorEmail = commit.author.email.toLowerCase();
       
-      // Check if message starts with "Roll" (case-insensitive)
-      if (/^roll\s/i.test(firstLine)) {
+      // Check if commit is from an ignored bot
+      if (IGNORED_BOT_EMAILS.includes(authorEmail)) {
         return false;
       }
       

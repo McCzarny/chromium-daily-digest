@@ -128,6 +128,7 @@ export async function generateSummary(
       const isRateLimitError = error?.message?.toLowerCase().includes('rate limit') || 
                                error?.message?.toLowerCase().includes('quota') ||
                                error?.message?.toLowerCase().includes('429') ||
+                               error?.message?.toLowerCase().includes('overloaded') ||
                                error?.status === 429;
       
       if (isRateLimitError && attempt < MAX_RETRIES) {
