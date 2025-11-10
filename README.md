@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="Chromium Daily Digest" src="./public/assets/daily-digest-logo.svg" />
+<img width="250" height="250" alt="Chromium Daily Digest" src="./public/assets/daily-digest-logo.svg" />
 </div>
 
 # Chromium Daily Digest
