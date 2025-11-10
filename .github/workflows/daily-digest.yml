@@ -1,0 +1,75 @@
+name: Generate and Publish Daily Summary
+
+on:
+  # Runs at 05:00 UTC every day
+  schedule:
+    - cron: '0 5 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the SECRET_GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: write # To push the generated summary file back to the repo
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Get yesterday's date
+        id: get-date
+        run: echo "YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')" >> $GITHUB_ENV
+      - name: Generate summary page
+        env:
+          # The GEMINI_API_KEY must be set in the repository's secrets
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Use the built-in SECRET_GITHUB_TOKEN to avoid rate limits
+          SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
+        run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main 'deprecated,breaking,new,improved'
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Check if there are changes to commit
+          if [[ -z $(git status -s) ]]; then
+            echo "No changes to commit."
+          else
+            git add public/summaries
+            git commit -m "docs: Add daily summary for ${{ env.YESTERDAY }}"
+            git push
+          fi
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload the generated summaries directory
+          path: './public/summaries'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
