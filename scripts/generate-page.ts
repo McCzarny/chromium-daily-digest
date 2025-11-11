@@ -66,7 +66,7 @@ const createHtmlPage = (
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summary | ${date}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,7 +78,7 @@ const createHtmlPage = (
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center space-x-3">
-          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
+          <img src="assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
           <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
             <p class="text-gray-400">Summary for ${date} on branch '${branch}'</p>
@@ -151,7 +151,7 @@ const updateIndexPage = async (outputDir: string) => {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -164,7 +164,7 @@ const updateIndexPage = async (outputDir: string) => {
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center space-x-3">
-          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-10 w-10" />
+          <img src="assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-10 w-10" />
           <div>
             <h1 class="text-3xl font-bold text-white tracking-tight">Chromium Daily Summaries</h1>
             <p class="text-gray-400 mt-1">Latest Chromium commits summarized daily</p>
