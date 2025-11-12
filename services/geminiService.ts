@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
-import { GitilesCommit, StructuredSummary } from "../types";
+import { GitilesCommit, StructuredSummary, SummaryConfig } from "../types";
 import { fetchMultipleCommitDetails } from "./commitDetailService";
 
 const SECRET_GEMINI_API_KEY = process.env.SECRET_GEMINI_API_KEY;
@@ -16,6 +16,63 @@ const model = "gemini-2.5-pro";
 const MAX_CONTEXT_TOKENS = 800000; // Leave room for output and safety margin
 const TOKENS_PER_COMMIT_ESTIMATE = 300; // Conservative estimate for commit message + files
 const MAX_COMMITS_PER_BATCH = Math.floor(MAX_CONTEXT_TOKENS / TOKENS_PER_COMMIT_ESTIMATE);
+
+// Retry configuration
+const MAX_API_RETRIES = 5;
+const RETRY_DELAY_MS = 60000;
+
+/**
+ * Helper function to make API calls with retry logic for rate limit errors
+ */
+async function generateContentWithRetry(
+  contents: any[],
+  config: any,
+  operationName: string = 'API call'
+): Promise<any> {
+  for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
+    try {
+      return await ai.models.generateContent({
+        model,
+        contents,
+        config,
+      });
+    } catch (error: any) {
+      const isRateLimitError = error?.message?.toLowerCase().includes('rate limit') || 
+                               error?.message?.toLowerCase().includes('quota') ||
+                               error?.message?.toLowerCase().includes('429') ||
+                               error?.message?.toLowerCase().includes('overloaded') ||
+                               error?.status === 429;
+      
+      if (isRateLimitError && attempt < MAX_API_RETRIES) {
+        console.warn(`\n⚠️  RATE LIMIT ERROR during ${operationName} (Attempt ${attempt}/${MAX_API_RETRIES})`);
+        console.warn(`Error details: ${error?.message || error}`);
+        console.warn(`Waiting ${RETRY_DELAY_MS / 1000} seconds before retry...`);
+        console.warn(`Chat history preserved - will resume from current state`);
+        
+        const startTime = Date.now();
+        const interval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          const remaining = Math.ceil((RETRY_DELAY_MS / 1000) - elapsed);
+          if (remaining > 0) {
+            process.stdout.write(`\r⏳ Waiting... ${remaining}s remaining `);
+          }
+        }, 1000);
+        
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        clearInterval(interval);
+        process.stdout.write('\r✓ Wait complete, retrying from current state...\n\n');
+        continue;
+      }
+      
+      // Not a rate limit error or max retries reached
+      if (attempt === MAX_API_RETRIES) {
+        throw new Error(`Failed ${operationName} after ${MAX_API_RETRIES} attempts. Last error: ${error?.message || error}`);
+      }
+      throw error;
+    }
+  }
+  throw new Error(`Failed ${operationName} after all retry attempts`);
+}
 
 // Define the function that the AI can call to get commit details
 const getCommitDetailsTool: FunctionDeclaration = {
@@ -38,7 +95,7 @@ const getCommitDetailsTool: FunctionDeclaration = {
 
 function createAgenticPrompt(
   commits: GitilesCommit[], 
-  interestingKeywords: string, 
+  config: SummaryConfig,
   date: string, 
   branch: string,
   totalCommitsCount: number,
@@ -46,9 +103,17 @@ function createAgenticPrompt(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): string {
-  const keywordsText = interestingKeywords.trim() 
-    ? `These keywords are of special interest: ${interestingKeywords}` 
+  const keywordsText = config.interestingKeywords?.trim() 
+    ? `These keywords are of special interest: ${config.interestingKeywords}` 
     : 'No special keywords were provided.';
+  
+  const focusAreasText = config.focusAreas && config.focusAreas.length > 0
+    ? `Focus particularly on these areas: ${config.focusAreas.join(', ')}`
+    : '';
+  
+  const customInstructionsText = config.customInstructions?.trim()
+    ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
+    : '';
   
   const commitDataForPrompt = commits.map(c => {
     const filePaths = c.files && c.files.length > 0
@@ -100,10 +165,12 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
           
 3.  **Content Prioritization:**
     *   ${keywordsText}
+    *   ${focusAreasText}
     *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true.
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     *   Use the get_commit_details function to provide accurate, detailed summaries
+    ${customInstructionsText}
 
 4.  **Tone:** Professional, informative, and accessible to software engineers.
 
@@ -112,6 +179,8 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
 -   **Relevant Commits:** ${relevantCommitsCount}
 -   **First Commit Hash:** ${firstCommit.commit}
 -   **Last Commit Hash:** ${lastCommit.commit}
+${config.interestingKeywords ? `-   **Keywords of Interest:** ${config.interestingKeywords}` : ''}
+${config.focusAreas && config.focusAreas.length > 0 ? `-   **Focus Areas:** ${config.focusAreas.join(', ')}` : ''}
 
 **Available Commit Data (hash, message, and up to 20 file paths):**
 ---
@@ -166,15 +235,15 @@ Provide your summary as plain text, not JSON. Focus on the most important change
   while (iteration < MAX_ITERATIONS) {
     iteration++;
     
-    const response = await ai.models.generateContent({
-      model,
-      contents: chatHistory,
-      config: {
+    const response = await generateContentWithRetry(
+      chatHistory,
+      {
         tools: [{
           functionDeclarations: [getCommitDetailsTool],
         }],
-      }
-    });
+      },
+      `chunk ${chunkIndex + 1} iteration ${iteration}`
+    );
     
     chatHistory.push({ 
       role: "model", 
@@ -236,7 +305,7 @@ Provide your summary as plain text, not JSON. Focus on the most important change
  */
 export async function generateSummary(
   commits: GitilesCommit[],
-  interestingKeywords: string,
+  config: SummaryConfig,
   date: string,
   branch: string,
   totalCommitsCount: number,
@@ -244,47 +313,43 @@ export async function generateSummary(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): Promise<StructuredSummary> {
-  const MAX_RETRIES = 5;
-  const RETRY_DELAY_MS = 60000;
   const MAX_ITERATIONS = 10;
   
   // Determine if we need to chunk the commits
   const needsChunking = commits.length > 500; // If more than 500 commits, use chunking
   
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      let summaryInput: string;
-      
-      if (needsChunking) {
-        console.log(`  Large commit set detected (${commits.length} commits)`);
-        console.log('  Using chunked processing approach...');
+  let summaryInput: string;
+  if (needsChunking) {
+    console.log(`  Large commit set detected (${commits.length} commits)`);
+    console.log('  Using chunked processing approach...');
+    
+    // Split commits into chunks
+    const chunkSize = 300;
+    const chunks: GitilesCommit[][] = [];
+    for (let i = 0; i < commits.length; i += chunkSize) {
+      chunks.push(commits.slice(i, i + chunkSize));
+    }
         
-        // Split commits into chunks
-        const chunkSize = 300;
-        const chunks: GitilesCommit[][] = [];
-        for (let i = 0; i < commits.length; i += chunkSize) {
-          chunks.push(commits.slice(i, i + chunkSize));
-        }
-        
-        console.log(`  Processing ${chunks.length} chunk(s)...`);
-        
-        // Generate summaries for each chunk
-        const chunkSummaries = await Promise.all(
-          chunks.map((chunk, idx) => {
-            console.log(`  Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} commits)...`);
-            return generateChunkSummary(chunk, idx, chunks.length);
-          })
-        );
-        
-        console.log('  ✓ All chunks processed, creating final summary...');
-        
-        // Combine chunk summaries into input for final summary
-        summaryInput = `
+    console.log(`  Processing ${chunks.length} chunk(s)...`);
+    
+    // Generate summaries for each chunk
+    const chunkSummaries = await Promise.all(
+      chunks.map((chunk, idx) => {
+        console.log(`  Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} commits)...`);
+        return generateChunkSummary(chunk, idx, chunks.length);
+      })
+    );
+    
+    console.log('  ✓ All chunks processed, creating final summary...');
+    
+    // Combine chunk summaries into input for final summary
+    summaryInput = `
 You are creating a final daily summary for Chromium changes on ${date} (${branch} branch).
 
 Below are pre-analyzed summaries of different parts of the day's commits. Synthesize these into a final structured summary.
 Focus on changes that can impact developers working on Chromium-based projects.
 Especially look for BREAKING CHANGES or things that require code updates, or allowing improvements to existing code.
+${config.customInstructions ? `\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n` : ''}
 
 **Pre-analyzed Summaries:**
 ${chunkSummaries.map((s, i) => `\n=== Chunk ${i + 1} ===\n${s}`).join('\n')}
@@ -294,125 +359,126 @@ ${chunkSummaries.map((s, i) => `\n=== Chunk ${i + 1} ===\n${s}`).join('\n')}
 - Relevant Commits: ${relevantCommitsCount}
 - First Commit: ${firstCommit.commit}
 - Last Commit: ${lastCommit.commit}
-${interestingKeywords.trim() ? `- Keywords of Interest: ${interestingKeywords}` : ''}
+${config.interestingKeywords?.trim() ? `- Keywords of Interest: ${config.interestingKeywords}` : ''}
+${config.focusAreas && config.focusAreas.length > 0 ? `- Focus Areas: ${config.focusAreas.join(', ')}` : ''}
 `;
-      } else {
-        console.log('  Starting agentic analysis...');
-        summaryInput = createAgenticPrompt(
-          commits, 
-          interestingKeywords, 
-          date, 
-          branch, 
-          totalCommitsCount, 
-          relevantCommitsCount, 
-          firstCommit, 
-          lastCommit
-        );
-      }
+  } else {
+    console.log('  Starting agentic analysis...');
+    summaryInput = createAgenticPrompt(
+      commits, 
+      config,
+      date, 
+      branch, 
+      totalCommitsCount, 
+      relevantCommitsCount, 
+      firstCommit, 
+      lastCommit
+    );
+  }
+  
+  let iteration = 0;
+  let continueLoop = true;
+  let chatHistory: any[] = [{ role: "user", parts: [{ text: summaryInput }] }];
       
-      let iteration = 0;
-      let continueLoop = true;
-      let chatHistory: any[] = [{ role: "user", parts: [{ text: summaryInput }] }];
+  // Phase 1: Agentic investigation (only if not chunked)
+  if (!needsChunking) {
+    while (continueLoop && iteration < MAX_ITERATIONS) {
+      iteration++;
+      console.log(`  Iteration ${iteration}...`);
       
-      // Phase 1: Agentic investigation (only if not chunked)
-      if (!needsChunking) {
-        while (continueLoop && iteration < MAX_ITERATIONS) {
-          iteration++;
-          console.log(`  Iteration ${iteration}...`);
-          
-          const response = await ai.models.generateContent({
-            model,
-            contents: chatHistory,
-            config: {
-              tools: [{
-                functionDeclarations: [getCommitDetailsTool],
-              }],
-            }
-          });
-          
-          // Add AI response to history
-          chatHistory.push({ 
-            role: "model", 
-            parts: response.candidates?.[0]?.content?.parts || []
-          });
-          
-          // Check if AI made function calls
-          const functionCalls = response.functionCalls;
-          
-          if (functionCalls && functionCalls.length > 0) {
-            console.log(`  AI requested details for ${functionCalls.length} function call(s)`);
-            
-            // Execute all function calls
-            const functionResponses = await Promise.all(
-              functionCalls.map(async (call) => {
-                if (call.name === "get_commit_details") {
-                  const commitHashes = call.args.commit_hashes as string[];
-                  console.log(`    Fetching details for ${commitHashes.length} commit(s)...`);
-                  
-                  try {
-                    const details = await fetchMultipleCommitDetails(commitHashes, SECRET_GITHUB_TOKEN);
-                    console.log(`    ✓ Successfully fetched ${details.length} commit detail(s)`);
-                    
-                    return {
-                      name: call.name,
-                      response: {
-                        commits: details.map(d => ({
-                          commit: d.commit,
-                          message: d.message,
-                          author: d.author,
-                          date: d.date,
-                          files_changed: d.filesChanged,
-                          additions: d.additions,
-                          deletions: d.deletions,
-                          top_files: d.files.slice(0, 10).map(f => ({
-                            filename: f.filename,
-                            status: f.status,
-                            additions: f.additions,
-                            deletions: f.deletions,
-                            patch: (f.additions + f.deletions < 50) ? f.patch : undefined,
-                          })),
-                        })),
-                      },
-                    };
-                  } catch (error) {
-                    console.error(`    ✗ Error fetching commit details:`, error);
-                    return {
-                      name: call.name,
-                      response: {
-                        error: `Failed to fetch commit details: ${error}`,
-                      },
-                    };
-                  }
-                }
+      const response = await generateContentWithRetry(
+        chatHistory,
+        {
+          tools: [{
+            functionDeclarations: [getCommitDetailsTool],
+          }],
+        },
+        `investigation iteration ${iteration}`
+      );
+      
+      // Add AI response to history
+      chatHistory.push({ 
+        role: "model", 
+        parts: response.candidates?.[0]?.content?.parts || []
+      });
+      
+      // Check if AI made function calls
+      const functionCalls = response.functionCalls;
+      
+      if (functionCalls && functionCalls.length > 0) {
+        console.log(`  AI requested details for ${functionCalls.length} function call(s)`);
+        
+        // Execute all function calls
+        const functionResponses = await Promise.all(
+          functionCalls.map(async (call) => {
+            if (call.name === "get_commit_details") {
+              const commitHashes = call.args.commit_hashes as string[];
+              console.log(`    Fetching details for ${commitHashes.length} commit(s)...`);
+              
+              try {
+                const details = await fetchMultipleCommitDetails(commitHashes, SECRET_GITHUB_TOKEN);
+                console.log(`    ✓ Successfully fetched ${details.length} commit detail(s)`);
                 
                 return {
                   name: call.name,
-                  response: { error: "Unknown function" },
+                  response: {
+                    commits: details.map(d => ({
+                      commit: d.commit,
+                      message: d.message,
+                      author: d.author,
+                      date: d.date,
+                      files_changed: d.filesChanged,
+                      additions: d.additions,
+                      deletions: d.deletions,
+                      top_files: d.files.slice(0, 10).map(f => ({
+                        filename: f.filename,
+                        status: f.status,
+                        additions: f.additions,
+                        deletions: f.deletions,
+                        patch: (f.additions + f.deletions < 50) ? f.patch : undefined,
+                      })),
+                    })),
+                  },
                 };
-              })
-            );
+              } catch (error) {
+                console.error(`    ✗ Error fetching commit details:`, error);
+                return {
+                  name: call.name,
+                  response: {
+                    error: `Failed to fetch commit details: ${error}`,
+                  },
+                };
+              }
+            }
             
-            // Add function responses to history
-            chatHistory.push({
-              role: "user",
-              parts: functionResponses.map(fr => ({
-                functionResponse: fr,
-              })),
-            });
-          } else {
-            // No function calls, AI is done investigating
-            console.log('  ✓ Investigation complete');
-            break;
-          }
-        }
+            return {
+              name: call.name,
+              response: { error: "Unknown function" },
+            };
+          })
+        );
+        
+        // Add function responses to history
+        chatHistory.push({
+          role: "user",
+          parts: functionResponses.map(fr => ({
+            functionResponse: fr,
+          })),
+        });
+      } else {
+        // No function calls, AI is done investigating
+        console.log('  ✓ Investigation complete');
+        break;
       }
+    }
+  }
       
-      // Phase 2: Generate final structured JSON
-      console.log('  Generating final JSON summary...');
-      chatHistory.push({
-        role: "user",
-        parts: [{
-          text: `Now generate the final summary as a JSON object with this exact structure:
+  // Phase 2: Generate final structured JSON
+  console.log('  Generating final JSON summary...');
+  chatHistory.push({
+    role: "user",
+    parts: [{
+      text: `Now generate the final summary as a JSON object with this exact structure:
 {
   "title": "Chromium Digest: ${date}",
   "overview": "A paragraph with total commits, filtered commits, and links to first/last commits",
@@ -433,88 +499,51 @@ ${interestingKeywords.trim() ? `- Keywords of Interest: ${interestingKeywords}` 
 IMPORTANT: Mark changes as isBreaking: true if they are API removals, signature changes, behavior changes requiring code updates, removed flags, or deprecated features being removed.
 
 Provide ONLY the JSON object, no other text.`
-        }]
-      });
-      
-      const finalResponse = await ai.models.generateContent({
-        model,
-        contents: chatHistory,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              overview: { type: Type.STRING },
-              categories: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    title: { type: Type.STRING },
-                    points: {
-                      type: Type.ARRAY,
-                      items: {
-                        type: Type.OBJECT,
-                        properties: {
-                          text: { type: Type.STRING },
-                          commits: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
-                          },
-                          isBreaking: { type: Type.BOOLEAN }
-                        },
-                        required: ["text", "commits"]
-                      }
-                    }
-                  },
-                  required: ["title", "points"]
-                }
-              }
-            },
-            required: ["title", "overview", "categories"]
-          }
-        }
-      });
-      
-      const jsonText = finalResponse.text.trim();
-      console.log('  ✓ Final summary generated');
-      return JSON.parse(jsonText) as StructuredSummary;
-
-    } catch (error: any) {
-      const isRateLimitError = error?.message?.toLowerCase().includes('rate limit') || 
-                               error?.message?.toLowerCase().includes('quota') ||
-                               error?.message?.toLowerCase().includes('429') ||
-                               error?.message?.toLowerCase().includes('overloaded') ||
-                               error?.status === 429;
-      
-      if (isRateLimitError && attempt < MAX_RETRIES) {
-        console.warn(`\n⚠️  RATE LIMIT ERROR (Attempt ${attempt}/${MAX_RETRIES})`);
-        console.warn(`Error details: ${error?.message || error}`);
-        console.warn(`Waiting ${RETRY_DELAY_MS / 1000} seconds before retry...`);
-        
-        const startTime = Date.now();
-        const interval = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          const remaining = Math.ceil((RETRY_DELAY_MS / 1000) - elapsed);
-          if (remaining > 0) {
-            process.stdout.write(`\r⏳ Waiting... ${remaining}s remaining `);
-          }
-        }, 1000);
-        
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-        clearInterval(interval);
-        process.stdout.write('\r✓ Wait complete, retrying now...\n\n');
-        continue;
-      }
-      
-      console.error("Error generating summary with Gemini API:", error);
-      if (attempt === MAX_RETRIES) {
-        throw new Error(`Failed to generate summary after ${MAX_RETRIES} attempts. Last error: ${error?.message || error}`);
-      }
-      throw error;
-    }
-  }
+    }]
+  });
   
-  throw new Error("Failed to generate summary after all retry attempts.");
+  const finalResponse = await generateContentWithRetry(
+    chatHistory,
+    {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          overview: { type: Type.STRING },
+          categories: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                points: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      text: { type: Type.STRING },
+                      commits: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING }
+                      },
+                      isBreaking: { type: Type.BOOLEAN }
+                    },
+                    required: ["text", "commits"]
+                  }
+                }
+              },
+              required: ["title", "points"]
+            }
+          }
+        },
+        required: ["title", "overview", "categories"]
+      }
+    },
+    'final JSON generation'
+  );
+  
+  const jsonText = finalResponse.text.trim();
+  console.log('  ✓ Final summary generated');
+  return JSON.parse(jsonText) as StructuredSummary;
 }

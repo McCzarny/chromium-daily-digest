@@ -1,6 +1,7 @@
 import { fetchCommitsForDate } from '../services/chromiumService';
 import { generateSummary } from '../services/geminiService';
-import { GitilesCommit, StructuredSummary } from '../types';
+import { GitilesCommit, StructuredSummary, SummaryConfig } from '../types';
+import { loadConfig, getIgnoredBotEmails } from '../config';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -11,8 +12,16 @@ const createHtmlPage = (
   allCommits: GitilesCommit[], 
   filteredCommits: GitilesCommit[], 
   date: string, 
-  branch: string
+  branch: string,
+  outputSubpath: string
 ): string => {
+  // Calculate relative path to assets folder
+  // Assets are in public/summaries/assets/
+  // If we're in a subdirectory like public/summaries/on-top-of-chromium/,
+  // we need to go up: ../assets/daily-digest-logo.svg
+  const depth = outputSubpath ? outputSubpath.split('/').filter(p => p).length : 0;
+  const prefix = depth > 0 ? '../'.repeat(depth) : '';
+  const assetsPath = `${prefix}assets/daily-digest-logo.svg`;
 
   const renderOverview = (text: string): string => {
     return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
@@ -74,7 +83,7 @@ const createHtmlPage = (
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="assets/daily-digest-logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="${assetsPath}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summary | ${date}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,7 +95,7 @@ const createHtmlPage = (
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center space-x-3">
-          <img src="assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
+          <img src="${assetsPath}" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
           <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
             <p class="text-gray-400">Summary for ${date} on branch '${branch}'</p>
@@ -145,7 +154,12 @@ const createHtmlPage = (
 </html>`;
 };
 
-const updateIndexPage = async (outputDir: string) => {
+const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
+    // Calculate relative path to assets based on subdirectory depth
+    const depth = outputSubpath ? outputSubpath.split('/').filter(p => p).length : 0;
+    const prefix = depth > 0 ? '../'.repeat(depth) : '';
+    const assetsPath = `${prefix}assets/daily-digest-logo.svg`;
+    
     const files = await fs.readdir(outputDir);
     const summaryPages = files
       .filter(file => file.endsWith('.html') && file !== 'index.html')
@@ -185,7 +199,7 @@ const updateIndexPage = async (outputDir: string) => {
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="assets/daily-digest-logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="${assetsPath}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -198,7 +212,7 @@ const updateIndexPage = async (outputDir: string) => {
     <header class="bg-gray-800 shadow-md">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center space-x-3">
-          <img src="assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-10 w-10" />
+          <img src="${assetsPath}" alt="Chromium Daily Digest Logo" class="h-10 w-10" />
           <div>
             <h1 class="text-3xl font-bold text-white tracking-tight">Chromium Daily Summaries</h1>
             <p class="text-gray-400 mt-1">Latest Chromium commits summarized daily</p>
@@ -346,24 +360,42 @@ const updateIndexPage = async (outputDir: string) => {
 const run = async () => {
   const args = process.argv.slice(2);
   if (args.length < 2) {
-    console.error('Usage: tsx scripts/generate-page.ts <date> <branch> [interesting-keywords]');
+    console.error('Usage: tsx scripts/generate-page.ts <date> <branch> [config-file]');
+    console.error('');
+    console.error('Arguments:');
+    console.error('  <date>        Date in YYYY-MM-DD format');
+    console.error('  <branch>      Branch name (e.g., main)');
+    console.error('  [config-file] Optional path to JSON config file');
     console.error('');
     console.error('Examples:');
     console.error('  tsx scripts/generate-page.ts 2025-11-09 main');
-    console.error('  tsx scripts/generate-page.ts 2025-11-09 main "performance,security"');
+    console.error('  tsx scripts/generate-page.ts 2025-11-09 main config.json');
+    console.error('  tsx scripts/generate-page.ts 2025-11-09 main custom-config.json');
+    console.error('');
+    console.error('Config file format (all fields optional):');
+    console.error('  {');
+    console.error('    "customInstructions": "Focus on V8 and Blink changes",');
+    console.error('    "interestingKeywords": "performance,security,v8",');
+    console.error('    "outputPath": "public/summaries",');
+    console.error('    "ignoredBotEmails": ["bot@example.com"],');
+    console.error('    "focusAreas": ["V8", "Blink", "DevTools"]');
+    console.error('  }');
     process.exit(1);
   }
 
-  const [date, branch, interestingKeywords = ''] = args;
+  const [date, branch, configFile] = args;
   
-  // Bot author emails to ignore
-  const IGNORED_BOT_EMAILS = [
-    'bling-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com',
-    'chromeos-ci-prod@chromeos-bot.iam.gserviceaccount.com',
-    'chromium-autoroll@skia-public.iam.gserviceaccount.com',
-    'chromium-internal-autoroll@skia-corp.google.com.iam.gserviceaccount.com',
-    'mdb.chrome-pki-metadata-release-jobs@google.com',
-  ];
+  // Load configuration
+  let config: SummaryConfig;
+  try {
+    config = await loadConfig(configFile);
+  } catch (error) {
+    console.error('Failed to load configuration. Using defaults.');
+    process.exit(1);
+  }
+  
+  // Get bot emails to ignore
+  const IGNORED_BOT_EMAILS = getIgnoredBotEmails(config);
   
   const githubToken = process.env.SECRET_GITHUB_TOKEN;
   if (githubToken) {
@@ -422,7 +454,7 @@ const run = async () => {
 
     const summaryContent = await generateSummary(
       filteredCommits, 
-      interestingKeywords, 
+      config,
       date, 
       branch,
       totalCommitsCount,
@@ -436,17 +468,21 @@ const run = async () => {
     console.log(`  Categories: ${summaryContent.categories.length}`);
     console.log('Step 4/5: Creating HTML page...');
 
-    const fullHtml = createHtmlPage(summaryContent, allCommits, filteredCommits, date, branch);
-    
-    const outputDir = path.join(process.cwd(), 'public', 'summaries');
+    // Build output directory: public/summaries/{subpath}
+    const baseDir = path.join(process.cwd(), 'public', 'summaries');
+    const outputDir = config.outputPath 
+      ? path.join(baseDir, config.outputPath) 
+      : baseDir;
     await fs.mkdir(outputDir, { recursive: true });
+    
+    const fullHtml = createHtmlPage(summaryContent, allCommits, filteredCommits, date, branch, config.outputPath || '');
     
     const outputPath = path.join(outputDir, `${date}.html`);
     await fs.writeFile(outputPath, fullHtml);
     console.log(`✓ Summary page saved to: ${outputPath}`);
     
     console.log('Step 5/5: Updating index page...');
-    await updateIndexPage(outputDir);
+    await updateIndexPage(outputDir, config.outputPath || '');
     console.log('\n✅ All done! Summary generation completed successfully.');
 
   } catch (err) {

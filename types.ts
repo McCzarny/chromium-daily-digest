@@ -36,3 +36,21 @@ export interface StructuredSummary {
   overview: string;
   categories: SummaryCategory[];
 }
+
+// Configuration types
+export interface SummaryConfig {
+  // Custom instructions to guide the AI summary generation
+  customInstructions?: string;
+  
+  // Keywords of special interest for the summary
+  interestingKeywords?: string;
+  
+  // Path where the generated HTML pages should be saved
+  outputPath?: string;
+  
+  // Bot email addresses to ignore (in addition to default ones)
+  ignoredBotEmails?: string[];
+  
+  // Focus areas for filtering or emphasizing specific parts
+  focusAreas?: string[];
+}

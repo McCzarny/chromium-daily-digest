@@ -1,9 +1,9 @@
-name: Generate and Publish Daily Summary
+name: Generate and Publish Daily Summary for On-Top-Of-Chromium configuration
 
 on:
-  # Runs at 05:00 UTC every day
+  # Runs at 06:00 UTC every day
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '0 6 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -41,7 +41,7 @@ jobs:
           SECRET_GEMINI_API_KEY: ${{ secrets.SECRET_GEMINI_API_KEY }}
           # Use the built-in SECRET_GITHUB_TOKEN to avoid rate limits
           SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
-        run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main
+        run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main config.on-top-of-chromium.json
       - name: Commit and push changes
         run: |
           git config --global user.name 'github-actions[bot]'
