@@ -27,19 +27,27 @@ const createHtmlPage = (
       .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`);
   };
 
-  const categoriesHtml = summary.categories.map(category => `
+  const categoriesHtml = summary.categories.map((category, catIdx) => `
     <div>
       <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">${category.title}</h3>
       <ul class="list-disc list-inside space-y-3">
-        ${category.points.map(point => `
-          <li class="text-gray-300">
+        ${category.points.map((point, pointIdx) => {
+          const anchorId = `update-${date}-${catIdx}-${pointIdx}`;
+          return `
+          <li id="${anchorId}" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('${anchorId}')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
             ${point.isBreaking ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>` : ''}
             ${renderPointText(point.text)}
             ${point.commits.map(hash => `
               <a href="${GITHUB_COMMIT_URL}${hash}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(${hash.substring(0, 7)})</a>
             `).join('')}
           </li>
-        `).join('')}
+        `;
+        }).join('')}
       </ul>
     </div>
   `).join('');
@@ -107,6 +115,32 @@ const createHtmlPage = (
         <a href="./index.html" class="text-sky-500 hover:text-sky-300">&larr; Back to all summaries</a>
       </div>
     </main>
+    <script>
+      function copyUpdateLink(anchorId) {
+        const url = window.location.origin + window.location.pathname + '#' + anchorId;
+        navigator.clipboard.writeText(url).then(() => {
+          // Show temporary feedback
+          const element = document.getElementById(anchorId);
+          if (element) {
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+            }, 500);
+          }
+        });
+      }
+      
+      // Scroll to anchor if present in URL
+      if (window.location.hash) {
+        setTimeout(() => {
+          const element = document.getElementById(window.location.hash.substring(1));
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+          }
+        }, 100);
+      }
+    </script>
 </body>
 </html>`;
 };
@@ -175,7 +209,7 @@ const updateIndexPage = async (outputDir: string) => {
     <main class="container mx-auto px-4 py-8">
       <div id="summaries-container" class="space-y-8">
         ${summaries.length === 0 ? '<p class="text-gray-400">No summaries generated yet.</p>' : summaries.map((summary, idx) => `
-        <article class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
+        <article id="summary-${summary.date}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">${summary.date}</h2>
             <a href="./${summary.page}" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
@@ -253,6 +287,53 @@ const updateIndexPage = async (outputDir: string) => {
       
       // Initialize
       showPage(1);
+
+      function copySummaryLink(date) {
+        const url = \`\${window.location.origin}\${window.location.pathname}#summary-\${date}\`;
+        navigator.clipboard.writeText(url).then(() => {
+          // Optionally show a toast or feedback
+        });
+      }
+
+      function copyUpdateLink(anchorId) {
+        const url = window.location.origin + window.location.pathname + '#' + anchorId;
+        navigator.clipboard.writeText(url).then(() => {
+          // Show temporary feedback
+          const element = document.getElementById(anchorId);
+          if (element) {
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+            }, 500);
+          }
+        });
+      }
+      
+      // Scroll to anchor if present in URL
+      if (window.location.hash) {
+        setTimeout(() => {
+          const element = document.getElementById(window.location.hash.substring(1));
+          if (element) {
+            // Find which page this element is on
+            const article = element.closest('.summary-item');
+            if (article) {
+              const page = parseInt(article.dataset.page);
+              if (page !== currentPage) {
+                currentPage = page;
+                showPage(currentPage);
+              }
+            }
+            
+            setTimeout(() => {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+              setTimeout(() => {
+                element.style.backgroundColor = '';
+              }, 1000);
+            }, 100);
+          }
+        }, 100);
+      }
     </script>
 </body>
 </html>`;
