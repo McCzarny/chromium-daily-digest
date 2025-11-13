@@ -12,13 +12,8 @@ if (!SECRET_GEMINI_API_KEY) {
 const ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
 const model = "gemini-2.5-pro";
 
-// Gemini 2.5 Pro has ~1M token context, but we'll be conservative
-const MAX_CONTEXT_TOKENS = 800000; // Leave room for output and safety margin
-const TOKENS_PER_COMMIT_ESTIMATE = 300; // Conservative estimate for commit message + files
-const MAX_COMMITS_PER_BATCH = Math.floor(MAX_CONTEXT_TOKENS / TOKENS_PER_COMMIT_ESTIMATE);
-
 // Retry configuration
-const MAX_API_RETRIES = 5;
+const MAX_API_RETRIES = 10;
 const RETRY_DELAY_MS = 60000;
 
 /**
