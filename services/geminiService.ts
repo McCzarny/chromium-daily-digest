@@ -316,7 +316,7 @@ export async function generateSummary(
   const MAX_ITERATIONS = 10;
   
   // Determine if we need to chunk the commits
-  const needsChunking = commits.length > 500; // If more than 500 commits, use chunking
+  const needsChunking = commits.length > 300; // If more than 300 commits, use chunking
   
   let summaryInput: string;
   if (needsChunking) {
@@ -324,7 +324,7 @@ export async function generateSummary(
     console.log('  Using chunked processing approach...');
     
     // Split commits into chunks
-    const chunkSize = 300;
+    const chunkSize = 250;
     const chunks: GitilesCommit[][] = [];
     for (let i = 0; i < commits.length; i += chunkSize) {
       chunks.push(commits.slice(i, i + chunkSize));
@@ -332,13 +332,14 @@ export async function generateSummary(
         
     console.log(`  Processing ${chunks.length} chunk(s)...`);
     
-    // Generate summaries for each chunk
-    const chunkSummaries = await Promise.all(
-      chunks.map((chunk, idx) => {
-        console.log(`  Processing chunk ${idx + 1}/${chunks.length} (${chunk.length} commits)...`);
-        return generateChunkSummary(chunk, idx, chunks.length);
-      })
-    );
+    // Generate summaries for each chunk sequentially
+    // to avoid hitting rate limits
+    const chunkSummaries: string[] = [];
+    for (let idx = 0; idx < chunks.length; idx++) {
+      console.log(`  Processing chunk ${idx + 1}/${chunks.length} (${chunks[idx].length} commits)...`);
+      const summary = await generateChunkSummary(chunks[idx], idx, chunks.length);
+      chunkSummaries.push(summary);
+    }
     
     console.log('  ✓ All chunks processed, creating final summary...');
     
