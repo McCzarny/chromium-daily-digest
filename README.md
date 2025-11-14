@@ -4,7 +4,7 @@
 
 # Chromium Daily Digest
 
-To check the daily summaries go to: https://mcczarny.github.io/chromium-daily-digest/
+To check the daily and weekly summaries go to: https://mcczarny.github.io/chromium-daily-digest/
 
 ## Run Locally
 
@@ -15,7 +15,11 @@ To check the daily summaries go to: https://mcczarny.github.io/chromium-daily-di
 2. Set the `SECRET_GEMINI_API_KEY` and `SECRET_GITHUB_TOKEN` in [.env.local](.env.local) to your Gemini API key and GitHub token respectively
 3. Run the generator:
    ```bash
+   # Generate daily summaries
    npm run generate-page [date] [branch] [config-file]
+   
+   # Generate weekly summaries from existing daily summaries
+   npm run generate-weeklies [config-file]
    ```
 
 ### How It Works
@@ -28,6 +32,7 @@ This tool uses an **agentic AI approach** where the AI can:
 
 **Examples:**
 ```bash
+# Generate daily summaries
 # Basic usage (no config)
 npm run generate-page 2025-11-09 main
 
@@ -36,6 +41,13 @@ npm run generate-page 2025-11-09 main config.example.json
 
 # V8-focused summary
 npm run generate-page 2025-11-09 main config.v8-focus.json
+
+# Generate weekly summaries
+# Basic usage (processes all daily summaries in public/summaries/)
+npm run generate-weeklies
+
+# With configuration file (uses outputPath to find daily summaries)
+npm run generate-weeklies config.example.json
 ```
 
 ### Configuration
@@ -73,3 +85,30 @@ See [`config.example.json`](config.example.json) for a general-purpose configura
 - **Accurate Summaries**: Based on actual code changes, not just commit messages
 - **Automatic Chunking**: Handles large commit sets (500+) by processing in chunks
 - **Better Grouping**: Groups related commits by analyzing actual file changes
+
+### Weekly Summaries
+
+The `generate-weeklies` script uses AI to create focused weekly summaries from existing daily digests:
+
+**Features:**
+- **AI-Powered Summarization**: Uses Gemini AI to analyze and condense daily summaries
+- **Intelligent Filtering**: Skips less relevant changes to keep weekly summaries focused
+- **Smart Grouping**: Combines related changes across multiple days into coherent themes
+- **Breaking Changes Highlighted**: Emphasizes important breaking changes across the week
+- **Same Color Scheme**: Matches daily summaries (sky blue accents) with a green header border
+- **Integrated Output**: Weekly summaries are placed alongside daily summaries in the same directory
+
+**How it works:**
+1. Scans `public/summaries/` (or custom `outputPath` from config) for daily HTML files
+2. Parses each daily summary to extract all content
+3. Groups summaries by ISO week number
+4. Sends daily content to Gemini AI to generate a focused weekly summary
+5. Generates individual weekly HTML pages in the same directory as daily summaries
+
+**Output:**
+- Weekly pages: `public/summaries/{year}-W{week}.html` (e.g., `2025-W46.html`)
+- Files are placed alongside daily summaries (e.g., `2025-11-09.html`, `2025-11-10.html`, etc.)
+
+**Requirements:**
+- Requires `SECRET_GEMINI_API_KEY` environment variable (same as daily generation)
+- Must have existing daily summaries to process

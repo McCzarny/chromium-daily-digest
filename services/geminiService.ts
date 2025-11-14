@@ -161,7 +161,7 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
 3.  **Content Prioritization:**
     *   ${keywordsText}
     *   ${focusAreasText}
-    *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true.
+    *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true. Do not generate explicit "BREAKING CHANGE" in text.
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     *   Use the get_commit_details function to provide accurate, detailed summaries
@@ -542,4 +542,150 @@ Provide ONLY the JSON object, no other text.`
   const jsonText = finalResponse.text.trim();
   console.log('  ✓ Final summary generated');
   return JSON.parse(jsonText) as StructuredSummary;
+}
+
+/**
+ * Daily summary data for weekly aggregation
+ */
+export interface DailySummaryData {
+  date: string;
+  title: string;
+  overview: string;
+  categories: Array<{
+    title: string;
+    points: Array<{
+      text: string;
+      isBreaking: boolean;
+      commits: string[];
+    }>;
+  }>;
+  totalCommits: number;
+  relevantCommits: number;
+}
+
+/**
+ * Generate a weekly summary from daily summaries
+ */
+export async function generateWeeklySummary(
+  dailySummaries: DailySummaryData[],
+  config: SummaryConfig,
+  startDate: string,
+  endDate: string,
+  year: number,
+  week: number
+): Promise<StructuredSummary> {
+  console.log(`  Generating weekly summary for ${year} Week ${week} using Gemini...`);
+  
+  // Prepare the daily summaries content
+  let dailyContent = '';
+  for (const daily of dailySummaries) {
+    dailyContent += `\n## ${daily.date} - ${daily.title}\n\n`;
+    dailyContent += `Overview: ${daily.overview}\n\n`;
+    
+    for (const category of daily.categories) {
+      dailyContent += `### ${category.title}\n`;
+      for (const point of category.points) {
+        const breakingPrefix = point.isBreaking ? '[BREAKING] ' : '';
+        const commitRefs = point.commits.map(c => `(${c.substring(0, 7)})`).join(' ');
+        dailyContent += `- ${breakingPrefix}${point.text} ${commitRefs}\n`;
+      }
+      dailyContent += '\n';
+    }
+  }
+  
+  const totalCommits = dailySummaries.reduce((sum, d) => sum + d.totalCommits, 0);
+  const totalRelevantCommits = dailySummaries.reduce((sum, d) => sum + d.relevantCommits, 0);
+  
+  const systemPrompt = `You are an expert technical writer creating weekly summaries of Chromium development.
+You will be given ${dailySummaries.length} daily summaries covering ${startDate} to ${endDate}.
+
+Your task is to create a concise weekly summary that:
+1. Highlights the most important changes and breaking changes across the week
+2. Groups related changes across multiple days into coherent themes
+3. Skips less relevant or minor changes to keep the summary focused
+4. Maintains technical accuracy while being accessible
+
+${config.customInstructions ? `Additional instructions: ${config.customInstructions}` : ''}
+${config.focusAreas && config.focusAreas.length > 0 ? `Focus areas: ${config.focusAreas.join(', ')}` : ''}
+
+Respond with valid JSON matching this exact structure:
+{
+  "title": "Chromium Weekly: ${year} Week ${week}",
+  "overview": "A brief overview paragraph (2-4 sentences). Mention: ${totalRelevantCommits} relevant commits out of ${totalCommits} total across ${dailySummaries.length} days.",
+  "categories": [
+    {
+      "title": "Category Name",
+      "points": [
+        {
+          "text": "Description. Use **BREAKING CHANGE** prefix if applicable. Use \`code\` for code elements.",
+          "isBreaking": boolean,
+          "commits": ["full_hash1", "full_hash2"]
+        }
+      ]
+    }
+  ]
+}`;
+
+  const userPrompt = `Daily summaries for Week ${week} of ${year}:
+
+${dailyContent}
+
+Create a focused weekly summary highlighting only the most important changes. Skip minor updates and combine related changes across days.`;
+
+  try {
+    const response = await generateContentWithRetry(
+      [
+        { role: 'user', parts: [{ text: systemPrompt }] },
+        { role: 'model', parts: [{ text: 'I understand. I will create a focused weekly summary in JSON format.' }] },
+        { role: 'user', parts: [{ text: userPrompt }] }
+      ],
+      {
+        temperature: 0.3,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            overview: { type: Type.STRING },
+            categories: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  points: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        text: { type: Type.STRING },
+                        commits: {
+                          type: Type.ARRAY,
+                          items: { type: Type.STRING }
+                        },
+                        isBreaking: { type: Type.BOOLEAN }
+                      },
+                      required: ["text", "commits"]
+                    }
+                  }
+                },
+                required: ["title", "points"]
+              }
+            }
+          },
+          required: ["title", "overview", "categories"]
+        }
+      },
+      `weekly summary ${year}-W${week}`
+    );
+
+    const jsonText = response.text.trim();
+    const summary = JSON.parse(jsonText) as StructuredSummary;
+    console.log(`  ✓ Weekly summary generated with ${summary.categories.length} categories`);
+    
+    return summary;
+  } catch (error) {
+    console.error('Failed to generate weekly summary:', error);
+    throw error;
+  }
 }

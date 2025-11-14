@@ -1,11 +1,10 @@
 import { fetchCommitsForDate } from '../services/chromiumService';
-import { generateSummary } from '../services/geminiService';
+import { createLLMService } from '../services/llmService';
 import { GitilesCommit, StructuredSummary, SummaryConfig } from '../types';
 import { loadConfig, getIgnoredBotEmails } from '../config';
+import { renderOverview, renderPointText, getAssetsPath, GITHUB_COMMIT_URL } from '../utils/htmlUtils';
 import fs from 'fs/promises';
 import path from 'path';
-
-const GITHUB_COMMIT_URL = 'https://github.com/chromium/chromium/commit/';
 
 const createHtmlPage = (
   summary: StructuredSummary, 
@@ -15,26 +14,7 @@ const createHtmlPage = (
   branch: string,
   outputSubpath: string
 ): string => {
-  // Calculate relative path to assets folder
-  // Assets are in public/summaries/assets/
-  // If we're in a subdirectory like public/summaries/on-top-of-chromium/,
-  // we need to go up: ../assets/daily-digest-logo.svg
-  const depth = outputSubpath ? outputSubpath.split('/').filter(p => p).length : 0;
-  const prefix = depth > 0 ? '../'.repeat(depth) : '';
-  const assetsPath = `${prefix}assets/daily-digest-logo.svg`;
-
-  const renderOverview = (text: string): string => {
-    return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-      const hash = url.split('/').pop() ?? '';
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
-    });
-  };
-
-  const renderPointText = (text: string): string => {
-    return text
-      .replace(/\*\*BREAKING CHANGE\*\*/g, `<strong class="text-red-400 font-bold">BREAKING CHANGE</strong>`)
-      .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`);
-  };
+  const assetsPath = getAssetsPath(outputSubpath, 'daily-digest-logo.svg');
 
   const categoriesHtml = summary.categories.map((category, catIdx) => `
     <div>
@@ -161,12 +141,14 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     const assetsPath = `${prefix}assets/daily-digest-logo.svg`;
     
     const files = await fs.readdir(outputDir);
+    // Only include daily summaries matching YYYY-MM-DD.html pattern
+    const dailyPattern = /^\d{4}-\d{2}-\d{2}\.html$/;
     const summaryPages = files
-      .filter(file => file.endsWith('.html') && file !== 'index.html')
+      .filter(file => dailyPattern.test(file))
       .sort()
       .reverse();
     
-    console.log(`  Found ${summaryPages.length} summary pages`);
+    console.log(`  Found ${summaryPages.length} daily summary pages`);
 
     // Read all summary files and extract their content
     const summaries = await Promise.all(
@@ -221,6 +203,9 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
       </div>
     </header>
     <main class="container mx-auto px-4 py-8">
+      <div class="mb-6 text-center">
+        <a href="./weeklies.html" class="text-green-500 hover:text-green-300 text-lg font-semibold">📅 View Weekly Summaries →</a>
+      </div>
       <div id="summaries-container" class="space-y-8">
         ${summaries.length === 0 ? '<p class="text-gray-400">No summaries generated yet.</p>' : summaries.map((summary, idx) => `
         <article id="summary-${summary.date}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
@@ -452,7 +437,9 @@ const run = async () => {
     console.log('  Using agentic approach with dynamic commit detail fetching');
     console.log('  Automatic chunking will be used if commit count exceeds limits');
 
-    const summaryContent = await generateSummary(
+    // Create LLM service with configured provider (defaults to Gemini)
+    const llmService = createLLMService(config.llmProvider || 'gemini');
+    const summaryContent = await llmService.generateSummary(
       filteredCommits, 
       config,
       date, 

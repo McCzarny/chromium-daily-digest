@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: SummaryConfig = {
   outputPath: '', // Subpath within public/summaries (empty = root)
   ignoredBotEmails: [],
   focusAreas: [],
+  llmProvider: 'gemini', // Default LLM provider
 };
 
 /**
@@ -67,6 +68,7 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
       console.log(`  - Additional ignored bots: ${config.ignoredBotEmails.length}`);
     }
     console.log(`  - Output path: ${config.outputPath}`);
+    console.log(`  - LLM provider: ${config.llmProvider}`);
     
     return config;
   } catch (error: any) {

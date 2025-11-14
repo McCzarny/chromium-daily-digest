@@ -53,4 +53,7 @@ export interface SummaryConfig {
   
   // Focus areas for filtering or emphasizing specific parts
   focusAreas?: string[];
+  
+  // LLM provider to use for summary generation (default: 'gemini')
+  llmProvider?: 'gemini' | 'openai' | 'anthropic';
 }
