@@ -7,7 +7,7 @@ import {
   createWeeklyPrompt
 } from "./llmService";
 
-const NEXOS_TOKEN = process.env.NEXOS_TOKEN;
+const NEXOS_TOKEN = process.env.SECRET_NEXOS_TOKEN;
 const NEXOS_API_BASE = "https://api.nexos.ai/v1";
 const NEXOS_MODEL = "8b77459d-7cc0-4bcd-a671-34648dd4aec6"; // gemini-2.5-pro
 
