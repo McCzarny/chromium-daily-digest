@@ -16,6 +16,9 @@ const createHtmlPage = (
 ): string => {
   const assetsPath = getAssetsPath(outputSubpath, 'daily-digest-logo.svg');
 
+  // Log summary whole summary for debugging
+  // console.log('Generated Structured Summary:', JSON.stringify(summary, null, 2));
+
   const categoriesHtml = summary.categories.map((category, catIdx) => `
     <div>
       <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">${category.title}</h3>
@@ -434,8 +437,6 @@ const run = async () => {
     console.log(`✓ Filtered to ${relevantCommitsCount} relevant commits out of ${totalCommitsCount} total`);
     console.log(`  Filtered out: ${totalCommitsCount - relevantCommitsCount} commits`);
     console.log('Step 3/5: Generating summary with AI...');
-    console.log('  Using agentic approach with dynamic commit detail fetching');
-    console.log('  Automatic chunking will be used if commit count exceeds limits');
 
     // Create LLM service with configured provider (defaults to Gemini)
     const llmService = createLLMService(config.llmProvider || 'gemini');
