@@ -37,10 +37,9 @@ jobs:
         run: echo "YESTERDAY=$(date -d "yesterday" +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Generate summary page
         env:
-          # The SECRET_GEMINI_API_KEY must be set in the repository's secrets
           SECRET_GEMINI_API_KEY: ${{ secrets.SECRET_GEMINI_API_KEY }}
-          # Use the built-in SECRET_GITHUB_TOKEN to avoid rate limits
           SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
+          SECRET_NEXOS_TOKEN: ${{ secrets.SECRET_NEXOS_TOKEN }}
         run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main
       - name: Commit and push changes
         run: |

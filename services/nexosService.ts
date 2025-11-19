@@ -11,10 +11,6 @@ const NEXOS_TOKEN = process.env.SECRET_NEXOS_TOKEN;
 const NEXOS_API_BASE = "https://api.nexos.ai/v1";
 const NEXOS_MODEL = "8b77459d-7cc0-4bcd-a671-34648dd4aec6"; // gemini-2.5-pro
 
-if (!NEXOS_TOKEN) {
-  throw new Error("NEXOS_TOKEN environment variable not set");
-}
-
 interface NexosMessage {
   role: "system" | "user" | "assistant";
   content: string;
@@ -103,6 +99,10 @@ class NexosAdapter implements PlatformAdapter {
       requestJson?: boolean;
     }
   ): Promise<{ content: string; toolCalls?: ToolCall[] }> {
+    if (!NEXOS_TOKEN) {
+      throw new Error("SECRET_NEXOS_TOKEN environment variable not set");
+    }
+
     const timeoutMs = 300000; // 5 minutes
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
