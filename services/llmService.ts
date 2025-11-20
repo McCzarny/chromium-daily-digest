@@ -222,7 +222,11 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
 3.  **Content Prioritization:**
     *   ${keywordsText}
     *   ${focusAreasText}
-    *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true.
+    *   **IMPORTANT**: Mark as BREAKING CHANGES (isBreaking: true) ONLY:
+        - Removal of stable, public APIs that embedders use
+        - Major signature changes to stable public interfaces
+        - Significant behavioral changes to stable features requiring embedder code updates
+    *   **DO NOT mark as breaking**: Experimental features, internal changes, deprecation warnings, feature flag changes, or changes only affecting outdated implementations
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     ${customInstructionsText}
@@ -244,6 +248,176 @@ ${commitDataForPrompt}
 
 Provide ONLY a valid JSON object with the structure specified above. No additional text.
   `;
+}
+
+/**
+ * Create Phase 1 prompt: Find potential breaking changes
+ */
+export function createPhase1Prompt(
+  commits: GitilesCommit[],
+  config: SummaryConfig
+): string {
+  const commitDataForPrompt = commits.map(c => {
+    const filePaths = c.files && c.files.length > 0
+      ? `\nFiles (top ${Math.min(c.files.length, 20)}):\n${c.files.slice(0, 20).map(f => `- ${f}`).join('\n')}`
+      : '';
+    return `Commit: ${c.commit}\nMessage:\n${c.message}${filePaths}`;
+  }).join('\n---\n');
+
+  return `
+You are an expert at identifying MAJOR breaking changes in Chromium commits.
+
+**YOUR TASK:**
+Analyze these commits and identify only MAJOR BREAKING CHANGES that would significantly impact production builds using Chromium.
+
+**ONLY mark as breaking if:**
+- Public API removals (NOT deprecations, only actual removals)
+- Stable API signature changes affecting embedders
+- Major behavioral changes to stable features requiring code updates
+- Removal of stable, widely-used features
+- Changes to core public interfaces used by embedders
+
+**DO NOT mark as breaking:**
+- Experimental features (with "Experimental" prefix, behind flags, or in origin trials)
+- Internal implementation changes
+- Changes to private/internal APIs
+- Deprecation warnings (only mark if actually removed)
+- Bug fixes that restore correct behavior
+- Changes that only affect very old implementations
+- Internal refactoring
+- Changes to test-only code
+- Feature flags being added, removed, or modified (unless it's a stable flag removal)
+
+**YOUR TOOL:**
+You have access to "get_commit_details" to fetch full diffs and patches for commits.
+
+**Instructions:**
+1. Review commit messages and file paths
+2. Identify ONLY commits that look like MAJOR breaking changes to stable, public APIs
+3. Use get_commit_details to fetch details for suspicious commits (up to 10 at a time)
+4. Based on the details, list the commit hashes that are confirmed MAJOR breaking changes
+5. Be conservative - when in doubt, it's NOT a breaking change
+
+${config.focusAreas && config.focusAreas.length > 0 ? `Focus areas: ${config.focusAreas.join(', ')}` : ''}
+
+**Commits:**
+---
+${commitDataForPrompt}
+---
+
+Respond with a list of commit hashes that are potential breaking changes, one per line. If none found, respond with "No potential breaking changes found."
+`;
+}
+
+/**
+ * Create Phase 2 prompt: Analyze and verify breaking changes
+ */
+export function createPhase2Prompt(
+  commits: GitilesCommit[],
+  potentialBreakingCommits: string[],
+  config: SummaryConfig
+): string {
+    const customInstructionsText = config.customInstructions?.trim()
+    ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
+    : '';
+
+  return `
+You previously identified these commits as potential breaking changes:
+${potentialBreakingCommits.map(c => `- ${c}`).join('\n')}
+
+Now:
+1. Review the commit details you fetched
+2. Determine which are CONFIRMED MAJOR breaking changes
+3. Apply strict criteria: Only confirm if it's a significant change to stable public APIs that production embedders rely on
+4. Provide a brief summary of ALL commits (not just breaking ones)
+5. If there are custom instructions, follow them carefully ignoring changes out of the interest scope.
+6. Ignore major changes like transparent type changes like 'const std::string&' to 'std::string_view' or container references to 'std::span'.
+
+**Remember:** Be conservative. Exclude:
+- Experimental features
+- Internal changes
+- Changes only affecting old/outdated code
+- Deprecations (only removals count)
+- Feature flags
+
+${customInstructionsText}
+
+Format your response as:
+
+**CONFIRMED BREAKING CHANGES:**
+- commit_hash: Brief reason why it's a MAJOR breaking change to stable public APIs
+(Or "None" if no major breaking changes confirmed)
+
+**GENERAL SUMMARY:**
+Brief overview of all commits analyzed, grouped by logical categories.
+`;
+}
+
+/**
+ * Create Phase 3 prompt: Pick commits needing more context
+ */
+export function createPhase3Prompt(
+  commits: GitilesCommit[]
+): string {
+  return `
+Based on your previous analysis, identify commits that need more detailed information to write an accurate summary.
+
+Look for commits where:
+- The message is vague or unclear
+- The scope of changes is uncertain
+- You want to verify technical details
+- The commit seems important but lacks details
+
+List the commit hashes you want to investigate further (up to 10), one per line.
+If no additional details needed, respond with "No additional details needed."
+`;
+}
+
+/**
+ * Create Phase 4 prompt: Summarize with details
+ */
+export function createPhase4Prompt(): string {
+  return `
+Now that you have all the commit details you requested, create a comprehensive summary of all commits.
+
+Group them by logical categories (Performance, Security, Blink, V8, UI/UX, Developer Tools, Bug Fixes, Infrastructure, etc.).
+
+For each category, provide:
+- Key changes (be specific using the details you gathered)
+- Which commits are involved (include full hashes)
+- Mark any breaking changes
+
+Provide your summary as structured text.
+`;
+}
+
+/**
+ * Create Phase 5 prompt: Write general summary
+ */
+export function createPhase5Prompt(
+  config: SummaryConfig
+): string {
+  const customInstructionsText = config.customInstructions?.trim()
+    ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
+    : '';
+  
+  return `
+Using all the information from your previous analysis:
+1. The confirmed breaking changes
+2. The detailed summaries of commits
+3. All commit details you gathered
+
+Create a final, polished summary organized by categories.
+
+For each category:
+- Synthesize related changes together
+- Be specific and technical
+- Highlight breaking changes clearly
+- Include relevant commit hashes
+${customInstructionsText}
+
+Provide your final summary as well-organized text.
+`;
 }
 
 /**
@@ -323,7 +497,11 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
 3.  **Content Prioritization:**
     *   ${keywordsText}
     *   ${focusAreasText}
-    *   **IMPORTANT**: Pay special attention to BREAKING CHANGES - API removals, signature changes, behavioral changes, removed flags, or deprecated features being removed. Mark these with isBreaking: true. Do not generate explicit "BREAKING CHANGE" in text.
+    *   **IMPORTANT**: Mark as BREAKING CHANGES (isBreaking: true) ONLY when:
+        - Stable, public API is removed (not deprecated, actually removed)
+        - Major signature change to stable public interface used by embedders
+        - Significant behavioral change to stable feature requiring embedder code updates
+    *   **DO NOT mark as breaking**: Experimental features, internal APIs, deprecation warnings, feature flags, internal refactoring, or changes only affecting very old code
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     *   Use the get_commit_details function to provide accurate, detailed summaries
@@ -508,14 +686,19 @@ export function createFinalJsonPrompt(date: string): string {
         {
           "text": "Summary text with markdown formatting",
           "commits": ["full_commit_hash1", "full_commit_hash2"],
-          "isBreaking": true  // ONLY if this is a breaking change for Chromium-based projects
+          "isBreaking": true  // ONLY for MAJOR breaking changes to stable public APIs
         }
       ]
     }
   ]
 }
 
-IMPORTANT: Mark changes as isBreaking: true if they are API removals, signature changes, behavior changes requiring code updates, removed flags, or deprecated features being removed.
+IMPORTANT: Mark as isBreaking: true ONLY for:
+- Removal of stable public APIs (not deprecation)
+- Major signature changes to stable public interfaces
+- Significant behavioral changes to stable features requiring embedder code updates
+
+DO NOT mark as breaking: experimental features, internal changes, deprecations, feature flags, or minor compatibility issues.
 
 Provide ONLY the JSON object, no other text.`;
 }
@@ -609,8 +792,124 @@ export async function executeToolCalls(toolCalls: ToolCall[]): Promise<string[]>
 }
 
 /**
+ * Execute the phased analysis approach
+ */
+async function executePhasedAnalysis(
+  adapter: PlatformAdapter,
+  commits: GitilesCommit[],
+  config: SummaryConfig,
+  chunkIndex?: number,
+  totalChunks?: number
+): Promise<string> {
+  const chunkPrefix = chunkIndex !== undefined ? `Chunk ${chunkIndex + 1}/${totalChunks} - ` : '';
+  
+  // Phase 1: Find potential breaking changes
+  console.log(`  ${chunkPrefix}Phase 1: Finding potential breaking changes...`);
+  adapter.resetMessages();
+  adapter.addMessage('user', createPhase1Prompt(commits, config));
+  
+  let response = await adapter.callAPI(adapter.getMessages(), {
+    systemPrompt: 'You are an expert at identifying breaking changes in Chromium commits.',
+    enableTools: true,
+    requestJson: false,
+  });
+  
+  // Allow tool calls for Phase 1
+  let iteration = 0;
+  while (response.toolCalls && response.toolCalls.length > 0 && iteration < 5) {
+    iteration++;
+    console.log(`    ${chunkPrefix}Phase 1 - Fetching details (iteration ${iteration})...`);
+    adapter.addMessage('assistant', response.content, response.toolCalls);
+    const toolResponses = await executeToolCalls(response.toolCalls);
+    for (const toolResponse of toolResponses) {
+      adapter.addMessage('tool', toolResponse);
+    }
+    response = await adapter.callAPI(adapter.getMessages(), {
+      systemPrompt: 'You are an expert at identifying breaking changes in Chromium commits.',
+      enableTools: true,
+      requestJson: false,
+    });
+  }
+  
+  const potentialBreakingCommits = response.content
+    .split('\n')
+    .filter(line => line.trim() && !line.toLowerCase().includes('no potential'))
+    .map(line => line.replace(/^[\s\-\*]+/, '').trim())
+    .filter(line => /^[a-f0-9]{40}$/i.test(line));
+  
+  console.log(`    ${chunkPrefix}✓ Found ${potentialBreakingCommits.length} potential breaking change(s)`);
+  
+  // Phase 2: Analyze and verify breaking changes
+  console.log(`  ${chunkPrefix}Phase 2: Analyzing and verifying commits...`);
+  adapter.addMessage('user', createPhase2Prompt(commits, potentialBreakingCommits, config));
+  
+  response = await adapter.callAPI(adapter.getMessages(), {
+    systemPrompt: 'You are an expert software engineer analyzing Chromium commits.',
+    enableTools: false,
+    requestJson: false,
+  });
+  
+  console.log(`    ${chunkPrefix}✓ Analysis complete`);
+  
+  // Phase 3: Pick commits needing more context
+  console.log(`  ${chunkPrefix}Phase 3: Identifying commits needing more context...`);
+  adapter.addMessage('user', createPhase3Prompt(commits));
+  
+  response = await adapter.callAPI(adapter.getMessages(), {
+    systemPrompt: 'You are an expert software engineer analyzing Chromium commits.',
+    enableTools: true,
+    requestJson: false,
+  });
+  
+  // Allow tool calls for Phase 3
+  iteration = 0;
+  while (response.toolCalls && response.toolCalls.length > 0 && iteration < 5) {
+    iteration++;
+    console.log(`    ${chunkPrefix}Phase 3 - Fetching additional details (iteration ${iteration})...`);
+    adapter.addMessage('assistant', response.content, response.toolCalls);
+    const toolResponses = await executeToolCalls(response.toolCalls);
+    for (const toolResponse of toolResponses) {
+      adapter.addMessage('tool', toolResponse);
+    }
+    response = await adapter.callAPI(adapter.getMessages(), {
+      systemPrompt: 'You are an expert software engineer analyzing Chromium commits.',
+      enableTools: true,
+      requestJson: false,
+    });
+  }
+  
+  console.log(`    ${chunkPrefix}✓ Context gathering complete`);
+  
+  // Phase 4: Summarize with details
+  console.log(`  ${chunkPrefix}Phase 4: Creating detailed summary...`);
+  adapter.addMessage('user', createPhase4Prompt());
+  
+  response = await adapter.callAPI(adapter.getMessages(), {
+    systemPrompt: 'You are an expert software engineer creating technical summaries.',
+    enableTools: false,
+    requestJson: false,
+  });
+  
+  console.log(`    ${chunkPrefix}✓ Detailed summary created`);
+  
+  // Phase 5: Write general summary
+  console.log(`  ${chunkPrefix}Phase 5: Writing final summary...`);
+  adapter.addMessage('user', createPhase5Prompt(config));
+  
+  response = await adapter.callAPI(adapter.getMessages(), {
+    systemPrompt: 'You are an expert technical writer creating polished summaries.',
+    enableTools: false,
+    requestJson: false,
+  });
+  
+  console.log(`    ${chunkPrefix}✓ Final summary complete`);
+  
+  return response.content;
+}
+
+/**
  * Common generation strategy for all LLM providers
- * Handles chunking, agentic investigation, and final JSON generation
+ * Handles chunking, phased analysis, and final JSON generation
  */
 export async function generateSummaryWithStrategy(
   adapter: PlatformAdapter,
@@ -623,18 +922,16 @@ export async function generateSummaryWithStrategy(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): Promise<StructuredSummary> {
-  const MAX_ITERATIONS = 10;
   const CHUNK_THRESHOLD = 300;
   const CHUNK_SIZE = 250;
-  const MAX_CHUNK_ITERATIONS = 5;
 
   adapter.resetMessages();
 
-  // Determine if we need to chunk the commits
+  // Determine if we need to chunk the commits (Phase 0)
   const needsChunking = commits.length > CHUNK_THRESHOLD;
 
   if (needsChunking) {
-    console.log(`  Large commit set detected (${commits.length} commits)`);
+    console.log(`  Phase 0: Large commit set detected (${commits.length} commits)`);
     console.log('  Using chunked processing approach...');
 
     // Split commits into chunks
@@ -643,70 +940,19 @@ export async function generateSummaryWithStrategy(
       chunks.push(commits.slice(i, i + CHUNK_SIZE));
     }
 
-    console.log(`  Processing ${chunks.length} chunk(s) with agentic approach...`);
+    console.log(`  Processing ${chunks.length} chunk(s) with phased approach...`);
 
-    // Generate summaries for each chunk with full agentic approach
+    // Execute phased analysis for each chunk
     const chunkSummaries: string[] = [];
     for (let idx = 0; idx < chunks.length; idx++) {
-      console.log(`  Processing chunk ${idx + 1}/${chunks.length} (${chunks[idx].length} commits)...`);
-      
-      adapter.resetMessages();
-      const prompt = createAgenticPrompt(
-        chunks[idx],
-        config,
-        date,
-        branch,
-        chunks[idx].length,
-        chunks[idx].length,
-        chunks[idx][0],
-        chunks[idx][chunks[idx].length - 1]
-      );
-      adapter.addMessage('user', prompt);
-
-      // Agentic loop for chunk processing with full tool calling support
-      let iteration = 0;
-      let chunkComplete = false;
-      while (iteration < MAX_ITERATIONS) {
-        iteration++;
-        console.log(`    Chunk ${idx + 1} - Iteration ${iteration}...`);
-
-        const response = await adapter.callAPI(adapter.getMessages(), {
-          systemPrompt: 'You are an expert software engineer and technical writer analyzing Chromium commits.',
-          enableTools: true,
-          requestJson: false,
-        });
-
-        if (response.toolCalls && response.toolCalls.length > 0) {
-          console.log(`    AI requested details for ${response.toolCalls.length} tool call(s)`);
-          adapter.addMessage('assistant', response.content, response.toolCalls);
-          const toolResponses = await executeToolCalls(response.toolCalls);
-          for (const toolResponse of toolResponses) {
-            adapter.addMessage('tool', toolResponse);
-          }
-        } else {
-          console.log(`    ✓ Chunk ${idx + 1} investigation complete`);
-          chunkSummaries.push(response.content);
-          chunkComplete = true;
-          break;
-        }
-      }
-
-      if (!chunkComplete) {
-        console.warn(`    ⚠ Chunk ${idx + 1} reached max iterations, using partial analysis`);
-        // Request a summary of what was analyzed so far
-        adapter.addMessage('user', 'Please provide a summary of your analysis so far based on the information you gathered.');
-        const partialResponse = await adapter.callAPI(adapter.getMessages(), {
-          systemPrompt: 'You are an expert software engineer and technical writer analyzing Chromium commits.',
-          enableTools: false,
-          requestJson: false,
-        });
-        chunkSummaries.push(partialResponse.content);
-      }
+      console.log(`\n  === Processing chunk ${idx + 1}/${chunks.length} (${chunks[idx].length} commits) ===`);
+      const summary = await executePhasedAnalysis(adapter, chunks[idx], config, idx, chunks.length);
+      chunkSummaries.push(summary);
     }
 
-    console.log('  ✓ All chunks processed, conducting final analysis with all chunk summaries...');
+    console.log('\n  Phase 6: Synthesizing all chunk summaries into final JSON...');
 
-    // Create final analysis including all chunk summaries
+    // Phase 6: Use all summaries to generate final JSON
     adapter.resetMessages();
     const finalPrompt = createFinalSummaryFromChunksPrompt(
       chunkSummaries,
@@ -720,48 +966,17 @@ export async function generateSummaryWithStrategy(
     );
     adapter.addMessage('user', finalPrompt);
   } else {
-    console.log('  Starting agentic analysis...');
-
-    const agenticPrompt = createAgenticPrompt(
-      commits,
-      config,
-      date,
-      branch,
-      totalCommitsCount,
-      relevantCommitsCount,
-      firstCommit,
-      lastCommit
-    );
-    adapter.addMessage('user', agenticPrompt);
-
-    // Phase 1: Agentic investigation
-    let iteration = 0;
-    while (iteration < MAX_ITERATIONS) {
-      iteration++;
-      console.log(`  Iteration ${iteration}...`);
-
-      const response = await adapter.callAPI(adapter.getMessages(), {
-        systemPrompt: 'You are an expert software engineer and technical writer creating daily summaries of Chromium project changes.',
-        enableTools: true,
-        requestJson: false,
-      });
-
-      if (response.toolCalls && response.toolCalls.length > 0) {
-        console.log(`  AI requested details for ${response.toolCalls.length} tool call(s)`);
-        adapter.addMessage('assistant', response.content, response.toolCalls);
-        const toolResponses = await executeToolCalls(response.toolCalls);
-        for (const toolResponse of toolResponses) {
-          adapter.addMessage('tool', toolResponse);
-        }
-      } else {
-        console.log('  ✓ Investigation complete');
-        break;
-      }
-    }
+    console.log('  Executing phased analysis...');
+    
+    // Execute all 5 phases for the full commit set
+    const summary = await executePhasedAnalysis(adapter, commits, config);
+    
+    // Phase 6: Generate final JSON from the complete analysis
+    console.log('\n  Phase 6: Generating final JSON from analysis...');
+    // The conversation history is already maintained in the adapter
   }
 
-  // Phase 2: Generate final structured JSON
-  console.log('  Generating final JSON summary...');
+  // Final step: Generate structured JSON output
   adapter.addMessage('user', createFinalJsonPrompt(date));
 
   const finalResponse = await adapter.callAPI(adapter.getMessages(), {
@@ -770,6 +985,6 @@ export async function generateSummaryWithStrategy(
     requestJson: true,
   });
 
-  console.log('  ✓ Final summary generated');
+  console.log('  ✓ Final JSON summary generated');
   return JSON.parse(finalResponse.content) as StructuredSummary;
 }

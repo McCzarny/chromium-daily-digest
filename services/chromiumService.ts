@@ -78,6 +78,7 @@ export async function fetchCommitsForDate(date: string, branch: string, githubTo
       url.searchParams.append('page', page.toString());
 
       console.log(`  Fetching page ${page}...`);
+      console.log(`  URL: ${url.toString()}`);
       const response = await fetchWithRetry(url.toString(), githubToken);
       
       if (!response.ok) {

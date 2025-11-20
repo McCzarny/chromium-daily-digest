@@ -153,5 +153,7 @@ export async function fetchMultipleCommitDetails(
     }
   }
   
+  const resultSize = JSON.stringify(results).length;
+  console.log(`Fetched details for ${results.length} commits (total size: ${resultSize} characters)`);
   return results;
 }
