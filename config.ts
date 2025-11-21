@@ -11,7 +11,7 @@ const DEFAULT_CONFIG: SummaryConfig = {
   outputPath: '', // Subpath within public/summaries (empty = root)
   ignoredBotEmails: [],
   focusAreas: [],
-  llmProvider: 'gemini', // Default LLM provider
+  llmProvider: 'nexos', // Default LLM provider
 };
 
 /**
