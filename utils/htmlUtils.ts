@@ -3,13 +3,18 @@
  */
 
 /**
- * Renders markdown-style links in overview text
+ * Renders markdown-style links and code formatting in overview text
  */
 export const renderOverview = (text: string): string => {
-  return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-    const hash = url.split('/').pop() ?? '';
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
-  });
+  return text
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+      const hash = url.split('/').pop() ?? '';
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
+    })
+    .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`)
+    .replace(/\b([a-f0-9]{7,40})\b/g, (match, hash) => {
+      return `<a href="${GITHUB_COMMIT_URL}${hash}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
+    });
 };
 
 /**
