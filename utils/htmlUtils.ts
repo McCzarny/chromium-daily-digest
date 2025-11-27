@@ -3,6 +3,18 @@
  */
 
 /**
+ * Escapes HTML special characters to prevent HTML injection
+ */
+const escapeHtml = (text: string): string => {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+/**
  * Renders markdown-style links and code formatting in overview text
  */
 export const renderOverview = (text: string): string => {
@@ -11,7 +23,9 @@ export const renderOverview = (text: string): string => {
       const hash = url.split('/').pop() ?? '';
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
     })
-    .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`)
+    .replace(/`([^`]+)`/g, (match, code) => {
+      return `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">${escapeHtml(code)}</code>`;
+    })
     .replace(/\b([a-f0-9]{7,40})\b/g, (match, hash) => {
       return `<a href="${GITHUB_COMMIT_URL}${hash}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(${hash.substring(0, 7)})</a>`;
     });
@@ -23,7 +37,9 @@ export const renderOverview = (text: string): string => {
 export const renderPointText = (text: string): string => {
   return text
     .replace(/\*\*BREAKING CHANGE\*\*/g, `<strong class="text-red-400 font-bold">BREAKING CHANGE</strong>`)
-    .replace(/`([^`]+)`/g, `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">$1</code>`);
+    .replace(/`([^`]+)`/g, (match, code) => {
+      return `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">${escapeHtml(code)}</code>`;
+    });
 };
 
 /**
