@@ -36,7 +36,9 @@ export const renderOverview = (text: string): string => {
  */
 export const renderPointText = (text: string): string => {
   return text
-    .replace(/\*\*BREAKING CHANGE\*\*/g, `<strong class="text-red-400 font-bold">BREAKING CHANGE</strong>`)
+    // Sometime LLM returns needless BREAKING CHANGE marker
+    .replace(/^\*\*BREAKING( CHANGE)?:\*\*:\s*/, '')
+    .replace(/\*\*([^\*]+)\*\*/g, (match, boldText) => `<strong class="text-red-400 font-bold">${escapeHtml(boldText)}</strong>`)
     .replace(/`([^`]+)`/g, (match, code) => {
       return `<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">${escapeHtml(code)}</code>`;
     });
