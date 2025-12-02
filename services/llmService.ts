@@ -651,7 +651,7 @@ export function createFinalSummaryFromChunksPrompt(
 You are creating a final daily summary for Chromium changes on ${date} (${branch} branch).
 
 Below are pre-analyzed summaries of different parts of the day's commits. Synthesize these into a final structured summary.
-Focus on changes that can impact developers working on Chromium-based projects.
+Focus on changes that can impact developers working on Chromium-based projects. Use minimal markdown formatting for making text bold or code elements.
 Especially look for BREAKING CHANGES or things that require code updates, or allowing improvements to existing code.
 ${config.customInstructions ? `\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n` : ''}
 
