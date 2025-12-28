@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chromium Summary | 2025-12-27</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .prose code::before, .prose code::after { content: '' !important; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <header class="bg-gray-800 shadow-md">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center space-x-3">
+          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
+            <p class="text-gray-400">Summary for 2025-12-27 on branch 'main'</p>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container mx-auto px-4 py-8">
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div class="prose prose-invert max-w-none w-full">
+          <h2 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2025-12-27</h2>
+          <div class="bg-gray-800 p-4 rounded-lg mb-6 shadow-inner border border-gray-700">
+            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
+            <div class="text-gray-300">This digest analyzes 18 commits from <a href="https://chromium.googlesource.com/chromium/src/+/<a href="https://github.com/chromium/chromium/commit/1bed1ea8e3fb129f8b0a7611fdfa3d067bcebd63" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(1bed1ea)</a>" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(<a href="https://github.com/chromium/chromium/commit/1bed1ea" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(1bed1ea)</a>)</a> to <a href="https://chromium.googlesource.com/chromium/src/+/<a href="https://github.com/chromium/chromium/commit/306590fea6f9703cd98e63419b0272edebe77987" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(306590f)</a>" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(<a href="https://github.com/chromium/chromium/commit/306590f" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(306590f)</a>)</a>. After filtering for changes relevant to Windows/macOS embedders and browser-level features, 7 commits are summarized. This edition highlights two major breaking changes impacting the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UserManager</code> observer contract and the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui::FormatBytes</code> utility function, which will require code updates for embedders.</div>
+          </div>
+          
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Core APIs & Components</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2025-12-27-0-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2025-12-27-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>
+            <strong class="text-red-400 font-bold">BREAKING:</strong> The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UserManager::Observer</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UserSessionStateObserver</code> interfaces now inherit from <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::CheckedObserver</code> and provide default empty implementations for their virtual methods. Previously, these methods were declared without default implementations, forcing observers to implement them to avoid link-time errors. This change in the observer contract means existing code may compile but exhibit different runtime behavior if it was implicitly relying on the old contract.
+            
+              <a href="https://github.com/chromium/chromium/commit/063bacea10bff5f5efcb2fe73d79f9d69696f0db" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(063bace)</a>
+            
+          </li>
+        
+          <li id="update-2025-12-27-0-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2025-12-27-0-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>
+            <strong class="text-red-400 font-bold">BREAKING:</strong> The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui::FormatBytes</code> utility function, along with related functions like <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui::FormatSpeed</code>, has been migrated to use the strongly-typed <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::ByteSize</code> class instead of primitive types like <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">int64_t</code> or the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::ByteCount</code> helper. This is a public API signature change that will cause build failures for embedders calling these functions directly. Code must be updated to use the new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::ByteSize</code> type for formatting byte values.
+            
+              <a href="https://github.com/chromium/chromium/commit/eae5d299081822269ee9f86f31991e1842467025" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(eae5d29)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Refactoring & Internal Improvements</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2025-12-27-1-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2025-12-27-1-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStripService</code>, which provides the backend for the Tab Strip API, has undergone significant internal refactoring. This work introduced a centralized validation framework to improve code clarity, maintainability, and testability without altering the public API surface.
+            
+              <a href="https://github.com/chromium/chromium/commit/fa1d9f85bba938c1d2b2a751180a591a92a395d1" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(fa1d9f8)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/49383bd60834952b316ef7c9a9d9fcc420ec5542" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(49383bd)</a>
+            
+          </li>
+        
+          <li id="update-2025-12-27-1-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2025-12-27-1-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A minor refactoring in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base/synchronization/waitable_event_win.cc</code> now uses <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::span</code> to fix an <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UNSAFE_TODO</code>. This improves type safety for this low-level, Windows-specific synchronization primitive.
+            
+              <a href="https://github.com/chromium/chromium/commit/306590fea6f9703cd98e63419b0272edebe77987" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(306590f)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Bug Fixes</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2025-12-27-2-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2025-12-27-2-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            Several fixes have been applied to the experimental "Contextual Tasks" feature. These changes address issues with data fetching from URLs, incorrect navigation handling, and UI animations in the zero-state overlay.
+            
+              <a href="https://github.com/chromium/chromium/commit/76d90be3b9d7a87dfcf5172135e3de611646e92b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(76d90be)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/1bed1ea8e3fb129f8b0a7611fdfa3d067bcebd63" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(1bed1ea)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+          <details class="mt-12 bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <summary class="cursor-pointer text-lg font-semibold text-white hover:text-sky-400">
+              All Commits (116)
+            </summary>
+            <ul class="mt-4 space-y-2 text-sm font-mono">
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/afb4d09761ac8cfec213d368d88949026c8d99ed" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          afb4d09
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from vb0-SGH7QNQm775JH... to BfqJBb90AzUUqUL4m...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/306590fea6f9703cd98e63419b0272edebe77987" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          306590f
+        </a>
+        <span class="ml-3 ">Fix UNSAFE_TODO in waitable_event_win.cc</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/69a245d139e790b5e6fa27de217f7e4279981493" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          69a245d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9d54cace04bc15d43628ca6f002cb074b8f7cf29" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9d54cac
+        </a>
+        <span class="ml-3 line-through">Roll ios_internal from 72084de8c15a to bbb9d352c200</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b67d85bac0fe03852ce03b37b0ddbdb771e4c0a2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b67d85b
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/ffb5b53cbf7383ab755b9a25fcb7c776e9689473" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          ffb5b53
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from KNGbO0zfjOMws11TC... to vb0-SGH7QNQm775JH...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/dc3049889ef80752406c79fc7b72dc950564e077" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          dc30498
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from lwGYegAR-bVWeXtO9... to a5YK9rv2nhCVEneC-...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9c931f00466de4d46156a4916410775dda97509d" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9c931f0
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/494abb4443e2d374d7c3f5be217073b5a289e06b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          494abb4
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM Orderfile from J3p_T12UzRXt1y6W9... to NVCFpAvzqd6F9KT-H...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c3b8b79ed1783428e6a1b86b6d9e5126b0cb662d" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c3b8b79
+        </a>
+        <span class="ml-3 line-through">[Frameworks roll] Roll to 849521218 piper revision</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d938bfa1aea3f29c9b61f2f430396da8f2668b53" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d938bfa
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2ba5b1eb70acdb69b3d2e328770deb46586443ff" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2ba5b1e
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a039c1792e4f77709781de4c573979c929e54aa7" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a039c17
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from 5BEXM7BpXg-pa7Ja-... to KNGbO0zfjOMws11TC...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/407ec25ed35e6ebb36b9099c5d2c7dcc41ba036b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          407ec25
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5796ac2727f0d614bb06d0d24a20b81d6c754381" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5796ac2
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from X-wo5CFFFC4GRu5R-... to lwGYegAR-bVWeXtO9...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/68e4c75aa6f969caf18da15d18f7fc156c7500ad" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          68e4c75
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/bc13ac63fbd446bd5b687149ef475f4b0621df90" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          bc13ac6
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9242ae96892227fb73f0ffc685864c0e2268321a" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9242ae9
+        </a>
+        <span class="ml-3 line-through">Roll Arm AFDO from 145.0.7602.0_pre1562784_rc-r1-merged to 145.0.7603.0_pre1562861_rc-r1-merged</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/494db8a8f271412efaab9dd0a1b3e9a0757440ec" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          494db8a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from _aBOvf4kX8medQasV... to 5BEXM7BpXg-pa7Ja-...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c5c355d21267805d2211faa2e5f34ed7d2ca7e07" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c5c355d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f30af63e23b8ab69902283d13460520028c77329" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f30af63
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/114f275ecc5fa04faf0345f5f5cfd2361f7f92be" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          114f275
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from 6VHnvY3VIpkI42NOS... to X-wo5CFFFC4GRu5R-...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/949baab1c7543bcb54affb54d20a4c07cc0cb84c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          949baab
+        </a>
+        <span class="ml-3 ">Use CheckedObserver in SessionManagerClient</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/063bacea10bff5f5efcb2fe73d79f9d69696f0db" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          063bace
+        </a>
+        <span class="ml-3 ">Use CheckedObserver in UserManager::Observer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5240e1f2f910b79f943f060d2865dcb402cd33c3" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5240e1f
+        </a>
+        <span class="ml-3 ">ScopedObservation for LoginState</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c7b8c7d76ee0170bbd561d4c2645067239ce1a1f" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c7b8c7d
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from rwE61HgEPYXo0I4Xj... to 6VHnvY3VIpkI42NOS...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2f29e8b6c4f90f6184f825a3b5f8b8abee6e2427" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2f29e8b
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d8ca3957784cc63a7ffe33e8383b0d3307c8b842" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d8ca395
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from V-L6fA_qTGERVYXrs... to _aBOvf4kX8medQasV...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d3b15181c37659527db0ead97cc1e629f2ae7dd0" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d3b1518
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/eae5d299081822269ee9f86f31991e1842467025" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          eae5d29
+        </a>
+        <span class="ml-3 ">[bytesize] Migrate the ui/base byte formatting code from the old ByteCount to ByteSize.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/7c53e5beda164441848e3bbb90eb083d73d155e2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          7c53e5b
+        </a>
+        <span class="ml-3 line-through">Updating trunk VERSION from 7603.0 to 7604.0</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3175317e17d45ba3a8099e4a3b66f6f11d024ea8" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3175317
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a31418803473ccc58b154788073a600a0bc8de77" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a314188
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 Orderfile from xl8-f3j5UaSqv3TWd... to NJ5_nRIwlXztn3pxl...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/062ce5a49f09958c442686aed6201aa000fe2eea" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          062ce5a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from jOjhVbNIvGn35xokD... to V-L6fA_qTGERVYXrs...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d9ddcfe926802a3864d03acc81f711979f20c2d2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d9ddcfe
+        </a>
+        <span class="ml-3 line-through">Roll Media App from I35Xjdbdd5KQphzul... to o_7pq1yitjnkCov2e...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/17932eec540d264620c5cf355206203ca60767b4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          17932ee
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from EsN-dkMnzukCwg5gd... to rwE61HgEPYXo0I4Xj...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3b8852dccf14a39425dc983e9e7e2ec01ecccecb" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3b8852d
+        </a>
+        <span class="ml-3 line-through">Roll Help App from ucSggM06bOByXiD9F... to Hq-Zb_kMoxq0gIAl4...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a4f9a908c2a0475973015dcef305c6c376b132a0" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a4f9a90
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/db192a7660124108d94232b62576f9efa7764407" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          db192a7
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM Orderfile from LIyNgN5oRrs2ZkI2Q... to J3p_T12UzRXt1y6W9...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/14a7f62696777ddeb687e433cdc724c374ceaa3a" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          14a7f62
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from 73hdiNV25fcF6ofUp... to jOjhVbNIvGn35xokD...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/25f5f561696c22129253b3c89aaa38f05dc14aa0" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          25f5f56
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/4398b8544281cc0b21d0ad970af5e98939c303b4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          4398b85
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from 4RcdUT-KBcFaH1Jxz... to EsN-dkMnzukCwg5gd...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9e7e87c8cf5a7b6416a55b827670a8a2535a1002" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9e7e87c
+        </a>
+        <span class="ml-3 line-through">Roll Chromium Variations from HKW-wSdU0ghWO0o_d... to BzNuFL-RIiwqLvpeR...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/dcc2e4b64066603d8c4c1a8dff467c7f4b225716" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          dcc2e4b
+        </a>
+        <span class="ml-3 line-through">[CT] Automatic update from google3</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/46849e212d466f903fe83b6356d717e602c25c30" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          46849e2
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a07078adadb084c881bd68f84c63f106ea676bbd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a07078a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from CajjXhh7-EFUn0nRQ... to 73hdiNV25fcF6ofUp...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/764d5c209e6fbf8bb6a35d37e923e2e802cd32f8" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          764d5c2
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a690fa1f64d8726ffcc195b723ddfeb9331702e7" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a690fa1
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/51606a9450d9ca9aa4f6772a785f225e9c8a548e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          51606a9
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a79ee1fc84d127d169668ede75dfc003c170bcc0" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a79ee1f
+        </a>
+        <span class="ml-3 line-through">Roll ios_internal from 2ec28b4ad76f to 72084de8c15a</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/dc6318d30a105d021bfc69acefa90136e42a7010" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          dc6318d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/fb7ac61d02848a879c9eb1da6f6dd41843132289" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          fb7ac61
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/79b4dacdc7d85878e26794111f1d18ba0910f84b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          79b4dac
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from EksgvIZD7DCws517y... to CajjXhh7-EFUn0nRQ...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/1e96ff0b5da7065dbc240efb9ec64e206bd490cf" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          1e96ff0
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from OcfDUMpRBqT2ZY9dr... to 4RcdUT-KBcFaH1Jxz...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/6f4f9fa885eb46e6fef38ce3f9b0fb63a19155dd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          6f4f9fa
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from FeK7bM0KE_ByLMIWP... to EksgvIZD7DCws517y...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9cb38a45934d94adb51870bd88d960f31a8709dd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9cb38a4
+        </a>
+        <span class="ml-3 line-through">Roll Projector App from EuZiAH2TVCdFPw88o... to f2Lz0q94JsC6-41PU...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5e83d05cf8a70e6084de6ca75dfae764643e7dad" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5e83d05
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9b836c145f144a404692f695a6290e9d8d5fdcd7" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9b836c1
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/485ca48961fb297fe335f28f8321ef8440269b02" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          485ca48
+        </a>
+        <span class="ml-3 line-through">Roll ios_internal from da4e3641458f to 2ec28b4ad76f</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/0a62f12e40013ccf8e7f80e5661dc72dcf9049be" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          0a62f12
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16535.0.0-1074123 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/75cb139fff3f0677e9a1bfb472fc401e4aa42ece" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          75cb139
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from evBxMM-wQlykOfew9... to FeK7bM0KE_ByLMIWP...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c800ee7ca09e33a68db6c44e265016292526e84e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c800ee7
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from JlVsM4izn3JB9jpji... to OcfDUMpRBqT2ZY9dr...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/0f92d2a1e03926fd3d0fa2eff98c8f4e325fb25c" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          0f92d2a
+        </a>
+        <span class="ml-3 line-through">Roll WebRTC from 89dc41ccc5c0 to 1fbc1f1be61c (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/44f198ddde7b8ac7e2f5ad51265e6de730cb6ec4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          44f198d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/db1e410b42bceac4c8474c4688e6026b59f528fe" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          db1e410
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5a20d6ea426d28d820735c88ac932807fffa4e55" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5a20d6e
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from oKJ-UhT4Cd_LMVqRW... to evBxMM-wQlykOfew9...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/96d49b56dd98a20ae4aed6b536ccb43f191d4899" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          96d49b5
+        </a>
+        <span class="ml-3 line-through">[Frameworks roll] Roll to 849382947 piper revision</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5fb56d0385235341179cd20b074285e4d5255844" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5fb56d0
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from UhvS2UhCUcZVoV9JZ... to JlVsM4izn3JB9jpji...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/4bcd16acc16531f67631631d89cf9f9f46dcddc4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          4bcd16a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/007665ea0e85e2be86221f648dd5b490399b3908" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          007665e
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c8791b88c10e60b6b8ba34df17f3eb0f76c3425a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c8791b8
+        </a>
+        <span class="ml-3 ">WebMCP: Clean IDL files</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/915675fa072241b123ab8d2a4926a91f89252dfd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          915675f
+        </a>
+        <span class="ml-3 line-through">Roll Arm AFDO from 145.0.7598.0_pre1562527_rc-r1-merged to 145.0.7602.0_pre1562784_rc-r1-merged</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b7c5d92eaad7718f74965be9eaa60270b1035b51" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b7c5d92
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/de9673fa8820234e632151aa90199ab3e1b6f8d4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          de9673f
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from 1iqZ_2D-2-9nwM1Xd... to UhvS2UhCUcZVoV9JZ...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f7653880ba72a9d7c2e64fc7748266ccd292fc01" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f765388
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/81d24781ccb5ec2247c733c008f2e71aefcebddf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          81d2478
+        </a>
+        <span class="ml-3 ">ChromeAndroidTask: support multiple Activities in one Task</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9a2355417865ffa980cd9c43a3e8045b4ecde89a" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9a23554
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from KXK-IFSNYWn69jt2V... to oKJ-UhT4Cd_LMVqRW...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/4938759412178cdce48a42ab3faff55b3eec88c4" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          4938759
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2521bb20b7c72600cc4f5ae86148f52ba5c94209" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2521bb2
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/fd871e265e3cf5fefd6f1139219db7c95edd78f6" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          fd871e2
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from 4igKkx9t_FPP0-Q25... to 1iqZ_2D-2-9nwM1Xd...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c4d5e4b13bc01723a469927d5de43373e1c55812" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c4d5e4b
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2a9514a3a6290ca0cc2422749d1c5087d5cc0fdb" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2a9514a
+        </a>
+        <span class="ml-3 line-through">Roll compiler-rt from 3d14406c9592 to 04c962d0cace (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3cd7a7e984a8d4441fba8f54a368fb82a4b4472e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3cd7a7e
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from ZngHPLm14KUvQ2f7y... to KXK-IFSNYWn69jt2V...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/21956ad517df0fbca566446d44abe6757f3b1af8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          21956ad
+        </a>
+        <span class="ml-3 ">[context menu] popup menus have dynamic width between 112 and 300 dp</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/28a6560c3c28351d6ac001e8cc58c1b3fd70cdef" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          28a6560
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from 9cb79860e741 to e22b0800d122 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/e38b60dbd3a58a9683800d4f8feb7413a5fefbef" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          e38b60d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b9476bffa9215c86930b1655b041c2136ac96076" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b9476bf
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/e12ccda07ef8f10c2bc33cf2c552951cdcaf12c2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          e12ccda
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from -S9LCN6aKMScxd-NS... to ZngHPLm14KUvQ2f7y...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3b7f3e319efe40e34e26aa8d3399633b87887db1" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3b7f3e3
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from Tg4-1iPbMecySfhaf... to 4igKkx9t_FPP0-Q25...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a669df7b452208f2ce642d175d1122a83198e950" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a669df7
+        </a>
+        <span class="ml-3 line-through">Updating trunk VERSION from 7602.0 to 7603.0</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b8078f9ff1d2f742311ef5449e59b0d53bad914e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b8078f9
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from ZZsMIwKqyFnZ-F__a... to Tg4-1iPbMecySfhaf...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/46035bfc294eb8c672d60fd2a8142ab267e7e33c" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          46035bf
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from QnEoRBvAgsL9M2Auo... to -S9LCN6aKMScxd-NS...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/e2721caa2efa499aaad4398b08ec4843e107a277" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          e2721ca
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/e0ef007479190bdc831459799615dc3312803afc" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          e0ef007
+        </a>
+        <span class="ml-3 line-through">Roll Crossbench from 3c50ccec6343 to 092ce9e46506 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f88dedd8aa7c22423328b3c9b604ccca1703e9d7" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f88dedd
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b067d0da338d28cafa3292c0470f110d0c599fad" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b067d0d
+        </a>
+        <span class="ml-3 ">Move more actor files to build on Android</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5063a0792a5b0b89f2a1d38ff52c9acc9c08d6a3" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5063a07
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/db3baff42fc4a36a90fe6047a6be7227f9abf2f9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          db3baff
+        </a>
+        <span class="ml-3 ">disable topControlsScrollingDisabled</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ec00694fbd323c1030efd041a6194a684e4d9b69" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ec00694
+        </a>
+        <span class="ml-3 ">disable topControlsScroll</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fa1d9f85bba938c1d2b2a751180a591a92a395d1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fa1d9f8
+        </a>
+        <span class="ml-3 ">Move more things over to the new validation pattern</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5f8d327a4059ba4b863739918dfb89b9134b2969" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5f8d327
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c8f9ec835e21bb7101edc5564b1544796d640a5b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c8f9ec8
+        </a>
+        <span class="ml-3 ">Fix: Avoid redundant draggable region notifications</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/52f3e734a1da88dac0c8388d5e5aa5befda44965" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          52f3e73
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16534.0.0-1074098 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/49383bd60834952b316ef7c9a9d9fcc420ec5542" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          49383bd
+        </a>
+        <span class="ml-3 ">Introduce a validation framework for tab strip service</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/76d90be3b9d7a87dfcf5172135e3de611646e92b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          76d90be
+        </a>
+        <span class="ml-3 ">[ContextualTasks] Fix issues with fetching data from URL</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a20b78b7ecb293160896d19a355fc29c0340bd8e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a20b78b
+        </a>
+        <span class="ml-3 line-through">Roll ChromeOS Bigcore AFDO profile from 145-7559.27-1766375487-benchmark-145.0.7598.0_pre1562527-r1 to 145-7559.27-1766375487-benchmark-145.0.7601.0_pre1562691-r1</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c2cc717c96a68036f1007b1c6349346a4983c8c9" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c2cc717
+        </a>
+        <span class="ml-3 line-through">Roll Chromium Variations from dMBKZCrQJN7CvApJZ... to HKW-wSdU0ghWO0o_d...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/402e57d88b12d5407ccc34d49d541ee0607e3498" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          402e57d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c922dce9c311a9186e4b89b6af48a8585d4c8b13" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c922dce
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from 5c18d53feb96 to 9cb79860e741 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b81efc4ee310a63fb016dede95a1e92c35392aca" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b81efc4
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from Iu79DGRxf3es3r6ld... to QnEoRBvAgsL9M2Auo...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b062a3a8c6311d74e07a8b38c1197bd1a37618cd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b062a3a
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from 430xV8O-_DdzE5TjC... to ZZsMIwKqyFnZ-F__a...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2a4a4416c3a6109a06a6d5e4ed2aadcd06fa5c67" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2a4a441
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/55e3977b87ef0f0cbb3c10cd0cc6661147f08790" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          55e3977
+        </a>
+        <span class="ml-3 ">Move more files to build on Android</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/1757ed5212af9c67a5ea544ab5b4b9a746cd9f49" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          1757ed5
+        </a>
+        <span class="ml-3 line-through">Roll ChromeOS Atom AFDO profile from 145-7581.0-1766374968-benchmark-145.0.7598.0_pre1562527-r1 to 145-7581.0-1766374968-benchmark-145.0.7601.0_pre1562691-r1</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6786385f2f461899b0bbe91426dc256395f4247d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6786385
+        </a>
+        <span class="ml-3 ">Do not show print in app menu for locally stored PDFs</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/1bed1ea8e3fb129f8b0a7611fdfa3d067bcebd63" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          1bed1ea
+        </a>
+        <span class="ml-3 ">[contexutal tasks] Various fixes for zero state</span>
+      </li>
+    </ul>
+          </details>
+        </div>
+      </div>
+       <div class="mt-8 text-center">
+        <a href="./index.html" class="text-sky-500 hover:text-sky-300">&larr; Back to all summaries</a>
+      </div>
+    </main>
+    <script>
+      function copyUpdateLink(anchorId) {
+        const url = window.location.origin + window.location.pathname + '#' + anchorId;
+        navigator.clipboard.writeText(url).then(() => {
+          // Show temporary feedback
+          const element = document.getElementById(anchorId);
+          if (element) {
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+            }, 500);
+          }
+        });
+      }
+      
+      // Scroll to anchor if present in URL
+      if (window.location.hash) {
+        setTimeout(() => {
+          const element = document.getElementById(window.location.hash.substring(1));
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+          }
+        }, 100);
+      }
+    </script>
+</body>
+</html>
