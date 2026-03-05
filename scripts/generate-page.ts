@@ -149,9 +149,10 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     const summaryPages = files
       .filter(file => dailyPattern.test(file))
       .sort()
-      .reverse();
+      .reverse()
+      .slice(0, 30); // Limit to last 30 days
     
-    console.log(`  Found ${summaryPages.length} daily summary pages`);
+    console.log(`  Found ${summaryPages.length} daily summary pages (limited to last 30 days)`);
 
     // Read all summary files and extract their content
     const summaries = await Promise.all(

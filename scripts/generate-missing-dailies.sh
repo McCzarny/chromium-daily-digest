@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Script to generate missing daily summaries for both default and on-top-of-chromium configurations
-# Usage: ./scripts/generate-missing-dailies.sh [start_date] [end_date]
+# Usage: ./scripts/generate-missing-dailies.sh [start_date] [end_date] [--max-days N]
 # Example: ./scripts/generate-missing-dailies.sh 2025-11-09 2025-12-18
+# Example with max-days: ./scripts/generate-missing-dailies.sh --max-days 30
 # If no dates provided, defaults to finding the earliest and latest dates
 
 set -e  # Exit on error
@@ -57,8 +58,27 @@ get_missing_dates() {
 }
 
 # Parse command line arguments
-START_DATE=${1:-}
-END_DATE=${2:-}
+START_DATE=""
+END_DATE=""
+MAX_DAYS=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --max-days)
+            MAX_DAYS="$2"
+            shift 2
+            ;;
+        *)
+            if [[ -z "$START_DATE" ]]; then
+                START_DATE="$1"
+            elif [[ -z "$END_DATE" ]]; then
+                END_DATE="$1"
+            fi
+            shift
+            ;;
+    esac
+done
 
 # If no dates provided, auto-detect from existing files
 if [[ -z "$START_DATE" ]]; then
@@ -79,6 +99,25 @@ if [[ -z "$END_DATE" ]]; then
     # Default to yesterday
     END_DATE=$(date -v-1d "+%Y-%m-%d")
     echo -e "${GREEN}End date: $END_DATE (yesterday)${NC}"
+fi
+
+# Apply max-days limitation if specified
+if [[ -n "$MAX_DAYS" ]]; then
+    # Validate max-days is a positive integer
+    if ! [[ "$MAX_DAYS" =~ ^[0-9]+$ ]] || [[ "$MAX_DAYS" -le 0 ]]; then
+        echo -e "${RED}Error: --max-days must be a positive integer${NC}"
+        exit 1
+    fi
+    
+    # Calculate the earliest date to check (max-days ago from today)
+    LIMIT_DATE=$(date -v-${MAX_DAYS}d "+%Y-%m-%d")
+    echo -e "${YELLOW}Max days limit: $MAX_DAYS days (earliest: $LIMIT_DATE)${NC}"
+    
+    # If start date is before the limit, adjust it
+    if [[ "$START_DATE" < "$LIMIT_DATE" ]]; then
+        echo -e "${YELLOW}Adjusting start date from $START_DATE to $LIMIT_DATE (max-days limit)${NC}"
+        START_DATE=$LIMIT_DATE
+    fi
 fi
 
 # Validate dates

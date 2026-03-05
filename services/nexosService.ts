@@ -103,7 +103,7 @@ class NexosAdapter implements PlatformAdapter {
       throw new Error("SECRET_NEXOS_TOKEN environment variable not set");
     }
 
-    const timeoutMs = 300000; // 5 minutes
+    const timeoutMs = 900000; // 15 minutes
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
