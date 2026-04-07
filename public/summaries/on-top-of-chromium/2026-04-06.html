@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chromium Summary | 2026-04-06</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .prose code::before, .prose code::after { content: '' !important; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200 font-sans">
+    <header class="bg-gray-800 shadow-md">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center space-x-3">
+          <img src="../assets/daily-digest-logo.svg" alt="Chromium Daily Digest Logo" class="h-8 w-8" />
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Chromium Changes Summarizer</h1>
+            <p class="text-gray-400">Summary for 2026-04-06 on branch 'main'</p>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="container mx-auto px-4 py-8">
+      <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <div class="prose prose-invert max-w-none w-full">
+          <h2 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2026-04-06</h2>
+          <div class="bg-gray-800 p-4 rounded-lg mb-6 shadow-inner border border-gray-700">
+            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
+            <div class="text-gray-300">On April 6th, 2026, 215 of 282 total commits were identified as relevant for developers building on Chromium for desktop platforms. This summary covers changes from commit <a href="https://github.com/chromium/chromium/commit/95b6d189" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(95b6d18)</a> to <a href="https://github.com/chromium/chromium/commit/0c355e95" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(0c355e9)</a>, highlighting two significant breaking changes in the compositor and accessibility APIs, the introduction of a new TabStrip API, and notable updates to networking and security.</div>
+          </div>
+          
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Breaking Changes</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-04-06-0-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>
+            <strong class="text-red-400 font-bold">BREAKING</strong>: The public <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">cc::LayerTreeHostClient</code> interface has been changed. The virtual method <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WillBeginImplCommit</code> was removed, and its logic merged into <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WillCommit</code>. Embedders with custom <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LayerTreeHostClient</code> implementations must remove the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WillBeginImplCommit</code> override to avoid build failures. The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">cc::TextureLayer::Create</code> factory method signature was also updated.
+            
+              <a href="https://github.com/chromium/chromium/commit/7010b87ca4c1b2912409bde1d8295d7b6b38e71a" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7010b87)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-0-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-0-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>
+            <strong class="text-red-400 font-bold">BREAKING</strong>: A stability check has been promoted from a debug-only <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">DCHECK</code> to a production <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CHECK</code> on Windows to prevent re-entrant calls to the public <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BrowserAccessibilityManager::OnAccessibilityEvents</code> method. Embedders whose code triggers this condition will now experience a production crash, hardening the API but requiring potential code updates.
+            
+              <a href="https://github.com/chromium/chromium/commit/c52ae89ece584a8ee0bcb57eb703ae450592811d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(c52ae89)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Browser & UI</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-04-06-1-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-1-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStrip API</code> is being introduced to allow programmatic updates to the tab strip. Initial commits add the service definition and an <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Update</code> method, starting with support for updating a TabGroup's visual data.
+            
+              <a href="https://github.com/chromium/chromium/commit/ea91004690e1a973d82a4107cc99ee9e69664230" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(ea91004)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/4a588dd9155cf47847fc8b482243092409f7242d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(4a588dd)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-1-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-1-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A race condition causing a dangling pointer in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BackgroundModeManager</code> was fixed. The fix ensures old status icon menus are kept alive until the context menu update is fully complete, preventing crashes.
+            
+              <a href="https://github.com/chromium/chromium/commit/620a0470d2efdaa5612d6f22983adf21cbed1754" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(620a047)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Networking & Security</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-04-06-2-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            Detailed DNS resolution information (e.g., source of result like cache, DoH, or system resolver) is now propagated through the network stack. This data is available in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LoadTimingInternalInfo</code> and can be used for more granular performance analysis.
+            
+              <a href="https://github.com/chromium/chromium/commit/2e629dcf6332fb932d97d477cd8a2cb7488c920c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(2e629dc)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/3c5e3bae8564001db6d20563fa35df8a912e4611" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3c5e3ba)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/dd8d63ca9d4e11afac916bdeb469bd2e9369e4a5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(dd8d63c)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/7288496c320cca70d84f1186be4aff089029ec90" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7288496)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-2-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A new feature flag, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kIgnoreCorsPreflightPolicy</code>, was added to the Network Service. When enabled, this flag will ignore the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kPreventPreflight</code> policy, moving towards its deprecation.
+            
+              <a href="https://github.com/chromium/chromium/commit/55b0c3138ded20eda85c981fb1bfd6f666be4757" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(55b0c31)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-2-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A security fix prevents a potential user activation bypass. System-triggered media suspensions, such as audio focus loss, no longer grant a transient user activation token to the frame.
+            
+              <a href="https://github.com/chromium/chromium/commit/55823cddbfc827a7e366b2027986143a2b230116" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(55823cd)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-2-3" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-3')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            The experimental <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ServiceWorkerAutoPreload</code> feature for subresources has been removed. This includes the removal of the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kAutoPreload</code> enum value from the public <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">blink.mojom.ServiceWorkerFetchHandlerBypassOption</code> interface.
+            
+              <a href="https://github.com/chromium/chromium/commit/2bb2c50defa7d41048026f4d0ebb3f066ce3b38d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(2bb2c50)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-2-4" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-4')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            Bug fixes for Service Workers were landed, addressing a potential use-after-free in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ServiceWorkerVersion</code> and a bug that caused requests to stall when a fetch event was restarted.
+            
+              <a href="https://github.com/chromium/chromium/commit/405dcf07fd14475d0ca9d340d1274a931cabe2db" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(405dcf0)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/bc87e022bbc47c14d30bf517970737cfac027ab5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(bc87e02)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-2-5" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-2-5')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            The list of bulk HSTS (HTTP Strict Transport Security) preloaded entries has been updated.
+            
+              <a href="https://github.com/chromium/chromium/commit/baeca77fd1f921492580c4baebab92f15f65a8d9" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(baeca77)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Extensions</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-04-06-3-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-3-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            Several internal enterprise extension APIs, including <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">enterprise.platformKeys</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">enterprise.networkingAttributes</code>, were migrated from JSON schema to WebIDL as part of an ongoing refactoring. This is not expected to impact extension behavior.
+            
+              <a href="https://github.com/chromium/chromium/commit/19c7e7f9e44461c6c861d644944bbe101bf03829" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(19c7e7f)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/f6107345275945ccea4eaf978e0f625c244d589d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(f610734)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/3440252dc6cee26ec0e67608e5ee8a4ccfcf81ea" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3440252)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-3-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-3-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            The <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">EnterpriseExtensionDOMActivityTelemetry</code> feature, which collects DOM activity for enterprise-installed extensions, has been enabled by default. Its runtime state is now tracked via a synthetic field trial for performance analysis.
+            
+              <a href="https://github.com/chromium/chromium/commit/1775f9a46b3893c3fca9b3f248b476b57c87b3d8" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(1775f9a)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/00f7844e20a3170323dc8c8cbe5cdc1f917c5f67" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(00f7844)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Testing & Infrastructure</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-04-06-4-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-4-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">InteractionTestUtilSimulatorWebUI</code> was implemented to allow automated tests to interact with tracked WebUI elements using the same APIs as for Views and WebContents, improving testability of WebUI components.
+            
+              <a href="https://github.com/chromium/chromium/commit/3609c2483a1c06e6be8f59095009848d4cc43220" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3609c24)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-4-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-4-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            As part of the ongoing modularization of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">//chrome/browser</code>, source files related to downloads were moved into a new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">//chrome/browser/download</code> component, breaking a dependency cycle.
+            
+              <a href="https://github.com/chromium/chromium/commit/38b45dc7b7200c0719b90add3a6b994b0689e005" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(38b45dc)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/5adc86a4410f5050971c64821f1cc8e75258da61" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(5adc86a)</a>
+            
+          </li>
+        
+          <li id="update-2026-04-06-4-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-04-06-4-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            
+            A large-scale code health effort fixed "Include What You Use" (IWYU) violations related to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base/logging.h</code> across many files, improving build hygiene.
+            
+              <a href="https://github.com/chromium/chromium/commit/3be1f60ad497eb027cf5b261fb36ab0b70f95dbf" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3be1f60)</a>
+            
+          </li>
+        
+      </ul>
+    </div>
+  
+          <details class="mt-12 bg-gray-900/50 rounded-lg p-4 border border-gray-700">
+            <summary class="cursor-pointer text-lg font-semibold text-white hover:text-sky-400">
+              All Commits (282)
+            </summary>
+            <ul class="mt-4 space-y-2 text-sm font-mono">
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/702be1f3fbab3437dda06d691e5e2efaec04267f" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          702be1f
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0c355e95f10a76ba52a7343d5dd5ac78e8dcf248" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0c355e9
+        </a>
+        <span class="ml-3 ">[glic] Fetch zero-state suggestions eagerly on show</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7a63798e1a646c39f7034fa728141d183b1f6477" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7a63798
+        </a>
+        <span class="ml-3 ">Fix providing Solutions from ManifestAssets.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/604afcdaf9a9b8e5ed7e0bad450e4d2e36909876" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          604afcd
+        </a>
+        <span class="ml-3 ">Extend Media.MediaHistory.DatabaseExists histogram</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0cfe7d3af5f0458123ef275662e01723ab7a334b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0cfe7d3
+        </a>
+        <span class="ml-3 ">[glic] Make default to last active instance ignore actuating instance</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7010b87ca4c1b2912409bde1d8295d7b6b38e71a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7010b87
+        </a>
+        <span class="ml-3 ">Prepare canvas for commit after paint event handlers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/77f495ee216d4c3cc784d33658bad4778c0680ee" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          77f495e
+        </a>
+        <span class="ml-3 ">extensions: Enable 4 ExtensionApiTabTest on desktop Android</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c800f2880786eaf8c6ba2971f78e66e7101bd961" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c800f28
+        </a>
+        <span class="ml-3 ">Fix incognito coloration for dividers & submenu arrows</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f494c61f9f78c21f1a3a5129d666f67ed35bac9f" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f494c61
+        </a>
+        <span class="ml-3 ">Extend expiry for UMA histograms</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b0f937ae553bb7373ebc08fe78fdc299b6dc319d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b0f937a
+        </a>
+        <span class="ml-3 ">Increase SafeBrowsing.HPRT.OhttpKeyService.Network.Time max bucket</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/903c3e00afcb6074f1bdb840d581bb3896ee5397" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          903c3e0
+        </a>
+        <span class="ml-3 ">[AIM] Rename ic_add_round to reflect size.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3486f70fef10ce522cc134917a8dbe876b50a42e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3486f70
+        </a>
+        <span class="ml-3 ">[Desktop Android] Fix tint for image in reload page message</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/cc4e9fa867987b8685cb9a4e0eecbb7f3c4da75a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          cc4e9fa
+        </a>
+        <span class="ml-3 ">Update ContentAnnotator testing config.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/655b5b67a1819c99f9cd564a3fc16c0606f283c9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          655b5b6
+        </a>
+        <span class="ml-3 ">[Extensions] Remove unused GetAutomationInfo method.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d1be964b19abc743cc6ef9e134e12be0868ed9e1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d1be964
+        </a>
+        <span class="ml-3 ">[BNPL][PNPL] Reshow disabled bnpl suggestions for non-empty field</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/4bf459becb56df27817e731e00ff43f4374aa7c4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          4bf459b
+        </a>
+        <span class="ml-3 ">[CUJService] Replace int metric ids with proper enums</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2d13660e0d7b59e5df04f82fb0570431fc7bdabd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2d13660
+        </a>
+        <span class="ml-3 ">WebUI: Declare properties used in templates reactive, part 1</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/19c7e7f9e44461c6c861d644944bbe101bf03829" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          19c7e7f
+        </a>
+        <span class="ml-3 ">[Extensions] Convert enterprise.platformKeysInternal to WebIDL</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f040bb5a06607805ce92a8d1c37a8289dd9fa2f5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f040bb5
+        </a>
+        <span class="ml-3 ">[cobrowse] Cleanup dead code path in webui</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/17af8b78c3466bcefa93e8e98ca2fbe3bf47e35d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          17af8b7
+        </a>
+        <span class="ml-3 ">[Extensions] Fix up enterprise.PlatformKeysInternal schema file</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c01ac412038e57774fe84369d57f01279cad6782" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c01ac41
+        </a>
+        <span class="ml-3 ">[ComboButton] Enable flag for tests</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b0bb3094e03ca2220fc761cd8ae549e0c8336955" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b0bb309
+        </a>
+        <span class="ml-3 ">[ios] Resize Ask Assistant button text based on available width</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/8b102add0c450ad0d88f6ca2b13be4850849f8bf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          8b102ad
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Starting metrics for Expand On Hover behavior</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/c3a768a134a202d0b130fc6c31cfde38382738c5" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          c3a768a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from uJHiUsZBFG0Ltou8A... to n7BjhvJ7_hhkxsDh1...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3028a7b6eee38c5faa60459eeb84cf3544d0a19e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3028a7b
+        </a>
+        <span class="ml-3 ">Update URL metadata in third_party/dpkg-shlibdeps/README.chromium</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/ba9d849973c0424362b332ea33e47fbc9bb71108" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          ba9d849
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ffc5ab651fa39b357f088347e4aa21c1b9c153e1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ffc5ab6
+        </a>
+        <span class="ml-3 ">[Skills]: Extract SkillsInteractiveUiTestBase fixture</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2362e16e3de61bbbe9640051542b89c997184c5b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2362e16
+        </a>
+        <span class="ml-3 line-through">Roll BoringSSL from cb1b9fb82ff7 to d8be2b4a7115 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3609c2483a1c06e6be8f59095009848d4cc43220" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3609c24
+        </a>
+        <span class="ml-3 ">Implement InteractionTestUtilSimulatorWebUI for automated WebUI testing</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6aa09f36018b87f10e4854c0e318dc9fcab54950" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6aa09f3
+        </a>
+        <span class="ml-3 ">Allowlist ChromeTrackEvent.begin_frame_args</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6ed52512b0b7c9fe6f7b195ad0fb759d1396a52b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6ed5251
+        </a>
+        <span class="ml-3 ">[Autofill] Clamp popup y-coordinate to content area for horizontal arrows</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f6107345275945ccea4eaf978e0f625c244d589d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f610734
+        </a>
+        <span class="ml-3 ">[Extensions] Convert enterprise.platformKeys to WebIDL</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3440252dc6cee26ec0e67608e5ee8a4ccfcf81ea" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3440252
+        </a>
+        <span class="ml-3 ">[Extensions] Convert enterprise.networkingAttributes to WebIDL</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d1894427ec139badaeaf9925f853cfb0eaddac31" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d189442
+        </a>
+        <span class="ml-3 ">[html-in-canvas] Support webgl and webgpu in offscreen canvas</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f6a2f2efec667b21e48a89e8018948b2ba7de2b2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f6a2f2e
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16640.0.0-1076502 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/45279f527681421afde073052e5fcc3e7b10e0ae" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          45279f5
+        </a>
+        <span class="ml-3 ">WebUI: Migrate ui/webui/resources/tools/eslint to TypeScript, part 5.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/cbb3744bc6cc5118c47ddee59ddf97df66496a08" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          cbb3744
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b84b2856f59cbbd247203114549d5d8058b7add6" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b84b285
+        </a>
+        <span class="ml-3 ">Fix DCHECK crash in UninstallSoda by making DeleteSodaFiles static</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c3a09d0db40436ed85e9d89b8cf303088119accf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c3a09d0
+        </a>
+        <span class="ml-3 ">[GlowUp] Remove obsolete detached tabs code</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b6afc10a770dd3c6d45d5e883deb9816fb089a64" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b6afc10
+        </a>
+        <span class="ml-3 ">Block tab activation for CCT and PWA windows on Android</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/9c4254db1701d6b26fea0e097e2ad104d334ed96" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          9c4254d
+        </a>
+        <span class="ml-3 ">[BNPL][PNPL] Add form fill and submit metrics</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/be0019b9d5b2bb4c13193796b1f11a0c19508f39" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          be0019b
+        </a>
+        <span class="ml-3 ">[ios] Centralize enterprise reporting for Safe Browsing interstitials</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/e24385b8b91dc178f25601d599cb5089956291a8" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          e24385b
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5adc86a4410f5050971c64821f1cc8e75258da61" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5adc86a
+        </a>
+        <span class="ml-3 ">Break circular dependency between //c/b:b and //c/b/serial:impl</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/963a513c2d025f848b5a3e4ac6a6b7ccc86f8412" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          963a513
+        </a>
+        <span class="ml-3 ">Disable failing permission-element tests on linux-blink-msan-rel</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/0d995b82ef629fa20a7f5d801866afd860e399b8" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          0d995b8
+        </a>
+        <span class="ml-3 line-through">Roll earl_grey2 from f82ec416369d to 0886717fc2d6 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6dbfd29507f316f74af6d61a0ae1397320993555" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6dbfd29
+        </a>
+        <span class="ml-3 ">Reland "WebNN: add exportToGPU with power preference test"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/60623a5656a19d97d2162afb599ac3419c5e6a6a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          60623a5
+        </a>
+        <span class="ml-3 ">Add tests to ensure the suggest callback is hooked up properly.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7cff714cb3ecaed0727c94a21f068e34a0225c54" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7cff714
+        </a>
+        <span class="ml-3 ">Handle url launches in windows with destroyed activities</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/abc45bb00e175b3ccd93b45bbd4a1231a6c1383a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          abc45bb
+        </a>
+        <span class="ml-3 ">Merge //ash:accessibility_prefs_custom_associator GN target back into //ash</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0b836efedb365439b044dc358c5b44de893a2bc9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0b836ef
+        </a>
+        <span class="ml-3 ">[html-in-canvas] Deflake worker tests</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c952f975ba8588d8aea6d52e447518c7c7658df8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c952f97
+        </a>
+        <span class="ml-3 ">Migrate to direct return stubs for browser controls service</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6bb13e9211cba1114fa43ccb1ad6acc0a704ce2e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6bb13e9
+        </a>
+        <span class="ml-3 ">Update Crashpad to 52cb22518e779844dd5b6a21e5be9223a56ee883</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/bc303c92dd1abfba1dee25b33702aef2f8b6ebe7" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          bc303c9
+        </a>
+        <span class="ml-3 ">Reland "[Connection-Allowlist] Set up Origin Trial for workers."</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b6bcebee53bbc742be031c65c06fd6ec25ce4014" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b6bcebe
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from nRtRJXF0J8vyS0zpM... to -HKwOympckjZa7Z4U...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7af3ab9354b34b6c44ca629375ca34a93ed1dbc7" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7af3ab9
+        </a>
+        <span class="ml-3 ">Remove TSTextSegmentation flag</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/38b45dc7b7200c0719b90add3a6b994b0689e005" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          38b45dc
+        </a>
+        <span class="ml-3 ">Modularize //chrome/browser/download</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e9a393f0a97fa7446eae8bc03197b8f4cb25a64c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e9a393f
+        </a>
+        <span class="ml-3 ">[context-input] Fix mime type for signpost for raw files</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0cb5bfe9371eb8af650e4c64c80f10fc67dca0ba" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0cb5bfe
+        </a>
+        <span class="ml-3 ">gardener: Disable NetworkContextConfigurationFilePacBrowserTest.FilePac</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b421b5cc0045cbbbb9de232dca832afbe81198c2" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b421b5c
+        </a>
+        <span class="ml-3 ">Revert "Reland "Add field trial test config entry for MigrateToBlockV8OptimizerOnUnfamiliarSites""</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/33d90c5d321d5b5ecd8a41cae8e8ec4593f4aa33" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          33d90c5
+        </a>
+        <span class="ml-3 ">Add const to MappedMemoryRegion::operator=</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b10e1a324d013de5f8db49a8f91de94cf3e7129d" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b10e1a3
+        </a>
+        <span class="ml-3 line-through">Roll optimization-guide from c5bf7a16c19a to 741e193af3b8</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/16a5e4832a742b2e703abaebc5059f931e969c8a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          16a5e48
+        </a>
+        <span class="ml-3 ">chrome.windows.update() returns Error when Fullscreen is requested on Android</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/23829aa899740d2351e2e4605c1c2eb42f743dea" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          23829aa
+        </a>
+        <span class="ml-3 ">[composebox] Avoid flooding mojo interface with `getRecentTabs` calls</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fd6b92b746228d107d824fe8ab48a8084839815d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fd6b92b
+        </a>
+        <span class="ml-3 ">[codehealth] Remove stale Photos module feature flags</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/419050e9440520ab669ce399311e8e9e3ae55a21" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          419050e
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from bcf073fa32d2 to b6d10ce2f11e (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/1939548095008d8cde8f3433a05fb787a09c7283" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          1939548
+        </a>
+        <span class="ml-3 ">[Live Tab Retrieval] Search Functions</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ea91004690e1a973d82a4107cc99ee9e69664230" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ea91004
+        </a>
+        <span class="ml-3 ">[TabStrip API] Introduce the Update API</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/047ed3da627498abfd2b7a6bbbaf3c4b7b8d4176" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          047ed3d
+        </a>
+        <span class="ml-3 ">[composebox][searchbox] flag for embedded permission dialogue</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/324cd9a8606f68aea7adc6ca0475ac04d4295eae" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          324cd9a
+        </a>
+        <span class="ml-3 ">Implement ScrollToolJavaScriptFeature.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/90d914cd4872d45a70ac6f594fe89cba3a2d4eee" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          90d914c
+        </a>
+        <span class="ml-3 ">a11y-android: Add helper methods for asserting extended selection.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/af8a1d7c800a8f2fa256df2a80e876354a7eaea6" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          af8a1d7
+        </a>
+        <span class="ml-3 ">[ntp-doodles] Disable Animated Doodles on Reduced Motion accessibility setting</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/4a588dd9155cf47847fc8b482243092409f7242d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          4a588dd
+        </a>
+        <span class="ml-3 ">[TabStrip API] Add a translator for building TabCollection data</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5cbab86785b0fce1fa6e83c99560f65ce49dc314" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5cbab86
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Adding ExpandOnHover Flag to Vertical Tabs Browser Test Mixin</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2e629dcf6332fb932d97d477cd8a2cb7488c920c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2e629dc
+        </a>
+        <span class="ml-3 ">[PageLoadMetrics] Segment GWS DNS delay by source</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/802e5eecce8d985459942208e62939760f967984" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          802e5ee
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Changing Settings Page Ordering and Visibility</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3c5e3bae8564001db6d20563fa35df8a912e4611" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3c5e3ba
+        </a>
+        <span class="ml-3 ">[net] Populate DNS resolution details from ConnectJob</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/dd8d63ca9d4e11afac916bdeb469bd2e9369e4a5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          dd8d63c
+        </a>
+        <span class="ml-3 ">[net] Populate DNS resolution details to internal load info</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7288496c320cca70d84f1186be4aff089029ec90" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7288496
+        </a>
+        <span class="ml-3 ">[dns] Expose resolution details for successful requests</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7eae6cb2e5508e37fbb05297f7b927cd7b75fa1d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7eae6cb
+        </a>
+        <span class="ml-3 ">[AIAE] Enable AutofillEnableAiBasedAmountExtraction by default</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/dd7895a2690997545ee41fdb8c6c51a4cfd79275" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          dd7895a
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from 7Zvb206TFj22Rtqrc... to uJHiUsZBFG0Ltou8A...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/314b43e0f0f23758f5505167a9358b95ea4e034f" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          314b43e
+        </a>
+        <span class="ml-3 ">Test Extension Provides Focus/Unfocus Function</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/9c58c98adaadf289ff882c853403037eae5378e6" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          9c58c98
+        </a>
+        <span class="ml-3 ">[NTP-Real-Box]: Move placeholder cycling to NtpSearchboxElement</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fa0532201401e834259572e38d0352f90a27d6c0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fa05322
+        </a>
+        <span class="ml-3 ">extensions: Disable ProcessesApiTest.OnUpdatedWithMemoryRefreshTypes</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/7b072b1386f65e66efd0538395e30300d61e62e3" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          7b072b1
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/80ae5a7214f3ab4aaae8592306a457f2bb9efdb0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          80ae5a7
+        </a>
+        <span class="ml-3 ">Bump histogram expiry of TabGroups.SavedTabGroupTimeSinceModification</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/be6eda77a95db60220c03e9bff0b2e9bdca6a868" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          be6eda7
+        </a>
+        <span class="ml-3 ">Wire AssetManager into ManifestBrokerState.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f8a495c83f66f4df91205a1834c5e2b169f8246e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f8a495c
+        </a>
+        <span class="ml-3 ">Suppress side panel animation for glic conversation switch</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/75d3b6b5906263f60a93dd1e0e7e98f5e17595f1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          75d3b6b
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Expanding Locks for EOH state</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/35f6f5d35886986583882e374131ccb5f551fffd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          35f6f5d
+        </a>
+        <span class="ml-3 ">ui: Update ENABLE_EXTENSIONS flag in //chrome/browser/ui/blocked_content</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/402939e8e9118a652799f7e86199a96ac52dd1f6" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          402939e
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e5b8f5513c6cd8a3bfc6cb6ca4a99a8d6e996388" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e5b8f55
+        </a>
+        <span class="ml-3 ">Revert "Reland "PaintTiming: Cache LCP details in PerformanceTimingForReporting""</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/0aa6603d3532276574ec1b95ebd97223f8c918f2" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          0aa6603
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5394887efd5e1491f1573f8f712564fedfc96c99" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5394887
+        </a>
+        <span class="ml-3 ">Remove ChromeAsyncTabLauncher#launchTabInOtherWindow()</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/cfaad910abe0ec0ca287ee906e4eba77d933dc57" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          cfaad91
+        </a>
+        <span class="ml-3 ">profiles: Update ENABLE_EXTENSIONS flag in OffTheRecordProfileImpl</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f4df3a5e80b8b5c1b6599bb03f7cd9801c3723af" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f4df3a5
+        </a>
+        <span class="ml-3 line-through">Roll optimization-guide from e2da708192d6 to c5bf7a16c19a</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d602f4cd4deff0eabaa56a35b41be1ff21017fcc" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d602f4c
+        </a>
+        <span class="ml-3 ">[ntp-doodles] Remove CTA Doodle logic and update Logo metric logging</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/bf31a0ff52ce95bedc0e8c1bca8b7092381d17c1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          bf31a0f
+        </a>
+        <span class="ml-3 ">[ntp][realbox] Add UI tests for NTP Composebox search fulfillment</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/11b5e22474c96ab6821e85530c8f0df6ad98a7cf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          11b5e22
+        </a>
+        <span class="ml-3 ">[glic] Rename GlicWindowController to GlicInstanceCoordinator</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ccb8e63cb87ccd1358c09ff9940cd6d3f5e88b65" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ccb8e63
+        </a>
+        <span class="ml-3 ">[context-input] Update legacy tool setting in silk message</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/58655690341feebd60f3bd3318ec7dbf74a3efe1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5865569
+        </a>
+        <span class="ml-3 ">Fix operator precedence bug in ClampedNumeric bitwise static_asserts</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ecdd5113b605dc2347b4c47b2f87beb4b58ed773" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ecdd511
+        </a>
+        <span class="ml-3 ">Side Panel: Use BuildConfig.IS_FOR_TEST as "defaultValueInTests"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6c8a8e8cee9925e1a404b606b7e1f58d6b60e5e2" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6c8a8e8
+        </a>
+        <span class="ml-3 ">x11: Validate GetProperty format and fix OOB access</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5f6062a4857fc83c1a57db51e17c47b116b1a0ba" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5f6062a
+        </a>
+        <span class="ml-3 ">[chromecast] Convert to UNSAFE_TODO</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/96f8edaff651324d3205b1ddff5a78392a97e595" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          96f8eda
+        </a>
+        <span class="ml-3 line-through">Roll Skia from 163dfdf500c7 to 2085e414ce37 (5 revisions)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e5b6686e01dd5623b7939dd8d4613b3c896a4a6a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e5b6686
+        </a>
+        <span class="ml-3 ">Remove superfluous includes for base/scoped_multi_source_observation.h</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5ce2ff1a8e651e2ab2861440acacbf2d9eebd0fc" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5ce2ff1
+        </a>
+        <span class="ml-3 ">[Android] Add EnforceIncognitoIsolation flag</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/4ca7c2c65ed1e36984b37aaa9b77bdad54c47224" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          4ca7c2c
+        </a>
+        <span class="ml-3 ">Reduce the size of generated Mojo files when no interfaces are defined</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fcb11562957059a4af9c0781e858b1992e94b852" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fcb1156
+        </a>
+        <span class="ml-3 ">[rustmojo] Add simple test service to demonstrate rustmojo usage</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/66b77ba5be2e9d835e5dc7f20c1f9d3514261c79" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          66b77ba
+        </a>
+        <span class="ml-3 ">Integrate Android mesh manager into OpenXR device and scene understanding</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/732f0b2f56a1a8b2f39d9063b6fce43aff0522dc" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          732f0b2
+        </a>
+        <span class="ml-3 ">Fix incorrect errno comparison in self_compaction_manager.cc</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d53e3d91f25f5d31fd85e689d97c83d9da82f172" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d53e3d9
+        </a>
+        <span class="ml-3 ">[gap-decorations] Rename rule-visibility-items initial value from auto to normal</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/11e67b2117184410a0804fd242167f0abb641de9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          11e67b2
+        </a>
+        <span class="ml-3 ">[Editing] Fix Shift+Up selection stuck at soft wrap</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/4a5038cda8d4dc01c14c09558fc8720fce68cc6e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          4a5038c
+        </a>
+        <span class="ml-3 ">fjord-oobe: Create a DissidiaClient that talks to dissidia-daemon</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/55823cddbfc827a7e366b2027986143a2b230116" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          55823cd
+        </a>
+        <span class="ml-3 ">[Media] Prevent user activation bypass on system audio focus suspend</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b30d69ffbdea747bd420ac064c2bbbd7ac4a1951" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b30d69f
+        </a>
+        <span class="ml-3 ">Return early and destroy the tree if Unserialize returns false.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a45b7422affab7a9f8bb1f1bcf1ff330c47a8c2b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a45b742
+        </a>
+        <span class="ml-3 ">gardener: Disable flaky tests in NetworkContextConfigurationBrowserTest</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/be3e596ca6ac854a9b7f15789da73da7c1304dfb" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          be3e596
+        </a>
+        <span class="ml-3 line-through">Updating trunk VERSION from 7777.0 to 7778.0</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/269e1d1c072840a855424ba8641688cef1477c89" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          269e1d1
+        </a>
+        <span class="ml-3 ">[histogram cleanup] Remove expired histogram History.QueryHistory</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/620a0470d2efdaa5612d6f22983adf21cbed1754" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          620a047
+        </a>
+        <span class="ml-3 ">Fix dangling pointer race condition in BackgroundModeManager</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b23fe166c4942b7a19aa41f1da63ca107a54fb61" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b23fe16
+        </a>
+        <span class="ml-3 line-through">Roll BoringSSL from 0370de714758 to cb1b9fb82ff7 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/8d748218c7035a9e3ba5777d054a838f5a13b879" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          8d74821
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Updating leading padding for group underline</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/60f5e6fd539c015f3e59028a35ec443c48fff47b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          60f5e6f
+        </a>
+        <span class="ml-3 ">[Vertical Tabs] Fixing several bugs with collapsed state</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/99d86ce1fd7be53331b94a91eacae68aa3ac722f" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          99d86ce
+        </a>
+        <span class="ml-3 ">Ensure we update the model from the URL params on every navigation event.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3276e8364c37048d399252d1ec8ea6d72876dfbe" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3276e83
+        </a>
+        <span class="ml-3 ">Extend expiration for MainFrameHasRTLDomain histograms</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/a844ca130c340fe8655f4fb28122a95e85e30da0" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          a844ca1
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM64 Orderfile from 4mcLAUntdXQ1aI14K... to 7Zvb206TFj22Rtqrc...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/20d1c71caebf03e39faa3b5321ace0d4710d7be0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          20d1c71
+        </a>
+        <span class="ml-3 ">[Adaptive Toolbar] Disable translate button by policy</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b40f7eb142c6cb4747170cd156a9e71bf9fe118c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b40f7eb
+        </a>
+        <span class="ml-3 ">[composebox] Move ContextType enum to shared omnibox file.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/dbe865bb2536044d879a6673d1bc679037c39261" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          dbe865b
+        </a>
+        <span class="ml-3 ">Commerce Side Panel: Polymer leftovers cleanup</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/1b20fb5df9c366ac946c4c202365c3d275efca83" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          1b20fb5
+        </a>
+        <span class="ml-3 ">Add accessibility observers for per-element actions and animations</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f563c20d319e7a31a92ad10f3304b4e8b373cf9a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f563c20
+        </a>
+        <span class="ml-3 ">[AIM] Reuse isAimRequest in view binder.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/55b0c3138ded20eda85c981fb1bfd6f666be4757" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          55b0c31
+        </a>
+        <span class="ml-3 ">CORS: Add feature flag to ignore CorsPreflightPolicy</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0dfa9166bc5495e55565caa5734b997333a30d64" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0dfa916
+        </a>
+        <span class="ml-3 ">Fixed missing event histogram in PageContentProviderImpl</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/78dad2d912568d5633ed0f04e49b3c6148dc10cf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          78dad2d
+        </a>
+        <span class="ml-3 ">Reenable testHintsFetchBasic.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c184feb5c8edb124475ee8895dd733567f42f5f5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c184feb
+        </a>
+        <span class="ml-3 ">[html-in-canvas] Support offscreen canvas in a worker thread</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3d66375b5502340d3f62d396dc55eaa543b757c2" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3d66375
+        </a>
+        <span class="ml-3 ">Update web tools to plumb a WeakPtr&lt;WebFrame&gt;</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/63a2cf3bed8b53ba33d5c6211358a691704896dd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          63a2cf3
+        </a>
+        <span class="ml-3 ">Rework app_restore tests to remove deprecated FakeChromeUserManager</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7c66e029002f3a20ba4df7e3abd85d270534acfd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7c66e02
+        </a>
+        <span class="ml-3 ">Add myself as layers owner</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/451e4bfb5dc5d95caf37b3ff00ad792b505507c3" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          451e4bf
+        </a>
+        <span class="ml-3 ">Announce when Immersive Reading Mode is opened.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/33832f599c58a69a35bc1099b4582e81c7fe2732" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          33832f5
+        </a>
+        <span class="ml-3 ">Delete unused ctags prompt template</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d44ae2db1461fa485ad4a5a09808c2b4c5824e3e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d44ae2d
+        </a>
+        <span class="ml-3 ">[Omnibox]Add browser tests to verify metrics logging</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fabc44f3e6e00da6a931a0fea84f33a935c9529b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fabc44f
+        </a>
+        <span class="ml-3 ">Don't expose internal state to LargestContentfulPaintCalculatorTest</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d7816772e441b8b91dd9c20cee161175bdd71087" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d781677
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/550e10b08bc609f6d285be68a3e95c9797bfd336" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          550e10b
+        </a>
+        <span class="ml-3 ">[html-in-canvas] Fix canvas_elements_needing_onpaint_ use-after-poison</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b63f8f33e2248868f86ab1734eebe55434bc6501" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b63f8f3
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 Orderfile from 9U0UkrK-YxF8VGGRi... to Fb7_oM9PBQsurCsDG...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/bed8aec80d107674d961456bb228a732f6104878" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          bed8aec
+        </a>
+        <span class="ml-3 ">arm_use_neon for ffmpeg gen script</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/14d538524833f2eaae1ae48950db1419f55af7d0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          14d5385
+        </a>
+        <span class="ml-3 ">[ios] Remove kIOSRemoteTabResumptionKillSwitch</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/bc1007a6a3125f80f50e18c36d5cea744453a53d" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          bc1007a
+        </a>
+        <span class="ml-3 line-through">Roll FuzzTest from 4b43388d6420 to 800c545cf9d6 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7ae07928f9aa79ccd58fc85ca92592509fe791c4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7ae0792
+        </a>
+        <span class="ml-3 ">Reland "Re-enable LFF toolbar swipe tab switching"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/dfbcd5d94b6de7429d3bc495c4b81f1bd7bbb5dd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          dfbcd5d
+        </a>
+        <span class="ml-3 ">extensions: Change CloseOverflowMenuIfOpen to return void and rename</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/367f39c3882b70e01f8eb95736d0ac447d95ab16" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          367f39c
+        </a>
+        <span class="ml-3 ">Add methods to remove and clear Content Annotations cache data.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/1031860596a608cd6b21c220a9f36b724481b0fb" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          1031860
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/79082a8f48833c03e0f88bab37998aa59a3ecff4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          79082a8
+        </a>
+        <span class="ml-3 ">Add Web Animations API support to the DOM fuzzing framework</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fbe94aace6b1f0d7e83125a3b47578f24a96b1a2" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fbe94aa
+        </a>
+        <span class="ml-3 ">some GlicWindowController cleanup</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/96d8576524d4aa37a1e6d571a8b7c600b5cb5e1f" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          96d8576
+        </a>
+        <span class="ml-3 ">[composebox] Remove legacy composebox submit button template.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b3fed572e96fc66a082a9696aba1966a9b165155" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b3fed57
+        </a>
+        <span class="ml-3 ">Use ActorToolJavaScriptFeatureTestBase in tests.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/9cdcd011c184b1082d5a19b7aacf68846bb3adbd" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          9cdcd01
+        </a>
+        <span class="ml-3 ">[iOS] Update InvalidateInsetRange() invocations</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/baf0992552afc412f60cba7bb7088051ae36ba0a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          baf0992
+        </a>
+        <span class="ml-3 ">In UkmMetricValueMatcher, add null-check for std::ostream* arg.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/34983ce5204deb865fb56c293db02bf4117a9d53" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          34983ce
+        </a>
+        <span class="ml-3 ">Minor cleanup of unused includes in TabStripModel</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/ca2d1f14e4dd92f1ec86ae937067f4df9d7352cf" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          ca2d1f1
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from PNWGHf5QSwPlxxq2T... to nRtRJXF0J8vyS0zpM...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2be5b79c676d4a71f2cd0cf559a4ede5e7bbbb20" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2be5b79
+        </a>
+        <span class="ml-3 ">Indicate attempt login sign in with google support via glic host capability</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a20c8285bfda24977c16a7f82496dcef05f7c035" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a20c828
+        </a>
+        <span class="ml-3 ">Change DCHECK_GE media/gpu/v4l2/v4l2_mjpeg_decode_accelerator.cc</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/270cf55e421f4cc28c3620e8e0693c49b9a9b951" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          270cf55
+        </a>
+        <span class="ml-3 ">[MDL] Remove component cleanup code</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/18c701fd5a8a8d3621aeea2ac4ded55df8921ae9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          18c701f
+        </a>
+        <span class="ml-3 ">Add testing config for ForceSecureDnsDohFallback experiment.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a7540018659343af26df09da9b8da83885f6f342" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a754001
+        </a>
+        <span class="ml-3 ">[iOS] Use custom UIView with AVPlayerLayer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0e79545a89f7f77865f06aac84e0fc26d476f8a8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0e79545
+        </a>
+        <span class="ml-3 ">Extend printing metrics</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/0ea6027b706d2e7909c3fa73523ff8488bd26a66" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          0ea6027
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from 931561fe54a1 to bcf073fa32d2 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/faada322153d91001ca278a072f536107843bac8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          faada32
+        </a>
+        <span class="ml-3 ">[media/gpu] Enforce safe range for NativePixmapPlane construction</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/8817f14e6786b193eaf6d1ef093ee04e5451b5e1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          8817f14
+        </a>
+        <span class="ml-3 ">Add per-element actions to the DOM fuzzing framework</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3a0613a8613b363b4ef47b4b29e57ebe0b02dedf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3a0613a
+        </a>
+        <span class="ml-3 ">[iOS] Cache regex and optimize string operations in CC scanner</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3d60e2382370086cf4c1a10bcd2f93cc650b6d94" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3d60e23
+        </a>
+        <span class="ml-3 ">Give skia roller accounts OWNERS of the version txt files</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6c157502e2aaae3acef2cb3ba4a50fb13151c7da" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6c15750
+        </a>
+        <span class="ml-3 ">Add WebUI pinned toolbar actions icons</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a26184ab3dfeffa0c7ba07bea4dbcdb74292a20c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a26184a
+        </a>
+        <span class="ml-3 ">Track RenderWidgetHosts in GlicSelectionObserver.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/9a52cb78e9cdc1200626c64c6aaa080b9360d5f1" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          9a52cb7
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM Orderfile from XV4NLJqMa_mGIn56X... to Gd7ZA9FaPbFsn9XL1...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ecc6965c7b93346d30a24834c721b2cd24c4a25c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ecc6965
+        </a>
+        <span class="ml-3 ">Add fieldtrial config to disable DelayInitialDohProbeTimeout</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/831a5c81229115cfa113fb6098da421974cd1f98" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          831a5c8
+        </a>
+        <span class="ml-3 line-through">Roll Chromium Variations from 0eUmGml_3n3wH0W_V... to Y1p_4Pan6H9rIfY-8...</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/015645ade642915522635ece6485fe491e52aac5" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          015645a
+        </a>
+        <span class="ml-3 line-through">Roll WebView ARM64 Orderfile from vJu6DtDPT92OTCqwc... to PNWGHf5QSwPlxxq2T...</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a183c86443820371de37e82bbf3e8a6c129881b4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a183c86
+        </a>
+        <span class="ml-3 ">Enable Web Actuation Settings Toggle by default</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6ea919d0f1b302f99c9d15ecd3f971ae8eb37211" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6ea919d
+        </a>
+        <span class="ml-3 ">Remove include guards that snuck into various source files</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3be1f60ad497eb027cf5b261fb36ab0b70f95dbf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3be1f60
+        </a>
+        <span class="ml-3 ">Fix various IWYU errors related to base/logging.h</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/baeca77fd1f921492580c4baebab92f15f65a8d9" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          baeca77
+        </a>
+        <span class="ml-3 ">[HSTS] Update bulk entries</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e983c0878fcb876d3524bcb722628ffaceaf7579" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e983c08
+        </a>
+        <span class="ml-3 ">Clean up some redundant map checks in soda_installer.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/606713645ace47728a8e2a56dd1fc6a8b44e13a7" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6067136
+        </a>
+        <span class="ml-3 ">Create opaque origins for data: URL workers behind a flag</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/18cf735e29c9b7dcae2f337501d292383f9bcfad" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          18cf735
+        </a>
+        <span class="ml-3 ">Add additional description and timing diagram to InterProcessTimeTicksConverter</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/aca76bf997916fafe862b7c6845801d8621f66a8" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          aca76bf
+        </a>
+        <span class="ml-3 line-through">Roll Skia from 5e5a7f252b5e to 163dfdf500c7 (10 revisions)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/58fe31c218a78323c33a187f1772887474479a8c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          58fe31c
+        </a>
+        <span class="ml-3 ">Enable toolbar related extension keybinding API tests.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2c5abbb1e7863d3f9f4eadf7a5936bc3e8b618a4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2c5abbb
+        </a>
+        <span class="ml-3 ">Update the save/update prompt source notice text.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/ecafcf860ddeee1c666c1b13945a1cff6193686b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          ecafcf8
+        </a>
+        <span class="ml-3 line-through">Roll ios_internal from 4bcdf69b11fa to 90007200bef0</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/1775f9a46b3893c3fca9b3f248b476b57c87b3d8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          1775f9a
+        </a>
+        <span class="ml-3 ">Enable EnterpriseExtensionDOMActivityTelemetry by default.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/405dcf07fd14475d0ca9d340d1274a931cabe2db" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          405dcf0
+        </a>
+        <span class="ml-3 ">Make ServiceWorkerVersion timeout iterators optional</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/6dc052ba617cfa42e867a1de1afb230a0e9a7775" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          6dc052b
+        </a>
+        <span class="ml-3 ">Site Search: Implement omnibox.onInputEntered API event for Android</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/bc87e022bbc47c14d30bf517970737cfac027ab5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          bc87e02
+        </a>
+        <span class="ml-3 ">Fix request stalling when restarting a fetch event.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ba72efbe874e89ab9568bacdfc390a58cea08242" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ba72efb
+        </a>
+        <span class="ml-3 ">Add fieldtrial config to disable SplitHostCacheByNetworkAnonymizationKey</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7e85978787196fdf0d1ae88d58ba57c01ecf77b0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7e85978
+        </a>
+        <span class="ml-3 ">Include NoVarySearch Match for PrerenderNewTabHandle</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/23da3340c4b1eea6c431c294f45a75717df9f092" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          23da334
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3ec1f1ee26e2ceab1d6de9cb15b124ae5181d118" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3ec1f1e
+        </a>
+        <span class="ml-3 line-through">[CT] Automatic update from google3</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b4bb90502f72fc782ba30a8d8e84aa4109f6379b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b4bb905
+        </a>
+        <span class="ml-3 line-through">[KP] Automatic update from google3</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2bb2c50defa7d41048026f4d0ebb3f066ce3b38d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2bb2c50
+        </a>
+        <span class="ml-3 ">Remove ServiceWorkerAutoPreload subresource handling</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/9f2d278f9dbea875522f39819ac20e7b6211d23f" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          9f2d278
+        </a>
+        <span class="ml-3 ">[rustmojo] Remove raw_trap.rs</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/327c1fd8772ed99ee591c586af06a4b948c8ad14" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          327c1fd
+        </a>
+        <span class="ml-3 ">Skip scroll/scale reset when restoring from back-forward cache.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/a067235290e860204f452ae45f46b565213f8ad5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          a067235
+        </a>
+        <span class="ml-3 ">[rustmojo] Address FOR_RELEASE comments in c_mojo_api/</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b1c68f3a4ca03f86dfe7cd0ae141702579b2e219" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b1c68f3
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16640.0.0-1076498 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0c94188025a711190df94cc2c377a97a5b35b31d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0c94188
+        </a>
+        <span class="ml-3 ">WebUILocationBar: Prep for omnibox popup integration</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/81059f5aa145b3c37d45c8ce83a36783be9e7a1a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          81059f5
+        </a>
+        <span class="ml-3 ">SearchPrefetch: Update expiry of chrome flags</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/00f7844e20a3170323dc8c8cbe5cdc1f917c5f67" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          00f7844
+        </a>
+        <span class="ml-3 ">Track Extension DOM activity telemetry state via synthetic trial</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/2ac52de5188c9f3f3d9674d57ae1eafcf65a1935" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          2ac52de
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c5c7e6a2d404580cdf2c0b828371baf606f71788" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c5c7e6a
+        </a>
+        <span class="ml-3 ">Normalize data directory paths in BUILD.gn</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/dbb301dc4becebe558d8b91a27eeea66b0470c1c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          dbb301d
+        </a>
+        <span class="ml-3 ">Add a test for invoke failure due to tab closing.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fc3d9b88331ceb44b8771ad4200e745c31931d99" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fc3d9b8
+        </a>
+        <span class="ml-3 ">fix FakeFastPairGattServiceClientImplFactory and FastPairFakeDataEncryptorImplFactory dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/1e82b9ed900afe57d529b6d3f1cf7f372feb245b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          1e82b9e
+        </a>
+        <span class="ml-3 ">fix SearchBoxViewTest dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/18e9598ec54ad7b17e1e0086663a42358114f8f5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          18e9598
+        </a>
+        <span class="ml-3 ">fix LoginUserViewUnittest Dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/2aaed11271c5dd43a9d536d058563df0ce1ea4ad" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          2aaed11
+        </a>
+        <span class="ml-3 ">fix LoginAuthUserViewTestBase dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3de6975d587e93807298352dd2807b31f22f3eac" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3de6975
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/7ca7fd0272b37160e56f549ed8d4b7063f5186de" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          7ca7fd0
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/8943cb2f99693c147d4b469a33187643bb775751" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          8943cb2
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/fd9f7a8e11a4a5addd2af6175088b53c073d68c0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          fd9f7a8
+        </a>
+        <span class="ml-3 ">Add AMSC to IndexedDB ConnectionCoordinator classses</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5259d174baf1bab6806bf96aabcd9bed44160369" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5259d17
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/467c8e0dff865541f409035188f10be210638eef" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          467c8e0
+        </a>
+        <span class="ml-3 ">[ASM] Stop using reflection for background start option</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/14328ec347b37a2ad5da8dae3cbe9c53c159b6e6" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          14328ec
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f826425a08337ebcd4602866a3d0eba0e8198922" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f826425
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/66f5740af5c708705c90eb3e334460dd7b299824" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          66f5740
+        </a>
+        <span class="ml-3 ">Temporarily remove interactive_ui tests from running on MacVM</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ff2f445083c17c9921f25b3850549e893c9c3b76" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ff2f445
+        </a>
+        <span class="ml-3 ">fix PipWindowResizerTest dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/64bbad282b03f2522c79724691fa0446ac541466" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          64bbad2
+        </a>
+        <span class="ml-3 ">fix VpnDetailedViewPixelTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/40a7fa6d80be1a9dd79aa3b338c29a4585eb8069" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          40a7fa6
+        </a>
+        <span class="ml-3 ">fix SecurityTokenRequestControllerTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/801022a9303d7725a1379296fd394a3677b287c3" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          801022a
+        </a>
+        <span class="ml-3 ">fix ProjectorControllerTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d12afbe316f86f8cdae20bcb644999612204a0d1" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d12afbe
+        </a>
+        <span class="ml-3 ">fix AudioDetailedViewTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d801625b0184a3786379f06b9f45dd93ba371c16" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d801625
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from ae452c8fedb6 to 931561fe54a1 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/b44cef801ca2c58c7af6c94a8970a1e8a4eac26d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          b44cef8
+        </a>
+        <span class="ml-3 ">fix InputDeviceSettingsControllerTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/7017bbbe0a5e9365c8e5b060d033a1ae676019b2" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          7017bbb
+        </a>
+        <span class="ml-3 ">fix GlanceablesTasksViewTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/f9df262a3d8f9d5d20eded2bc993f75863b6cef5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          f9df262
+        </a>
+        <span class="ml-3 ">diagnostics: route connectivity details through session log</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/bc5fc296d75a027c55e20c49162e21beb0050f96" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          bc5fc29
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/1047826aef0f3174225419293a51e47bd64832f9" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          1047826
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/cdc9b847f4d1c6bf300f6e44b567ec19c0fe18e4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          cdc9b84
+        </a>
+        <span class="ml-3 ">fix TestPaginationModelObserver dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/bd6a5735c1891347ceed99d1083c1c30bf27acaf" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          bd6a573
+        </a>
+        <span class="ml-3 ">fix LocaleDetailedViewTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0c72cc5f0ddf149e4e04ef0b66edbedd48ab0066" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0c72cc5
+        </a>
+        <span class="ml-3 ">fix FakeFastPairGattServiceClientImplFactory and FastPairPairerImplTest dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/506f82ec8d324efc259a2ee71030117fecdf455e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          506f82e
+        </a>
+        <span class="ml-3 ">fix HotspotTrayViewTest dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/01630c9036d2332b7519fcce360fb17b0e9d9f8c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          01630c9
+        </a>
+        <span class="ml-3 ">fix HoldingSpaceTrayChildBubblePlaceholderTest dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/76421ed28e76eb499075a928c079274610f88f8d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          76421ed
+        </a>
+        <span class="ml-3 ">fix FrameSinkHolderTest dangling pointers</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0ad592074441f482f53322654ceb714066e99efb" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0ad5920
+        </a>
+        <span class="ml-3 ">fix SearchResultViewWidget dangling pointer</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/fad802fb4d2e315fba81e0afc4a0074fc357edf5" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          fad802f
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f25058996a0087ef6245f49907daa1b24e8f9187" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f250589
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5a20fbd5f3cc7e708d019effdd15de08306c305a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5a20fbd
+        </a>
+        <span class="ml-3 ">Autoshard chromium/src test suites</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/20bb930800ffc9cced3dae94076a061a0552b2e0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          20bb930
+        </a>
+        <span class="ml-3 ">Revert "[Vertical tabs] Update the combobutton to show labels in expand on hover state."</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5914c248ad448b26199c1df8b2ca717e74161297" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5914c24
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/69638edffc700027e71df73cb6675d454364cb04" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          69638ed
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/02a1eb51a7225fa57ac4916cc4fc8e0bb107f425" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          02a1eb5
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e5e0b195574a9354aa8580bdb8e34a5f3440e700" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e5e0b19
+        </a>
+        <span class="ml-3 ">Kiosk: Launch ARCVM kiosk app after Beam ChromeOS services are ready</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/c52ae89ece584a8ee0bcb57eb703ae450592811d" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          c52ae89
+        </a>
+        <span class="ml-3 ">Enable CHECK(!in_on_accessiblity_events) when BUILDFLAG(IS_WIN).</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/65ea032b601c06075616cfa30cab95f56608a624" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          65ea032
+        </a>
+        <span class="ml-3 ">Reland "[composebox] Move input state related logic to mixin"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/3a4ef2fdd374e109183ae69420d09fb422a2a8c6" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          3a4ef2f
+        </a>
+        <span class="ml-3 ">Reland "[composebox] Move Tab related methods to mixin"</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/47906c246b2ddfe08122f3279667548676a723db" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          47906c2
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/cdda2aed1a992d587d2615d768c20ee620586b82" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          cdda2ae
+        </a>
+        <span class="ml-3 ">Rework ArcAuthServiceTest.</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/cb89d708744099ddf13dd8baddc765d68ca2ab8c" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          cb89d70
+        </a>
+        <span class="ml-3 ">Add documentation for how to use net_perftests</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/ded4beaaf95e645d5f06ff239c456efb926020d6" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          ded4bea
+        </a>
+        <span class="ml-3 ">[BackButton] Implements iph visuals for gesture user education</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/8c8171746d85449fed12ca7f7a8058bb8a03e245" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          8c81717
+        </a>
+        <span class="ml-3 ">Revert "[composebox] Move Tab related methods to mixin"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/db8f7082f959396a0b4670238ff427b15790eea8" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          db8f708
+        </a>
+        <span class="ml-3 ">Revert "[composebox] Move input state related logic to mixin"</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0d4c477b42736d7bc3a80a6ff01ee459a339a614" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0d4c477
+        </a>
+        <span class="ml-3 ">Disable ExtensionApiTabTest.TabAudible</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/87e9a51ee1e792592ca09e6dd22554ad0ffcddcf" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          87e9a51
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5c1614e1168873060fe44000abd3c319c229c1d0" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5c1614e
+        </a>
+        <span class="ml-3 ">[Extensions] Add header to site permissions page in extensions menu</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/8491862a1bb0bc4e29a4548a5f967f20eff99e47" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          8491862
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/e9fc2c42f14cc42acd3698e5fdcf57e6972414e4" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          e9fc2c4
+        </a>
+        <span class="ml-3 ">Site search: Prefill the search term for @history</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/5ad968e80ca8b3b0de68ed033dc6b1d16e19bc73" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          5ad968e
+        </a>
+        <span class="ml-3 ">Destroy HatsNotificationController on UserSessionManager::Shutdown</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/adb058d3159191fb67799c558c7abe5193c29532" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          adb058d
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from 928a85f8fca8 to ae452c8fedb6 (1 revision)</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/feeba850054c3423631cd7f0ae3fcd7097b08c7a" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          feeba85
+        </a>
+        <span class="ml-3 ">ash: Dismantle the document_scan crosapi service, part 3</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/cfa59c887a2649658acb7523d56cd6767b2bf866" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          cfa59c8
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/7b3b870b2457257367bd486c70c6903ef4754a8b" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          7b3b870
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16639.0.0-1076490 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/f200f57a19490707ff8bc7aa5de3cbc443a3afad" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          f200f57
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/5f546bdff45d8e2dc59e2069c517584d3cc121fd" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          5f546bd
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0ebe17e6213ac780f15b28d674a966160bc7a17b" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0ebe17e
+        </a>
+        <span class="ml-3 ">Disable NetworkContextConfigurationBrowserTest.ThirdPartyCookiesAllowedForExtensions on ASAN</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/7ee6fed5e41a8624da90fc028d42ff81e4431674" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          7ee6fed
+        </a>
+        <span class="ml-3 line-through">Updating trunk VERSION from 7776.0 to 7777.0</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/d25fa88bb9fdf7893f428167b6207e25a2b511a5" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          d25fa88
+        </a>
+        <span class="ml-3 ">Disable four WebUIPinnedToolbarActions tests on ChromeOS and Win</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/acc3bd2c0c64173534df946c2e9329afa6b8fe40" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          acc3bd2
+        </a>
+        <span class="ml-3 ">Disable NoStatePrefetchBrowserTest.ServiceWorkerIntercept on cros/win</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/b9abbd9ea1175a92550af5ddd2ee4ba8d7b9a933" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          b9abbd9
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Linux PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/d044524ccafeca8a9743cdf2464bcdd109b94d24" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          d044524
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Mac Arm PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/98ed51c31da57285a949b283462b4eac1624343e" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          98ed51c
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android ARM32 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/074f5093f574725055159d628a8a8eedb015a2df" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          074f509
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Android Desktop x64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/3fb6f3d982a0c7eb49ccb330dd2632e404393a0a" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          3fb6f3d
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win ARM64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/0bd9366db7ef5eebf3cd6e3927b53b86f7b95899" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          0bd9366
+        </a>
+        <span class="ml-3 ">Update VirtualTestSuites expiration for speculation-rules-prerender-cross-origin-iframes</span>
+      </li>
+    
+      <li class="flex items-baseline ">
+        <a href="https://github.com/chromium/chromium/commit/95b6d189840f13c8dcd0a5056f57d366a0255d5e" target="_blank" rel="noopener noreferrer" class="hover:underline text-sky-500">
+          95b6d18
+        </a>
+        <span class="ml-3 ">[gardener] Disable ChromeRenderProcessHostTest.ProcessPerTab</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/33f4d258c60380c2043fc3de0305f10003676d81" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          33f4d25
+        </a>
+        <span class="ml-3 line-through">Roll Chrome Win64 PGO Profile</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/50e6ae9207812b07afc8a1c56542e1c3c2211f0f" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          50e6ae9
+        </a>
+        <span class="ml-3 line-through">Automated Commit: LKGM 16639.0.0-1076484 for chromeos.</span>
+      </li>
+    
+      <li class="flex items-baseline text-gray-500">
+        <a href="https://github.com/chromium/chromium/commit/bf3da5baa39e990d56183af95bc4345d4eca1d74" target="_blank" rel="noopener noreferrer" class="hover:underline text-gray-600">
+          bf3da5b
+        </a>
+        <span class="ml-3 line-through">Roll clank/internal/apps from a9d63103dc12 to 928a85f8fca8 (1 revision)</span>
+      </li>
+    </ul>
+          </details>
+        </div>
+      </div>
+       <div class="mt-8 text-center">
+        <a href="./index.html" class="text-sky-500 hover:text-sky-300">&larr; Back to all summaries</a>
+      </div>
+    </main>
+    <script>
+      function copyUpdateLink(anchorId) {
+        const url = window.location.origin + window.location.pathname + '#' + anchorId;
+        navigator.clipboard.writeText(url).then(() => {
+          // Show temporary feedback
+          const element = document.getElementById(anchorId);
+          if (element) {
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+            }, 500);
+          }
+        });
+      }
+      
+      // Scroll to anchor if present in URL
+      if (window.location.hash) {
+        setTimeout(() => {
+          const element = document.getElementById(window.location.hash.substring(1));
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+          }
+        }, 100);
+      }
+    </script>
+</body>
+</html>
