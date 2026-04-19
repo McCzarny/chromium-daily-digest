@@ -62,6 +62,10 @@ const createHtmlPage = (
     `;
   }).join('');
 
+  // Print overview before and after rendering for debugging
+  console.log('Original Overview:', summary.overview);
+  console.log('Rendered Overview:', renderOverview(summary.overview));
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
