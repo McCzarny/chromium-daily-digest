@@ -2,7 +2,7 @@ import { fetchCommitsForDate } from '../services/chromiumService';
 import { createLLMService } from '../services/llmService';
 import { GitilesCommit, StructuredSummary, SummaryConfig } from '../types';
 import { loadConfig, getIgnoredBotEmails } from '../config';
-import { renderOverview, renderPointText, getAssetsPath, GITHUB_COMMIT_URL } from '../utils/htmlUtils';
+import { renderOverview, renderPointText, renderComponentBadges, getAssetsPath, GITHUB_COMMIT_URL } from '../utils/htmlUtils';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -32,11 +32,11 @@ const createHtmlPage = (
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
               </svg>
             </button>
-            ${point.isBreaking ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2">⚠️ BREAKING</span>` : ''}
-            ${renderPointText(point.text)}
+            ${point.isBreaking ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span>` : ''}${renderPointText(point.text)}
             ${point.commits.map(hash => `
               <a href="${GITHUB_COMMIT_URL}${hash}" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(${hash.substring(0, 7)})</a>
             `).join('')}
+            ${point.components && point.components.length > 0 ? `<div class="flex flex-wrap items-center gap-1 mt-1">${renderComponentBadges(point.components)}</div>` : ''}
           </li>
         `;
         }).join('')}

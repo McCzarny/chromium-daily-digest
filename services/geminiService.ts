@@ -139,7 +139,11 @@ class GeminiAdapter implements PlatformAdapter {
                         type: Type.ARRAY,
                         items: { type: Type.STRING }
                       },
-                      isBreaking: { type: Type.BOOLEAN }
+                      isBreaking: { type: Type.BOOLEAN },
+                      components: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING }
+                      }
                     },
                     required: ["text", "commits"]
                   }

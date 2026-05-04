@@ -1,4 +1,4 @@
-import { GitilesCommit, StructuredSummary, SummaryConfig } from "../types";
+import { GitilesCommit, StructuredSummary, SummaryConfig, CHROMIUM_COMPONENTS } from "../types";
 import { generateSummary as generateGeminiSummary, generateWeeklySummary as generateGeminiWeeklySummary } from "./geminiService";
 import { generateSummary as generateNexosSummary, generateWeeklySummary as generateNexosWeeklySummary } from "./nexosService";
 import { fetchMultipleCommitDetails } from "./commitDetailService";
@@ -23,6 +23,7 @@ export interface DailySummaryData {
       text: string;
       isBreaking: boolean;
       commits: string[];
+      components?: string[];
     }>;
   }>;
   totalCommits: number;
@@ -218,6 +219,7 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
           - **text**: Concise summary using markdown. Use \`code\` for file paths. Be specific about what changed.
           - **commits**: Array of full commit hashes this point relates to
           - **isBreaking**: Boolean (optional) - Set to true if this change is BREAKING for projects using Chromium. Breaking changes include: API removals, signature changes, behavior changes that require code updates, removed flags, deprecated features being removed, or changes to public interfaces.
+          - **components**: Array of component tags from this fixed list: ${CHROMIUM_COMPONENTS.join(', ')}. Assign 1-3 tags that best describe which Chromium subsystems are affected. Only use tags from the list above.
           
 3.  **Content Prioritization:**
     *   ${keywordsText}
@@ -493,6 +495,7 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
           - **text**: Concise summary using markdown. Use \`code\` for file paths. Be specific about what changed based on the details you gathered.
           - **commits**: Array of full commit hashes this point relates to
           - **isBreaking**: Boolean (optional) - Set to true if this change is BREAKING for projects using Chromium. Breaking changes include: API removals, signature changes, behavior changes that require code updates, removed flags, deprecated features being removed, or changes to public interfaces.
+          - **components**: Array of component tags from this fixed list: ${CHROMIUM_COMPONENTS.join(', ')}. Assign 1-3 tags that best describe which Chromium subsystems are affected. Only use tags from the list above.
           
 3.  **Content Prioritization:**
     *   ${keywordsText}
@@ -581,12 +584,16 @@ Respond with valid JSON matching this exact structure:
         {
           "text": "Description. Use **BREAKING CHANGE** prefix if applicable. Use \`code\` for code elements.",
           "isBreaking": boolean,
-          "commits": ["full_hash1", "full_hash2"]
+          "commits": ["full_hash1", "full_hash2"],
+          "components": ["Component1", "Component2"]
         }
       ]
     }
   ]
 }
+
+Available component tags (only use from this list): ${CHROMIUM_COMPONENTS.join(', ')}
+Assign 1-3 component tags per point that best describe the affected Chromium subsystems.
 
 Daily summaries for Week ${week} of ${year}:
 
@@ -686,12 +693,16 @@ export function createFinalJsonPrompt(date: string): string {
         {
           "text": "Summary text with markdown formatting",
           "commits": ["full_commit_hash1", "full_commit_hash2"],
-          "isBreaking": true  // ONLY for MAJOR breaking changes to stable public APIs
+          "isBreaking": true,  // ONLY for MAJOR breaking changes to stable public APIs
+          "components": ["Component1", "Component2"]  // 1-3 tags from the fixed list
         }
       ]
     }
   ]
 }
+
+Available component tags (only use from this list): ${CHROMIUM_COMPONENTS.join(', ')}
+Assign 1-3 component tags per point that best describe the affected Chromium subsystems.
 
 IMPORTANT: Mark as isBreaking: true ONLY for:
 - Removal of stable public APIs (not deprecation)
