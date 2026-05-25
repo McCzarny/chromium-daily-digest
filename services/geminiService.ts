@@ -15,7 +15,7 @@ if (!SECRET_GEMINI_API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
-const model = "gemini-2.5-pro";
+const model = "gemini-3.1-flash-lite";
 
 // Retry configuration
 const MAX_API_RETRIES = 10;
