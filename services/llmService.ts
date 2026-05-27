@@ -933,8 +933,8 @@ export async function generateSummaryWithStrategy(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): Promise<StructuredSummary> {
-  const CHUNK_THRESHOLD = 200;
-  const CHUNK_SIZE = 150;
+  const CHUNK_THRESHOLD = 150;
+  const CHUNK_SIZE = 100;
 
   adapter.resetMessages();
 
