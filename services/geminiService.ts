@@ -41,7 +41,9 @@ async function generateContentWithRetry(
                                error?.message?.toLowerCase().includes('quota') ||
                                error?.message?.toLowerCase().includes('429') ||
                                error?.message?.toLowerCase().includes('overloaded') ||
-                               error?.status === 429;
+                               error?.status === 429 ||
+                               // Treat 503 as potential overload/rate limit error and try again.
+                               error?.status === 503;
       
       if (isRateLimitError && attempt < MAX_API_RETRIES) {
         console.warn(`\n⚠️  RATE LIMIT ERROR during ${operationName} (Attempt ${attempt}/${MAX_API_RETRIES})`);
