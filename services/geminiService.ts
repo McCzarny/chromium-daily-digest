@@ -16,6 +16,7 @@ if (!SECRET_GEMINI_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
 const model = "gemini-3.5-flash";
+const backupModel = "gemini-3.1-flash-lite";
 
 // Retry configuration
 const MAX_API_RETRIES = 10;
@@ -29,10 +30,12 @@ async function generateContentWithRetry(
   config: any,
   operationName: string = 'API call'
 ): Promise<any> {
+  let currentModel = model;
+  
   for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
     try {
       return await ai.models.generateContent({
-        model,
+        model: currentModel,
         contents,
         config,
       });
@@ -44,10 +47,20 @@ async function generateContentWithRetry(
                                error?.status === 429 ||
                                // Treat 503 as potential overload/rate limit error and try again.
                                error?.status === 503;
+            // Check for daily quota exhaustion in error details
+      const isRequestsPerDayError = JSON.stringify(error).toLowerCase().includes('requestsperday');
+
       
       if (isRateLimitError && attempt < MAX_API_RETRIES) {
+        // Switch to backup model if RequestsPerDay error is detected
+        if (isRequestsPerDayError && currentModel === model) {
+          console.warn(`\n⚠️  REQUESTS_PER_DAY LIMIT during ${operationName}, switching to backup model...`);
+          currentModel = backupModel;
+        }
+        
         console.warn(`\n⚠️  RATE LIMIT ERROR during ${operationName} (Attempt ${attempt}/${MAX_API_RETRIES})`);
         console.warn(`Error details: ${error?.message || error}`);
+        console.warn(`Using model: ${currentModel}`);
         console.warn(`Waiting ${RETRY_DELAY_MS / 1000} seconds before retry...`);
         console.warn(`Chat history preserved - will resume from current state`);
         
