@@ -48,8 +48,7 @@ async function generateContentWithRetry(
                                // Treat 503 as potential overload/rate limit error and try again.
                                error?.status === 503;
             // Check for daily quota exhaustion in error details
-      const isRequestsPerDayError = JSON.stringify(error).toLowerCase().includes('requestsperday');
-
+      const isRequestsPerDayError = JSON.stringify(error?.message || error).toLowerCase().includes('requestsperday');
       
       if (isRateLimitError && attempt < MAX_API_RETRIES) {
         // Switch to backup model if RequestsPerDay error is detected
