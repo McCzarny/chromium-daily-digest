@@ -49,30 +49,31 @@ async function generateContentWithRetry(
                                error?.status === 503;
             // Check for daily quota exhaustion in error details
       const isRequestsPerDayError = JSON.stringify(error?.message || error).toLowerCase().includes('requestsperday');
-      
+      let delay = RETRY_DELAY_MS;
       if (isRateLimitError && attempt < MAX_API_RETRIES) {
         // Switch to backup model if RequestsPerDay error is detected
         if (isRequestsPerDayError && currentModel === model) {
           console.warn(`\n⚠️  REQUESTS_PER_DAY LIMIT during ${operationName}, switching to backup model...`);
           currentModel = backupModel;
+          delay = 0; // No need to wait if we're switching models
         }
         
         console.warn(`\n⚠️  RATE LIMIT ERROR during ${operationName} (Attempt ${attempt}/${MAX_API_RETRIES})`);
         console.warn(`Error details: ${error?.message || error}`);
         console.warn(`Using model: ${currentModel}`);
-        console.warn(`Waiting ${RETRY_DELAY_MS / 1000} seconds before retry...`);
+        console.warn(`Waiting ${delay / 1000} seconds before retry...`);
         console.warn(`Chat history preserved - will resume from current state`);
         
         const startTime = Date.now();
         const interval = setInterval(() => {
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          const remaining = Math.ceil((RETRY_DELAY_MS / 1000) - elapsed);
+          const remaining = Math.ceil((delay / 1000) - elapsed);
           if (remaining > 0) {
             process.stdout.write(`\r⏳ Waiting... ${remaining}s remaining `);
           }
         }, 1000);
         
-        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+        await new Promise(resolve => setTimeout(resolve, delay));
         clearInterval(interval);
         process.stdout.write('\r✓ Wait complete, retrying from current state...\n\n');
         continue;
