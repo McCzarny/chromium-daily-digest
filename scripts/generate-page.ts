@@ -183,6 +183,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
 
     const ITEMS_PER_PAGE = 20;
     const totalPages = Math.ceil(summaries.length / ITEMS_PER_PAGE);
+    const pageVersion = `${new Date().toISOString()}-${summaries[0]?.date ?? 'no-summaries'}-${summaries.length}`;
     console.log(`  Creating index with ${totalPages} page(s) (${ITEMS_PER_PAGE} items per page)`);
 
     const indexContent = `<!DOCTYPE html>
@@ -191,6 +192,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="${assetsPath}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="digest-version" content="${pageVersion}" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -253,7 +255,54 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     <script>
       const ITEMS_PER_PAGE = ${ITEMS_PER_PAGE};
       const totalPages = ${totalPages};
+      const currentDigestVersion = document.querySelector('meta[name="digest-version"]')?.getAttribute('content') || '';
       let currentPage = 1;
+      let updateBannerVisible = false;
+
+      function showUpdateBanner() {
+        if (updateBannerVisible) return;
+
+        updateBannerVisible = true;
+
+        const banner = document.createElement('div');
+        banner.id = 'digest-update-banner';
+        banner.className = 'fixed bottom-4 right-4 max-w-sm bg-sky-900/95 border border-sky-600 text-white rounded-lg shadow-2xl px-4 py-3 z-50';
+        banner.innerHTML = '<div class="flex items-center justify-between gap-4"><p class="text-sm">A newer version of this page is available.</p><button id="digest-refresh-btn" class="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded whitespace-nowrap">Refresh</button></div>';
+
+        document.body.appendChild(banner);
+        document.getElementById('digest-refresh-btn')?.addEventListener('click', () => {
+          window.location.reload();
+        });
+      }
+
+      async function checkForNewerIndexVersion() {
+        if (!currentDigestVersion) return;
+
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('_digestVersionCheck', Date.now().toString());
+
+          const response = await fetch(url.toString(), {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+              Pragma: 'no-cache'
+            }
+          });
+
+          if (!response.ok) return;
+
+          const html = await response.text();
+          const versionMatch = html.match(/<meta\s+name=["']digest-version["']\s+content=["']([^"']+)["']/i);
+          const fetchedVersion = versionMatch?.[1];
+
+          if (fetchedVersion && fetchedVersion !== currentDigestVersion) {
+            showUpdateBanner();
+          }
+        } catch {
+          // Ignore update check failures in the background.
+        }
+      }
       
       function showPage(page) {
         const items = document.querySelectorAll('.summary-item');
@@ -294,6 +343,17 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
       
       // Initialize
       showPage(1);
+
+      setTimeout(() => {
+        checkForNewerIndexVersion();
+        setInterval(checkForNewerIndexVersion, 5 * 60 * 1000);
+      }, 30 * 1000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkForNewerIndexVersion();
+        }
+      });
 
       function copySummaryLink(date) {
         const url = \`\${window.location.origin}\${window.location.pathname}#summary-\${date}\`;
