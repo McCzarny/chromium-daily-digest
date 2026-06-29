@@ -293,7 +293,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
           if (!response.ok) return;
 
           const html = await response.text();
-          const versionMatch = html.match(/<meta\s+name=["']digest-version["']\s+content=["']([^"']+)["']/i);
+          const versionMatch = html.match(/<meta\\s+name=["']digest-version["']\\s+content=["']([^"']+)["']/i);
           const fetchedVersion = versionMatch?.[1];
 
           if (fetchedVersion && fetchedVersion !== currentDigestVersion) {
