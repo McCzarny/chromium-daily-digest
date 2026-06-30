@@ -2,7 +2,9 @@
 
 # Script to generate missing daily summaries for both default and on-top-of-chromium configurations
 # Usage: ./scripts/generate-missing-dailies.sh [start_date] [end_date] [--max-days N]
+# Dates can be absolute (YYYY-MM-DD) or a relative offset like -5 (5 days ago from today)
 # Example: ./scripts/generate-missing-dailies.sh 2025-11-09 2025-12-18
+# Example with relative start: ./scripts/generate-missing-dailies.sh -5
 # Example with max-days: ./scripts/generate-missing-dailies.sh --max-days 30
 # If no dates provided, defaults to finding the earliest and latest dates
 
@@ -70,6 +72,8 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         *)
+            # A bare value: an absolute date (YYYY-MM-DD) or a
+            # relative offset like -5 meaning 5 days ago from today
             if [[ -z "$START_DATE" ]]; then
                 START_DATE="$1"
             elif [[ -z "$END_DATE" ]]; then
@@ -79,6 +83,32 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Convert a relative day offset (e.g. -5) into an absolute date N days ago
+resolve_relative_date() {
+    local value=$1
+    if [[ "$value" =~ ^-([0-9]+)$ ]]; then
+        date -v-"${BASH_REMATCH[1]}"d "+%Y-%m-%d"
+    else
+        echo "$value"
+    fi
+}
+
+if [[ -n "$START_DATE" ]]; then
+    RESOLVED_START=$(resolve_relative_date "$START_DATE")
+    if [[ "$RESOLVED_START" != "$START_DATE" ]]; then
+        echo -e "${GREEN}Start date: $RESOLVED_START (${START_DATE} days from today)${NC}"
+        START_DATE=$RESOLVED_START
+    fi
+fi
+
+if [[ -n "$END_DATE" ]]; then
+    RESOLVED_END=$(resolve_relative_date "$END_DATE")
+    if [[ "$RESOLVED_END" != "$END_DATE" ]]; then
+        echo -e "${GREEN}End date: $RESOLVED_END (${END_DATE} days from today)${NC}"
+        END_DATE=$RESOLVED_END
+    fi
+fi
 
 # If no dates provided, auto-detect from existing files
 if [[ -z "$START_DATE" ]]; then
