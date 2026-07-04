@@ -273,6 +273,22 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         document.getElementById('digest-refresh-btn')?.addEventListener('click', () => {
           window.location.reload();
         });
+
+        const faviconLink = document.querySelector('link[rel="icon"]');
+        if (faviconLink) {
+          const updatedHref = faviconLink.getAttribute('href')?.replace(/daily-digest-logo\.svg$/, 'daily-digest-logo-new.svg');
+          if (updatedHref) {
+            faviconLink.setAttribute('href', updatedHref);
+          }
+        }
+
+        const logoImage = document.querySelector('img[alt="Chromium Daily Digest Logo"]');
+        if (logoImage) {
+          const updatedSrc = logoImage.getAttribute('src')?.replace(/daily-digest-logo\.svg$/, 'daily-digest-logo-new.svg');
+          if (updatedSrc) {
+            logoImage.setAttribute('src', updatedSrc);
+          }
+        }
       }
 
       async function checkForNewerIndexVersion() {
