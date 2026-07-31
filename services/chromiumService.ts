@@ -42,7 +42,7 @@ async function fetchWithRetry(url: string, token?: string, retries = MAX_RETRIES
     }
     // Retry on rate limit errors
     if (response.status === 403 || response.status === 429) {
-      console.warn(`Rate limit detected. Retrying in ${RETRY_DELAY_MS / 1000}s... (${i + 1}/${retries})`);
+      console.warn(`[Chromium commits] Rate limit detected. Retrying in ${RETRY_DELAY_MS / 1000}s... (${i + 1}/${retries})`);
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS * (i + 1))); // simple backoff
       continue;
     }
