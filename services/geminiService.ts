@@ -15,7 +15,7 @@ if (!SECRET_GEMINI_API_KEY) {
 }
 
 const ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
-const model = "gemini-3.6-flash";
+const model = "gemini-3.7-flash";
 const backupModel = "gemini-3.5-flash-lite";
 
 // Retry configuration

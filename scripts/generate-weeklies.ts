@@ -362,8 +362,9 @@ const createWeekliesIndexHtml = (
     <title>Chromium Weekly Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .summary-item { display: none; }
+      .summary-item { display: none; scroll-margin-top: 16px; }
       .summary-item.active { display: block; }
+      .summary-item.current { outline: 2px solid rgba(34, 197, 94, 0.6); outline-offset: 2px; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -484,6 +485,85 @@ const createWeekliesIndexHtml = (
           }
         }, 100);
       }
+
+      // ----- j / k keyboard navigation between summaries -----
+      const summaryArticles = Array.from(document.querySelectorAll('.summary-item'));
+      let currentSummaryIdx = 0;
+
+      // The summary currently occupying the top of the viewport is the current one.
+      function getReadingSummary() {
+        for (const el of summaryArticles) {
+          if (!el.classList.contains('active')) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.bottom > 120 && rect.top < window.innerHeight) return el;
+        }
+        return null;
+      }
+
+      function syncCurrentIdx() {
+        const el = getReadingSummary();
+        if (el) currentSummaryIdx = summaryArticles.indexOf(el);
+      }
+
+      function setCurrentSummary(idx) {
+        currentSummaryIdx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
+        summaryArticles.forEach((el, i) => el.classList.toggle('current', i === currentSummaryIdx));
+      }
+
+      // Skip position sync while a programmatic (smooth) scroll is in flight,
+      // so rapid j/k presses are not undone mid-animation.
+      let programmaticScrollTimer = null;
+      function suppressScrollSync() {
+        if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
+        programmaticScrollTimer = setTimeout(() => {
+          programmaticScrollTimer = null;
+          syncCurrentIdx();
+        }, 1500);
+      }
+
+      let scrollTicking = false;
+      window.addEventListener('scroll', () => {
+        if (scrollTicking || programmaticScrollTimer) return;
+        scrollTicking = true;
+        requestAnimationFrame(() => {
+          scrollTicking = false;
+          syncCurrentIdx();
+        });
+      }, { passive: true });
+
+      function gotoSummary(idx) {
+        if (summaryArticles.length === 0) return;
+        idx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
+        const el = summaryArticles[idx];
+        const page = parseInt(el.dataset.page);
+        const pageChanged = page !== currentPage;
+        if (pageChanged) {
+          currentPage = page;
+          showPage(page);
+        }
+        setCurrentSummary(idx);
+        suppressScrollSync();
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, pageChanged ? 100 : 0);
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        const target = event.target;
+        const tag = target ? target.tagName : null;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+        const key = event.key ? event.key.toLowerCase() : '';
+        if (key === 'j') {
+          event.preventDefault();
+          gotoSummary(currentSummaryIdx + 1);
+        } else if (key === 'k') {
+          event.preventDefault();
+          gotoSummary(currentSummaryIdx - 1);
+        }
+      });
+
+      syncCurrentIdx();
     </script>
 </body>
 </html>`;

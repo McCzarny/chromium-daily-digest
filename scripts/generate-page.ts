@@ -112,6 +112,14 @@ const createHtmlPage = (
       </div>
     </main>
     <script>
+      // Remember the last read summary date (only ever moves forward to newer dates)
+      try {
+        const storedLastRead = localStorage.getItem('digest-last-read-date');
+        if (!storedLastRead || storedLastRead < '${date}') {
+          localStorage.setItem('digest-last-read-date', '${date}');
+        }
+      } catch (err) {}
+
       function copyUpdateLink(anchorId) {
         const url = window.location.origin + window.location.pathname + '#' + anchorId;
         navigator.clipboard.writeText(url).then(() => {
@@ -196,8 +204,9 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .summary-item { display: none; }
+      .summary-item { display: none; scroll-margin-top: 16px; }
       .summary-item.active { display: block; }
+      .summary-item.current { outline: 2px solid rgba(14, 165, 233, 0.6); outline-offset: 2px; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -417,6 +426,163 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
           }
         }, 100);
       }
+
+      // ----- Track the last read summary in localStorage -----
+      const LAST_READ_KEY = 'digest-last-read-date';
+      const summaryArticles = Array.from(document.querySelectorAll('.summary-item'));
+      const summaryDates = summaryArticles.map(el => el.id.replace('summary-', ''));
+
+      let lastReadDate = null;
+      try {
+        lastReadDate = localStorage.getItem(LAST_READ_KEY);
+      } catch (err) {
+        lastReadDate = null;
+      }
+
+      function markSummaryRead(date) {
+        if (!date) return;
+        if (lastReadDate && date <= lastReadDate) return;
+        lastReadDate = date;
+        try {
+          localStorage.setItem(LAST_READ_KEY, date);
+        } catch (err) {}
+      }
+
+      // The summary currently occupying the top of the viewport is the one being read.
+      const READING_TOP_THRESHOLD = 120;
+      function getReadingSummary() {
+        for (const el of summaryArticles) {
+          if (!el.classList.contains('active')) continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.bottom > READING_TOP_THRESHOLD && rect.top < window.innerHeight) return el;
+        }
+        return null;
+      }
+
+      let currentSummaryIdx = 0;
+      function syncCurrentIdx() {
+        const el = getReadingSummary();
+        if (el) currentSummaryIdx = summaryArticles.indexOf(el);
+      }
+
+      // Mark a summary as read only after it has stayed in the reading position for a while.
+      let readMarkTimer = null;
+      let pendingReadDate = null;
+      function updateReadingPosition() {
+        if (summaryArticles.length === 0) return;
+        syncCurrentIdx();
+        const el = getReadingSummary();
+        const date = el ? el.id.replace('summary-', '') : null;
+        if (date === pendingReadDate) return;
+        pendingReadDate = date;
+        if (readMarkTimer) clearTimeout(readMarkTimer);
+        if (!date) return;
+        readMarkTimer = setTimeout(() => {
+          if (pendingReadDate === date) markSummaryRead(date);
+        }, 2000);
+      }
+
+      // Skip position tracking while a programmatic (smooth) scroll triggered by
+      // navigation is still in flight, so j/k presses are not undone mid-animation.
+      let programmaticScrollTimer = null;
+      function suppressScrollSync() {
+        if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
+        programmaticScrollTimer = setTimeout(() => {
+          programmaticScrollTimer = null;
+          updateReadingPosition();
+        }, 1500);
+      }
+
+      let scrollTicking = false;
+      window.addEventListener('scroll', () => {
+        if (scrollTicking || programmaticScrollTimer) return;
+        scrollTicking = true;
+        requestAnimationFrame(() => {
+          scrollTicking = false;
+          updateReadingPosition();
+        });
+      }, { passive: true });
+      window.addEventListener('resize', updateReadingPosition);
+
+      // ----- Toast pointing to the next unread summary -----
+      let unreadToast = null;
+      function dismissUnreadToast() {
+        if (unreadToast) {
+          unreadToast.remove();
+          unreadToast = null;
+        }
+      }
+
+      function showUnreadToast(count, targetDate) {
+        dismissUnreadToast();
+        unreadToast = document.createElement('div');
+        unreadToast.id = 'unread-toast';
+        unreadToast.setAttribute('role', 'status');
+        unreadToast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-sky-900/95 border border-sky-600 text-white rounded-lg shadow-2xl px-4 py-3 flex items-center gap-3';
+        const label = count === 1 ? 'new summary' : 'new summaries';
+        unreadToast.innerHTML =
+          '<span class="text-sm whitespace-nowrap">' + count + ' ' + label + ' since your last visit</span>' +
+          '<button id="goto-unread-btn" class="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded whitespace-nowrap">Go to next unread summary</button>' +
+          '<button id="dismiss-unread-btn" class="text-gray-400 hover:text-white text-xl leading-none px-1" aria-label="Dismiss">&times;</button>';
+        document.body.appendChild(unreadToast);
+        document.getElementById('goto-unread-btn').addEventListener('click', () => {
+          dismissUnreadToast();
+          gotoSummaryByDate(targetDate);
+        });
+        document.getElementById('dismiss-unread-btn').addEventListener('click', dismissUnreadToast);
+      }
+
+      // ----- j / k keyboard navigation between summaries -----
+      function setCurrentSummary(idx) {
+        currentSummaryIdx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
+        summaryArticles.forEach((el, i) => el.classList.toggle('current', i === currentSummaryIdx));
+      }
+
+      function gotoSummary(idx) {
+        if (summaryArticles.length === 0) return;
+        idx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
+        const el = summaryArticles[idx];
+        const page = parseInt(el.dataset.page);
+        const pageChanged = page !== currentPage;
+        if (pageChanged) {
+          currentPage = page;
+          showPage(page);
+        }
+        setCurrentSummary(idx);
+        suppressScrollSync();
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, pageChanged ? 100 : 0);
+      }
+
+      function gotoSummaryByDate(date) {
+        const idx = summaryDates.indexOf(date);
+        if (idx >= 0) gotoSummary(idx);
+      }
+
+      document.addEventListener('keydown', (event) => {
+        if (event.metaKey || event.ctrlKey || event.altKey) return;
+        const target = event.target;
+        const tag = target ? target.tagName : null;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+        const key = event.key ? event.key.toLowerCase() : '';
+        if (key === 'j') {
+          event.preventDefault();
+          gotoSummary(currentSummaryIdx + 1);
+        } else if (key === 'k') {
+          event.preventDefault();
+          gotoSummary(currentSummaryIdx - 1);
+        }
+      });
+
+      // ----- Init -----
+      if (summaryDates.length > 0 && lastReadDate) {
+        const unreadDates = summaryDates.filter(d => d > lastReadDate);
+        if (unreadDates.length > 0) {
+          showUnreadToast(unreadDates.length, unreadDates[unreadDates.length - 1]);
+        }
+      }
+      updateReadingPosition();
     </script>
 </body>
 </html>`;
