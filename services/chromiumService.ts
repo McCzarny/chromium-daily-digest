@@ -4,6 +4,7 @@ const API_BASE_URL = 'https://api.github.com/repos/chromium/chromium/commits';
 const MAX_PAGES = 10; // Fetch up to 10 pages of commits (1000 total)
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 1000;
+const DETAIL_CONCURRENCY = 10; // Max concurrent detail fetches to avoid rate limiting
 
 // A minimal type for the commit list API response.
 interface GitHubCommitListItem {
@@ -50,6 +51,31 @@ async function fetchWithRetry(url: string, token?: string, retries = MAX_RETRIES
     return response; 
   }
   throw new Error(`Failed to fetch from ${url} after ${retries} attempts.`);
+}
+
+/**
+ * Maps over items with a bounded number of concurrent async operations.
+ * Results are returned in the same order as the input items.
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  async function worker(): Promise<void> {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await fn(items[index]);
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => worker()),
+  );
+  return results;
 }
 
 /**
@@ -113,8 +139,8 @@ export async function fetchCommitsForDate(date: string, branch: string, githubTo
     }
 
     console.log(`  Found ${allCommitShas.length} commit(s), fetching details...`);
-    // Stage 2: Fetch detailed information for each commit concurrently.
-    const detailPromises = allCommitShas.map(sha =>
+    // Stage 2: Fetch detailed information for each commit with bounded concurrency.
+    const detailedCommitsResults = await mapWithConcurrency(allCommitShas, DETAIL_CONCURRENCY, sha =>
       fetchWithRetry(`${API_BASE_URL}/${sha}`, githubToken).then(async res => {
         if (!res.ok) {
           let errorMsg = `Failed to fetch details for commit ${sha}. Status: ${res.status}`;
@@ -128,8 +154,6 @@ export async function fetchCommitsForDate(date: string, branch: string, githubTo
         return res.json() as Promise<GitHubDetailedCommit>;
       })
     );
-    
-    const detailedCommitsResults = await Promise.all(detailPromises);
     const successfulDetailedCommits = detailedCommitsResults.filter((c): c is GitHubDetailedCommit => c !== null);
     
     const failedCount = detailedCommitsResults.length - successfulDetailedCommits.length;
