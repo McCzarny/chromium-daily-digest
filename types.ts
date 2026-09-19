@@ -123,6 +123,10 @@ export interface SummaryConfig {
   // Focus areas for filtering or emphasizing specific parts
   focusAreas?: string[];
   
-  // LLM provider to use for summary generation (default: 'nexos')
-  llmProvider?: 'gemini' | 'openai' | 'anthropic' | 'nexos';
+  // LLM provider to use for summary generation (default: 'gemini')
+  llmProvider?: 'gemini' | 'openai' | 'anthropic' | 'nexos' | 'opencode';
+
+  // Optional model override for the selected provider
+  // (defaults to the provider's default, e.g. 'deepseek-v4.1-flash' for opencode)
+  llmModel?: string;
 }

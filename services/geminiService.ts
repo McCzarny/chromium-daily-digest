@@ -10,11 +10,22 @@ import {
 
 const SECRET_GEMINI_API_KEY = process.env.SECRET_GEMINI_API_KEY;
 
-if (!SECRET_GEMINI_API_KEY) {
-  throw new Error("SECRET_GEMINI_API_KEY environment variable not set");
+let ai: GoogleGenAI | null = null;
+
+/**
+ * Lazily initialize the Gemini client so that other LLM providers can be used
+ * without requiring SECRET_GEMINI_API_KEY to be set.
+ */
+function getAi(): GoogleGenAI {
+  if (!SECRET_GEMINI_API_KEY) {
+    throw new Error("SECRET_GEMINI_API_KEY environment variable not set");
+  }
+  if (!ai) {
+    ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
+  }
+  return ai;
 }
 
-const ai = new GoogleGenAI({ apiKey: SECRET_GEMINI_API_KEY });
 const model = "gemini-3.7-flash";
 const backupModel = "gemini-3.5-flash-lite";
 
@@ -34,7 +45,7 @@ async function generateContentWithRetry(
   
   for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
     try {
-      return await ai.models.generateContent({
+      return await getAi().models.generateContent({
         model: currentModel,
         contents,
         config,

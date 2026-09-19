@@ -15,6 +15,29 @@ const DEFAULT_CONFIG: SummaryConfig = {
 };
 
 /**
+ * Valid LLM providers that can be selected via config or the LLM_PROVIDER env variable
+ */
+export const VALID_LLM_PROVIDERS = ['gemini', 'openai', 'anthropic', 'nexos', 'opencode'] as const;
+
+/**
+ * Apply environment variable overrides on top of a loaded configuration.
+ * Currently supports:
+ * - LLM_PROVIDER: overrides the configured llmProvider
+ */
+export function applyEnvOverrides(config: SummaryConfig): SummaryConfig {
+  const envProvider = process.env.LLM_PROVIDER?.trim();
+  if (envProvider) {
+    if (!(VALID_LLM_PROVIDERS as readonly string[]).includes(envProvider)) {
+      throw new Error(
+        `Invalid LLM_PROVIDER "${envProvider}". Valid values: ${VALID_LLM_PROVIDERS.join(', ')}`
+      );
+    }
+    config.llmProvider = envProvider as SummaryConfig['llmProvider'];
+  }
+  return config;
+}
+
+/**
  * Default bot emails to ignore
  */
 export const DEFAULT_IGNORED_BOT_EMAILS = [
@@ -30,7 +53,7 @@ export const DEFAULT_IGNORED_BOT_EMAILS = [
  */
 export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
   if (!configPath) {
-    return DEFAULT_CONFIG;
+    return applyEnvOverrides({ ...DEFAULT_CONFIG });
   }
 
   try {
@@ -48,6 +71,9 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
       // Ensure outputPath is set (as subpath of public/summaries)
       outputPath: userConfig.outputPath !== undefined ? userConfig.outputPath : DEFAULT_CONFIG.outputPath,
     };
+    
+    // Apply environment variable overrides
+    applyEnvOverrides(config);
     
     // Validate outputPath doesn't try to escape public/summaries
     if (config.outputPath && (config.outputPath.includes('..') || path.isAbsolute(config.outputPath))) {
@@ -69,6 +95,12 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
     }
     console.log(`  - Output path: ${config.outputPath}`);
     console.log(`  - LLM provider: ${config.llmProvider}`);
+    if (process.env.LLM_PROVIDER?.trim()) {
+      console.log('    (overridden by LLM_PROVIDER env variable)');
+    }
+    if (config.llmModel) {
+      console.log(`  - LLM model: ${config.llmModel}`);
+    }
     
     return config;
   } catch (error: any) {

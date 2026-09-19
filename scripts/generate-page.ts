@@ -221,6 +221,15 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         </div>
       </div>
     </header>
+    <div aria-hidden="true" class="fixed right-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-1 bg-gray-800/90 border border-gray-700 rounded-xl px-2 py-3 shadow-lg pointer-events-none select-none">
+      <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">K</kbd>
+      <span class="text-sm leading-none text-sky-400">&uarr;</span>
+      <span class="text-[10px] text-gray-400">newer</span>
+      <div class="w-6 h-px bg-gray-600"></div>
+      <span class="text-[10px] text-gray-400">older</span>
+      <span class="text-sm leading-none text-sky-400">&darr;</span>
+      <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">J</kbd>
+    </div>
     <main class="container mx-auto px-4 py-8">
       <div class="mb-6 text-center">
         <a href="./weeklies.html" class="text-green-500 hover:text-green-300 text-lg font-semibold">📅 View Weekly Summaries →</a>

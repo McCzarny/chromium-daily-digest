@@ -1,6 +1,7 @@
 import { GitilesCommit, StructuredSummary, SummaryConfig, CHROMIUM_COMPONENTS } from "../types";
 import { generateSummary as generateGeminiSummary, generateWeeklySummary as generateGeminiWeeklySummary } from "./geminiService";
 import { generateSummary as generateNexosSummary, generateWeeklySummary as generateNexosWeeklySummary } from "./nexosService";
+import { generateSummary as generateOpenCodeSummary, generateWeeklySummary as generateOpenCodeWeeklySummary } from "./opencodeService";
 import { fetchMultipleCommitDetails } from "./commitDetailService";
 
 const SECRET_GITHUB_TOKEN = process.env.SECRET_GITHUB_TOKEN;
@@ -8,7 +9,7 @@ const SECRET_GITHUB_TOKEN = process.env.SECRET_GITHUB_TOKEN;
 /**
  * LLM Provider types
  */
-export type LLMProvider = 'gemini' | 'openai' | 'anthropic' | 'nexos';
+export type LLMProvider = 'gemini' | 'openai' | 'anthropic' | 'nexos' | 'opencode';
 
 /**
  * Daily summary data extracted from HTML
@@ -61,6 +62,8 @@ export interface ILLMService {
  * This class acts as a proxy to different LLM providers.
  * Currently supports:
  * - Gemini (default)
+ * - OpenCode (OpenCode Zen, defaults to DeepSeek V4.1 Flash)
+ * - Nexos.ai
  * 
  * Future providers can be added by:
  * 1. Creating a new service file (e.g., openaiService.ts)
@@ -91,6 +94,11 @@ export class LLMService implements ILLMService {
         return {
           generateSummary: generateNexosSummary,
           generateWeeklySummary: generateNexosWeeklySummary,
+        };
+      case 'opencode':
+        return {
+          generateSummary: generateOpenCodeSummary,
+          generateWeeklySummary: generateOpenCodeWeeklySummary,
         };
       case 'openai':
         throw new Error('OpenAI provider not yet implemented');
