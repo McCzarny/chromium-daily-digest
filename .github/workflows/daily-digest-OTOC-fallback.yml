@@ -1,8 +1,11 @@
-name: Generate and Publish Daily Summary
+name: Generate and Publish Daily Summary for On-Top-Of-Chromium configuration (OpenCode fallback)
 
 on:
+  # Runs at 09:00 UTC - the third and final daily attempt. If the earlier
+  # runs (05:00 and 07:00 UTC) failed to produce the summary, this run
+  # retries using the OpenCode provider.
   schedule:
-    - cron: '0 6,8 * * *'
+    - cron: '0 9 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -37,22 +40,23 @@ jobs:
       - name: Check if summary already exists
         id: check-file
         run: |
-          if [ -f "public/summaries/${{ env.YESTERDAY }}.html" ]; then
+          if [ -f "public/summaries/on-top-of-chromium/${{ env.YESTERDAY }}.html" ]; then
             echo "File already exists, skipping generation"
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "File does not exist, will generate"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Generate summary page
+      - name: Generate summary page (OpenCode fallback)
         if: steps.check-file.outputs.exists == 'false'
         env:
+          LLM_PROVIDER: opencode
           SECRET_GEMINI_API_KEY: ${{ secrets.SECRET_GEMINI_API_KEY }}
           SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
           SECRET_NEXOS_TOKEN: ${{ secrets.SECRET_NEXOS_TOKEN }}
           SECRET_OPENCODE_API_KEY: ${{ secrets.SECRET_OPENCODE_API_KEY }}
-        run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main
+
+        run: npm exec tsx scripts/generate-page.ts ${{ env.YESTERDAY }} main config.on-top-of-chromium.json
       - name: Commit and push changes
         if: steps.check-file.outputs.exists == 'false'
         run: |

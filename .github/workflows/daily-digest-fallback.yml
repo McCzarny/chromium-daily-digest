@@ -1,8 +1,11 @@
-name: Generate and Publish Daily Summary
+name: Generate and Publish Daily Summary (OpenCode fallback)
 
 on:
+  # Runs at 10:00 UTC - the third and final daily attempt. If the earlier
+  # runs (06:00 and 08:00 UTC) failed to produce the summary, this run
+  # retries using the OpenCode provider.
   schedule:
-    - cron: '0 6,8 * * *'
+    - cron: '0 10 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -45,9 +48,10 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Generate summary page
+      - name: Generate summary page (OpenCode fallback)
         if: steps.check-file.outputs.exists == 'false'
         env:
+          LLM_PROVIDER: opencode
           SECRET_GEMINI_API_KEY: ${{ secrets.SECRET_GEMINI_API_KEY }}
           SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
           SECRET_NEXOS_TOKEN: ${{ secrets.SECRET_NEXOS_TOKEN }}
