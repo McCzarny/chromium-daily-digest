@@ -15,6 +15,8 @@ const createHtmlPage = (
   outputSubpath: string
 ): string => {
   const assetsPath = getAssetsPath(outputSubpath, 'daily-digest-logo.svg');
+  const modelUsed = summary.modelUsed || 'Unknown model';
+  const escapedModelUsed = modelUsed.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // Log summary whole summary for debugging
   // console.log('Generated Structured Summary:', JSON.stringify(summary, null, 2));
@@ -72,6 +74,7 @@ const createHtmlPage = (
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="${assetsPath}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="summary-model" content="${escapedModelUsed}" />
     <title>Chromium Summary | ${date}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -175,6 +178,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         
         // Extract the entire summary content (title, overview, and all categories)
         const titleMatch = content.match(/<h2 class="text-3xl font-bold text-white mb-6">(.*?)<\/h2>/s);
+        const modelMatch = content.match(/<meta name="summary-model" content="([^"]+)"/);
         const overviewSectionMatch = content.match(/<div class="bg-gray-800 p-4 rounded-lg mb-6 shadow-inner border border-gray-700">(.*?)<\/div>/s);
         // Capture all category sections between overview and the "All Commits" details section
         const categoriesSectionMatch = content.match(/<\/div>\s*<\/div>\s*((?:<div>[\s\S]*?<\/div>\s*)+)<details class="mt-12/s);
@@ -183,7 +187,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         const overviewSection = overviewSectionMatch ? overviewSectionMatch[1] : '';
         const categoriesSection = categoriesSectionMatch ? categoriesSectionMatch[1] : '';
         
-        return { date, page, title, overviewSection, categoriesSection };
+        return { date, page, title, overviewSection, categoriesSection, modelUsed: modelMatch?.[1] };
       })
     );
     
@@ -239,7 +243,8 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         <article id="summary-${summary.date}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">${summary.date}</h2>
-            <a href="./${summary.page}" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             ${summary.modelUsed ? `<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-sky-900/70 border border-sky-700 text-sky-200 text-xs font-medium">Summarized by ${summary.modelUsed}</span>` : ''}
+             <a href="./${summary.page}" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>

@@ -123,7 +123,7 @@ export class LLMService implements ILLMService {
     lastCommit: GitilesCommit
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
-    return this.service.generateSummary(
+    const summary = await this.service.generateSummary(
       commits,
       config,
       date,
@@ -133,6 +133,10 @@ export class LLMService implements ILLMService {
       firstCommit,
       lastCommit
     );
+    if (!summary.modelUsed) {
+      summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
+    }
+    return summary;
   }
 
   /**
@@ -147,7 +151,7 @@ export class LLMService implements ILLMService {
     week: number
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
-    return this.service.generateWeeklySummary(
+    const summary = await this.service.generateWeeklySummary(
       dailySummaries,
       config,
       startDate,
@@ -155,6 +159,10 @@ export class LLMService implements ILLMService {
       year,
       week
     );
+    if (!summary.modelUsed) {
+      summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
+    }
+    return summary;
   }
 
   /**

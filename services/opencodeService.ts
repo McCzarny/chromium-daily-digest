@@ -11,12 +11,14 @@ import {
 const OPENCODE_TOKEN = process.env.SECRET_OPENCODE_API_KEY || process.env.OPENCODE_API_KEY;
 const OPENCODE_API_BASE = process.env.OPENCODE_API_BASE || "https://opencode.ai/zen/go/v1";
 const DEFAULT_OPENCODE_MODEL = "glm-5.3-flash"; // GLM-5.3-Flash
+const BACKUP_OPENCODE_MODEL = "gpt-5.6-luna";
 // Identify ourselves with a dedicated user agent rather than the default SDK/HTTP one.
 const OPENCODE_USER_AGENT = process.env.OPENCODE_USER_AGENT || "chromium-daily-digest/1.0";
 
 // Retry configuration for transient OpenCode API errors (e.g. 500 Internal Server Error)
-const MAX_API_RETRIES = 5;
+const MAX_API_RETRIES = 7;
 const RETRY_DELAY_MS = 30000; // 30 seconds
+const MAX_RETRY_DELAY_MS = 5 * 60 * 1000; // 5 minutes
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -56,6 +58,11 @@ interface OpenCodeTool {
 }
 
 interface OpenCodeResponse {
+  error?: {
+    type?: string;
+    message?: string;
+    code?: string | number;
+  };
   choices?: Array<{
     message?: {
       role?: string;
@@ -76,6 +83,73 @@ interface OpenCodeResponse {
     completion_tokens: number;
     total_tokens: number;
   };
+}
+
+interface OpenCodeModelInfo {
+  id?: string;
+  name?: string;
+  context_length?: number;
+  context_window?: number;
+  max_context_length?: number;
+  top_provider?: { context_length?: number };
+}
+
+const contextLimitCache = new Map<string, Promise<number>>();
+
+/**
+ * OpenCode's model list may expose context_length. Treat it as optional because
+ * compatible gateways do not all implement /models or use the same field.
+ */
+async function getContextLimit(model: string): Promise<number> {
+  const configuredLimit = Number(process.env.OPENCODE_CONTEXT_LIMIT);
+  if (Number.isFinite(configuredLimit) && configuredLimit > 0) return configuredLimit;
+
+  const defaultLimit = 1000000000; // 1M tokens
+  let lookup = contextLimitCache.get(model);
+  if (!lookup) {
+    lookup = (async () => {
+      try {
+        const response = await fetch(`${OPENCODE_API_BASE}/models`, {
+          headers: {
+            "Authorization": `Bearer ${OPENCODE_TOKEN}`,
+            "User-Agent": OPENCODE_USER_AGENT,
+          },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!response.ok) return defaultLimit;
+
+        const payload = await response.json() as { data?: OpenCodeModelInfo[] } | OpenCodeModelInfo[];
+        const models = Array.isArray(payload) ? payload : payload.data || [];
+        const info = models.find(item => item.id === model || item.name === model);
+        return info?.context_length || info?.context_window || info?.max_context_length || info?.top_provider?.context_length || defaultLimit;
+      } catch {
+        // Context discovery is advisory and must never prevent generation.
+        return defaultLimit;
+      }
+    })();
+    contextLimitCache.set(model, lookup);
+  }
+  return lookup;
+}
+
+async function warnAboutContextSize(
+  model: string,
+  messages: OpenCodeMessage[],
+  tools?: OpenCodeTool[]
+): Promise<void> {
+  const contextLimit = await getContextLimit(model);
+
+  // A rough 4 characters/token estimate, reserving space for the response.
+  const requestCharacters = JSON.stringify(messages).length + (tools ? JSON.stringify(tools).length : 0);
+  const estimatedPromptTokens = Math.ceil(requestCharacters / 4);
+  const reservedOutputTokens = 4096;
+  const estimatedContextTokens = estimatedPromptTokens + reservedOutputTokens;
+  const usagePercent = estimatedContextTokens / contextLimit;
+
+  console.log(`  Context estimate for ${model}: ~${estimatedContextTokens.toLocaleString()} / ${contextLimit.toLocaleString()} tokens (${Math.round(usagePercent * 100)}%)`);
+  if (usagePercent >= 0.8) {
+    console.warn(`⚠️  OpenCode context warning: this request may exceed ${model}'s context capacity (${Math.round(usagePercent * 100)}% estimated).`);
+  }
 }
 
 // Define the tool for getting commit details
@@ -116,6 +190,10 @@ class OpenCodeAdapter implements PlatformAdapter {
     this.sessionId = randomUUID();
   }
 
+  getModel(): string {
+    return this.model;
+  }
+
   async callAPI(
     _messages: any[],
     options: {
@@ -136,6 +214,12 @@ class OpenCodeAdapter implements PlatformAdapter {
       apiMessages.push({ role: "system", content: options.systemPrompt });
     }
     apiMessages.push(...this.messages);
+
+    await warnAboutContextSize(
+      this.model,
+      apiMessages,
+      options.enableTools ? [getCommitDetailsTool] : undefined
+    );
 
     for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
       const controller = new AbortController();
@@ -171,8 +255,20 @@ class OpenCodeAdapter implements PlatformAdapter {
 
         const data = (await response.json()) as OpenCodeResponse;
 
+        // Some OpenAI-compatible gateways return errors in a 2xx JSON body.
+        if (data.error) {
+          const error: any = new Error(`OpenCode API error: ${data.error.message || JSON.stringify(data.error)}`);
+          error.status = response.status >= 400 ? response.status : 500;
+          error.apiErrorType = data.error.type;
+          throw error;
+        }
+
         if (data.usage) {
           console.log(`  Tokens: ${data.usage.prompt_tokens} prompt, ${data.usage.completion_tokens} completion, ${data.usage.total_tokens} total`);
+          const contextLimit = await getContextLimit(this.model);
+          if (contextLimit && data.usage.prompt_tokens / contextLimit >= 0.8) {
+            console.warn(`⚠️  OpenCode context warning: API reported ${data.usage.prompt_tokens.toLocaleString()} prompt tokens for a ${contextLimit.toLocaleString()}-token context.`);
+          }
         }
 
         const message = data.choices?.[0]?.message;
@@ -197,12 +293,17 @@ class OpenCodeAdapter implements PlatformAdapter {
           throw new Error(`Request timed out after ${timeoutMs}ms`);
         }
 
-        const isRetryable = error.status >= 500 || error.status === 429;
+        const isRetryable = error.status >= 500 || error.status === 429 || error.status === undefined;
         if (isRetryable && attempt < MAX_API_RETRIES) {
+          if (this.model !== BACKUP_OPENCODE_MODEL) {
+            console.warn(`Switching to backup OpenCode model: ${BACKUP_OPENCODE_MODEL}`);
+            this.model = BACKUP_OPENCODE_MODEL;
+          }
+          const delay = Math.min(RETRY_DELAY_MS * 2 ** (attempt - 1), MAX_RETRY_DELAY_MS);
           console.warn(`\n⚠️  Transient OpenCode API error (attempt ${attempt}/${MAX_API_RETRIES})`);
           console.warn(`Error details: ${error.message}`);
-          console.warn(`Waiting ${RETRY_DELAY_MS / 1000} seconds before retry...`);
-          await sleep(RETRY_DELAY_MS);
+          console.warn(`Waiting ${delay / 1000} seconds before retry...`);
+          await sleep(delay);
           continue;
         }
 
@@ -264,7 +365,7 @@ export async function generateSummary(
   console.log(`  Using OpenCode (${model}) for summary generation...`);
 
   const adapter = new OpenCodeAdapter(model);
-  return generateSummaryWithStrategy(
+  const summary = await generateSummaryWithStrategy(
     adapter,
     commits,
     config,
@@ -275,6 +376,8 @@ export async function generateSummary(
     firstCommit,
     lastCommit
   );
+  summary.modelUsed = adapter.getModel();
+  return summary;
 }
 
 /**
@@ -310,6 +413,7 @@ export async function generateWeeklySummary(
   });
 
   const summary = JSON.parse(response.content) as StructuredSummary;
+  summary.modelUsed = adapter.getModel();
   console.log(`  ✓ Weekly summary generated with ${summary.categories.length} categories`);
 
   return summary;

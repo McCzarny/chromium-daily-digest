@@ -104,6 +104,8 @@ export interface StructuredSummary {
   title: string;
   overview: string;
   categories: SummaryCategory[];
+  /** Model that produced the summary, for display in generated pages. */
+  modelUsed?: string;
 }
 
 // Configuration types

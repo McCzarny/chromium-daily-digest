@@ -88,6 +88,7 @@ Create a JSON configuration file to customize the summary generation:
 - `OPENCODE_API_BASE` (optional): Override the OpenCode API base URL (defaults to `https://opencode.ai/zen/go/v1`).
 - `OPENCODE_USER_AGENT` (optional): Override the `User-Agent` header sent to OpenCode (defaults to `chromium-daily-digest/1.0`).
 - `OPENCODE_MODEL` (optional): Override the OpenCode model without a config file.
+- `OPENCODE_CONTEXT_LIMIT` (optional): Set the model context limit in tokens when the OpenCode `/models` endpoint does not provide it. The generator estimates prompt size and warns at 80% of the available context (including a 4,096-token output reserve).
 - `SECRET_NEXOS_TOKEN`: Required when using the Nexos provider.
 
 **Example Config Files:**
