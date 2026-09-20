@@ -62,7 +62,7 @@ export interface ILLMService {
  * This class acts as a proxy to different LLM providers.
  * Currently supports:
  * - Gemini (default)
- * - OpenCode (OpenCode Zen, defaults to DeepSeek V4.1 Flash)
+ * - OpenCode (OpenCode Go, defaults to DeepSeek V4.1 Flash)
  * - Nexos.ai
  * 
  * Future providers can be added by:

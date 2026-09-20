@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { GitilesCommit, StructuredSummary, SummaryConfig } from "../types";
 import { 
   DailySummaryData,
@@ -8,8 +9,10 @@ import {
 } from "./llmService";
 
 const OPENCODE_TOKEN = process.env.SECRET_OPENCODE_API_KEY || process.env.OPENCODE_API_KEY;
-const OPENCODE_API_BASE = process.env.OPENCODE_API_BASE || "https://opencode.ai/zen/v1";
-const DEFAULT_OPENCODE_MODEL = "deepseek-v4.1-flash"; // DeepSeek V4.1 Flash
+const OPENCODE_API_BASE = process.env.OPENCODE_API_BASE || "https://opencode.ai/zen/go/v1";
+const DEFAULT_OPENCODE_MODEL = "glm-5.3-flash"; // GLM-5.3-Flash
+// Identify ourselves with a dedicated user agent rather than the default SDK/HTTP one.
+const OPENCODE_USER_AGENT = process.env.OPENCODE_USER_AGENT || "chromium-daily-digest/1.0";
 
 // Retry configuration for transient OpenCode API errors (e.g. 500 Internal Server Error)
 const MAX_API_RETRIES = 5;
@@ -99,15 +102,18 @@ const getCommitDetailsTool: OpenCodeTool = {
 
 /**
  * OpenCode Platform Adapter
- * Implements the PlatformAdapter interface for the OpenCode Zen API,
+ * Implements the PlatformAdapter interface for the OpenCode Go API,
  * which exposes an OpenAI-compatible /chat/completions endpoint.
  */
 class OpenCodeAdapter implements PlatformAdapter {
   private messages: OpenCodeMessage[] = [];
   private model: string;
+  // Stable identifier for this conversation, used for routing and prompt caching.
+  private sessionId: string;
 
   constructor(model: string = DEFAULT_OPENCODE_MODEL) {
     this.model = model;
+    this.sessionId = randomUUID();
   }
 
   async callAPI(
@@ -141,6 +147,8 @@ class OpenCodeAdapter implements PlatformAdapter {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${OPENCODE_TOKEN}`,
+            "User-Agent": OPENCODE_USER_AGENT,
+            "x-opencode-session": this.sessionId,
           },
           body: JSON.stringify({
             model: this.model,
@@ -240,7 +248,7 @@ class OpenCodeAdapter implements PlatformAdapter {
 }
 
 /**
- * Generate a daily summary using OpenCode Zen
+ * Generate a daily summary using OpenCode Go
  */
 export async function generateSummary(
   commits: GitilesCommit[],
@@ -270,7 +278,7 @@ export async function generateSummary(
 }
 
 /**
- * Generate a weekly summary using OpenCode Zen
+ * Generate a weekly summary using OpenCode Go
  */
 export async function generateWeeklySummary(
   dailySummaries: DailySummaryData[],

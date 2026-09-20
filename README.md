@@ -76,7 +76,7 @@ Create a JSON configuration file to customize the summary generation:
 
 - **`focusAreas`** (optional): Array of specific Chromium areas to focus on (e.g., ["V8 JavaScript Engine", "Blink Rendering", "DevTools"]).
 
-- **`llmProvider`** (optional): LLM backend to use. Supported values: `"gemini"` (default), `"opencode"`, `"nexos"`. The OpenCode provider uses the [OpenCode Zen](https://opencode.ai/docs/zen/) OpenAI-compatible API and defaults to the **DeepSeek V4.1 Flash** model.
+- **`llmProvider`** (optional): LLM backend to use. Supported values: `"gemini"` (default), `"opencode"`, `"nexos"`. The OpenCode provider uses the [OpenCode Go](https://opencode.ai/docs/go) OpenAI-compatible API and defaults to the **DeepSeek V4.1 Flash** model.
 
 - **`llmModel`** (optional): Override the model used by the selected provider. For example, `"deepseek-v4-pro"` when using `"opencode"`.
 
@@ -85,7 +85,8 @@ Create a JSON configuration file to customize the summary generation:
 - `LLM_PROVIDER` (optional): Overrides the `llmProvider` from the config file (or the default). Valid values: `gemini`, `opencode`, `nexos`.
 - `SECRET_GEMINI_API_KEY`: Required when using the Gemini provider.
 - `SECRET_OPENCODE_API_KEY` (or `OPENCODE_API_KEY`): Required when using the OpenCode provider. Get it from [opencode.ai/auth](https://opencode.ai/auth).
-- `OPENCODE_API_BASE` (optional): Override the OpenCode API base URL (defaults to `https://opencode.ai/zen/v1`).
+- `OPENCODE_API_BASE` (optional): Override the OpenCode API base URL (defaults to `https://opencode.ai/zen/go/v1`).
+- `OPENCODE_USER_AGENT` (optional): Override the `User-Agent` header sent to OpenCode (defaults to `chromium-daily-digest/1.0`).
 - `OPENCODE_MODEL` (optional): Override the OpenCode model without a config file.
 - `SECRET_NEXOS_TOKEN`: Required when using the Nexos provider.
 
