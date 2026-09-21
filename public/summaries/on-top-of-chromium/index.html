@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="digest-version" content="2026-09-20T09:47:19.421Z-2026-09-19-30" />
+    <meta name="digest-version" content="2026-09-21T15:27:22.336Z-2026-09-20-30" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -40,10 +40,290 @@
       </div>
       <div id="summaries-container" class="space-y-8">
         
+        <article id="summary-2026-09-20" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
+          <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-white">2026-09-20</h2>
+             <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-sky-900/70 border border-sky-700 text-sky-200 text-xs font-medium">Summarized by glm-5.3-flash</span>
+             <a href="./2026-09-20.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+              <span>Open Standalone Page</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+          <div class="p-6">
+            <div class="prose prose-invert max-w-none w-full">
+              <h3 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2026-09-20</h3>
+              
+            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
+            <div class="text-gray-300">This digest covers 30 commits landed on 2026-09-20 (first: <a href="https://github.com/chromium/chromium/commit/25fe36a9dbe20b67636afce308e2b71a7827c8ec" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(25fe36a)</a>, last: <a href="https://github.com/chromium/chromium/commit/30010bf0577ed988b2598b70465d708523064712" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(30010bf)</a>). After filtering per custom instructions (excluding ChromeOS/Ash, iOS, Android, and Blink/V8 webpage-processing changes), the relevant commits focus on browser UI refactoring, security hardening in fullscreen/context-menu handling, media API cleanup, and test infrastructure. No major breaking changes to stable public APIs were confirmed.
+              <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Browser UI & Build Refactoring</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-0-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            A multi-part series splits <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">browser_view.h</code> out of the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">//chrome/browser/ui:ui</code> monolith into its own GN target (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">browser_view_header</code>), fixing circular dependencies for the ~700 files that include it. <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">browser_view.h</code> no longer transitively includes <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">unload_controller.h</code> or <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">intent_picker_bubble_view.h</code>; signatures now use <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">DownloadCloseType</code> directly and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">apps::IntentPickerAppInfo</code> instead of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IntentPickerBubbleView::AppInfo</code>. Companion CLs added standalone targets for <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">browser_widget.h</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">contents_container_view.h</code>, and fixed include-what-you-use across direct and transitive includers (1078 files reach browser_view.h indirectly). No behavior change, but embedders relying on browser_view.h as an umbrella header may need explicit includes.
+            
+              <a href="https://github.com/chromium/chromium/commit/321684d1a8d0879a5f22fa548d978c26d1509097" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(321684d)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/6f9e867c094c4be939525f9a523510a9d3055b3d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(6f9e867)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/aacc5db858838c580cc62ea2cdf132cd3c59eb3c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(aacc5db)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/60abad70c7180dc72a3b55553c4cc50ddf711a4a" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(60abad7)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/7bb5c2a6c3a7541276a8e091c506b121a42f3ebd" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7bb5c2a)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/d27a608321032fc179c51ca43dd2f383aa3079ac" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(d27a608)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Build</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-0-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-0-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Omnibox <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OmniboxHeaderView</code> was simplified to pass a <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui::ColorId</code> directly to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">views::Label::SetEnabledColor()</code>, letting the label handle theme changes automatically instead of overriding <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnThemeChanged()</code>.
+            
+              <a href="https://github.com/chromium/chromium/commit/87d2dbeceeb6ee28744922bdcf7be799c065627e" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(87d2dbe)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-blue-900 text-blue-200 border-blue-700 mr-1">Themes</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-0-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-0-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Composebox webui components now render <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">secondary_text_placement</code> (BELOW_PRIMARY_TEXT) as a second row when <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">is_two_row_suggestion</code> is set, adding layout and CSS support for rich suggestions.
+            
+              <a href="https://github.com/chromium/chromium/commit/6672b033995b133d272017736474d3ec39c7116c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(6672b03)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Security & Fullscreen Behavior</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-1-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-1-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Modal dialog blocking now prevents tabs from entering or re-entering HTML fullscreen: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BrowserWindowModalDialogDelegate::SetWebContentsBlocked()</code> uses <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WebContents::ForSecurityDropFullscreen()</code> and retains the returned <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ScopedClosureRunner</code> per-WebContents for the duration of the block. The delegate now also implements <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStripModelObserver</code> to clean up fullscreen blocks when blocked tabs are closed or replaced. This is a behavioral hardening of stable fullscreen handling on Windows/macOS.
+            
+              <a href="https://github.com/chromium/chromium/commit/9dcb787a8644439bf44d701efb71e72811cbae81" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(9dcb787)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Windows</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-1-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-1-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            OOPIF context menu actions (CopyImageAt, SaveImageAt, etc.) now execute at the renderer-reported clicked point cached in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RenderFrameHostImpl</code>, instead of re-mapping root coordinates that could silently fall back untransformed when an iframe is hidden or moved. Silent fallbacks in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TransformPointToTargetCoordSpace()</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UnboundedSurfaceWindow::RouteWebPointerEvent()</code> now drop on failure, preventing actions from being redirected to unintended elements in cross-origin frames.
+            
+              <a href="https://github.com/chromium/chromium/commit/28b80f77efc01e6aa4faebce5b12f962e989b7e7" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(28b80f7)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Navigation</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Media API Cleanup</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-2-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-2-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Removed the deprecated pointer/size overload of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">H264Parser::FindStartCodeInClearRanges</code> from the MEDIA_EXPORT header; all internal callers now use the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::span</code> variant. Embedders calling the old pointer-based overload would need to migrate, but this was a long-deprecated overload with no remaining in-tree callers.
+            
+              <a href="https://github.com/chromium/chromium/commit/bbae873b7272dd05fffc788a09c6658d56d52d4c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(bbae873)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Media</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Autofill & Password Manager</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-3-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-3-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Autofill correctness fixes: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OmniboxAutofillDelegate</code> now binds <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">FormGlobalId</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">FieldGlobalId</code> by value in callbacks (members may change over the callback lifetime), and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">PasswordManualFallbackFlowTest</code> passes correct global IDs through <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ShowAndAcceptSuggestion()</code>. Test-only changes otherwise.
+            
+              <a href="https://github.com/chromium/chromium/commit/706679b0d0256befce760685abcd7e9a15e14e93" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(706679b)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/3b32f5afab77ebc2e0483484b9a3637f19bb4903" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3b32f5a)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Autofill</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">PasswordManager</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Testing & Test Infrastructure</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-4-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-4-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Ash browser test cleanup replaced namespace-scope mutable constants with constexpr values and removed <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">-Wexit-time-destructors</code> opt-outs across five browser_tests targets (ChromeOS-specific).
+            
+              <a href="https://github.com/chromium/chromium/commit/25fe36a9dbe20b67636afce308e2b71a7827c8ec" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(25fe36a)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Testing</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-emerald-900 text-emerald-200 border-emerald-700 mr-1">ChromeOS</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-4-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-4-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            New TTC (test) infrastructure adds a full end-to-end browser test harness with real App/Core components and mocked AudioManager/TtcBackend, plus a cleanup making <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TtcMesClient</code> observer binding consistent between tests and production (observer passed via <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Connect</code> instead of constructor).
+            
+              <a href="https://github.com/chromium/chromium/commit/4558074128f69e6cbe5771ec01fb2cb74a53900b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(4558074)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/a6b6151053570ca39b8b1e683dc4bbcc0ecc704b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(a6b6151)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Testing</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">AI</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-4-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-4-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Test reliability fixes: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">AppMenuIconControllerTest</code> scheduled-restart test now expects <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Severity::kLow</code> on unstable channels; a flaky Android <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ContextMenuTest</code> was fixed by unregistering observers in tearDown; the document-PiP mouse-exit activation test was made deterministic using a Views mock activation controller (re-enabling the Linux regression); and Chrome importer tests migrated C-style arrays to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">std::array</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::span</code> as part of spanification.
+            
+              <a href="https://github.com/chromium/chromium/commit/7703969ca1d5b4a8615ab8470240cab64a1273eb" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7703969)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/a71040dab6c2a75e7fb65a729eac8170950ee887" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(a71040d)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/232836797665b784a6b0105f95294a666924b375" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(2328367)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/38280658f8606b32c262fcbc0a817f790b841379" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3828065)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Testing</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Miscellaneous & Third-Party</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-09-20-5-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-5-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Android AtMemory bottom sheet now preserves a partially typed search query when the sheet is closed (Android-specific, noted for completeness).
+            
+              <a href="https://github.com/chromium/chromium/commit/d661926d755e16ea57aec7a9fabf03cd5bb659bc" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(d661926)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-yellow-900 text-yellow-200 border-yellow-700 mr-1">Android</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Autofill</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-5-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-5-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Android NTP customization color getters now return <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">@Nullable Integer</code> instead of sentinel <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">-1</code> values to avoid collision with <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Color.WHITE</code>; <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NtpThemeColorInfo.COLOR_NOT_SET</code> was removed (Android-specific).
+            
+              <a href="https://github.com/chromium/chromium/commit/b39bd668e771fa3ee23d16df5307c8e679d0d757" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(b39bd66)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-yellow-900 text-yellow-200 border-yellow-700 mr-1">Android</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-blue-900 text-blue-200 border-blue-700 mr-1">Themes</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-5-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-5-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Built-In AI WebDX feature enum names were corrected (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kLanguageModel</code> → <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kLanguagemodel</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kLanguageDetector</code> → <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kLanguagedetector</code>) to match W3C web-features IDs, and missing <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WEB_FEATURES.yml</code> files were added for languagemodel, languagedetection, and translator WPT directories.
+            
+              <a href="https://github.com/chromium/chromium/commit/7f08e3cdfa240c6e440d1a80bc3db2b2e33fa6b4" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7f08e3c)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">AI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Infra</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-5-3" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-5-3')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            A libusb patch was applied to free cached devices on macOS USB unplug (importing upstream darwin_deref_cached_device fix), resolving a device leak on device detach.
+            
+              <a href="https://github.com/chromium/chromium/commit/30010bf0577ed988b2598b70465d708523064712" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(30010bf)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">USB</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">macOS</span></div>
+          </li>
+        
+          <li id="update-2026-09-20-5-4" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-09-20-5-4')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            iOS Gemini settings suggestions subpage gained informative sections and a sync-settings link (iOS-specific, noted for completeness).
+            
+              <a href="https://github.com/chromium/chromium/commit/5233c110e9d303cd8c144e8c4e0591147ec53880" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(5233c11)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-green-900 text-green-200 border-green-700 mr-1">iOS</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+          
+            </div>
+          </div>
+        </article>
+        
         <article id="summary-2026-09-19" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-19</h2>
-            <a href="./2026-09-19.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-19.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -390,7 +670,8 @@
         <article id="summary-2026-09-18" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-18</h2>
-            <a href="./2026-09-18.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-18.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -1611,7 +1892,8 @@
         <article id="summary-2026-09-13" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-13</h2>
-            <a href="./2026-09-13.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-13.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -1736,7 +2018,8 @@
         <article id="summary-2026-09-12" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-12</h2>
-            <a href="./2026-09-12.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-12.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -2109,7 +2392,8 @@
         <article id="summary-2026-09-11" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-11</h2>
-            <a href="./2026-09-11.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-11.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -2446,7 +2730,8 @@
         <article id="summary-2026-09-08" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-08</h2>
-            <a href="./2026-09-08.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-08.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -2714,7 +2999,8 @@
         <article id="summary-2026-09-07" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-07</h2>
-            <a href="./2026-09-07.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-07.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -2914,7 +3200,8 @@
         <article id="summary-2026-09-06" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-06</h2>
-            <a href="./2026-09-06.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-06.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -3041,7 +3328,8 @@
         <article id="summary-2026-09-05" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-05</h2>
-            <a href="./2026-09-05.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-05.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -3339,7 +3627,8 @@
         <article id="summary-2026-09-04" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-04</h2>
-            <a href="./2026-09-04.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-04.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -3507,7 +3796,8 @@
         <article id="summary-2026-09-03" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-03</h2>
-            <a href="./2026-09-03.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-03.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -3783,7 +4073,8 @@
         <article id="summary-2026-09-02" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-02</h2>
-            <a href="./2026-09-02.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-02.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4088,7 +4379,8 @@
         <article id="summary-2026-09-01" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-09-01</h2>
-            <a href="./2026-09-01.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-09-01.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4215,7 +4507,8 @@
         <article id="summary-2026-08-31" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-31</h2>
-            <a href="./2026-08-31.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-31.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4420,7 +4713,8 @@
         <article id="summary-2026-08-30" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-30</h2>
-            <a href="./2026-08-30.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-30.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4489,7 +4783,8 @@
         <article id="summary-2026-08-29" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-29</h2>
-            <a href="./2026-08-29.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-29.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4748,7 +5043,8 @@
         <article id="summary-2026-08-28" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-28</h2>
-            <a href="./2026-08-28.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-28.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -4929,7 +5225,8 @@
         <article id="summary-2026-08-27" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-27</h2>
-            <a href="./2026-08-27.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-27.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -5182,7 +5479,8 @@
         <article id="summary-2026-08-26" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-26</h2>
-            <a href="./2026-08-26.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-26.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -5417,10 +5715,11 @@
           </div>
         </article>
         
-        <article id="summary-2026-08-25" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="1">
+        <article id="summary-2026-08-25" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-25</h2>
-            <a href="./2026-08-25.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-25.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -5588,7 +5887,8 @@
         <article id="summary-2026-08-24" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-24</h2>
-            <a href="./2026-08-24.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-24.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -5799,7 +6099,8 @@
         <article id="summary-2026-08-23" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-23</h2>
-            <a href="./2026-08-23.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-23.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -5855,7 +6156,8 @@
         <article id="summary-2026-08-22" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-22</h2>
-            <a href="./2026-08-22.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-22.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -6173,7 +6475,8 @@
         <article id="summary-2026-08-21" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-21</h2>
-            <a href="./2026-08-21.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-21.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -6297,7 +6600,8 @@
         <article id="summary-2026-08-20" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-20</h2>
-            <a href="./2026-08-20.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-20.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -6574,7 +6878,8 @@
         <article id="summary-2026-08-19" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-19</h2>
-            <a href="./2026-08-19.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-19.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -6839,7 +7144,8 @@
         <article id="summary-2026-08-18" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-18</h2>
-            <a href="./2026-08-18.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-18.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -7065,7 +7371,8 @@
         <article id="summary-2026-08-17" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-17</h2>
-            <a href="./2026-08-17.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-17.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -7318,7 +7625,8 @@
         <article id="summary-2026-08-16" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">2026-08-16</h2>
-            <a href="./2026-08-16.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+             
+             <a href="./2026-08-16.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
               <span>Open Standalone Page</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -7475,47 +7783,6 @@
             Renamed <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStripActionContainer::GetGlicButton()</code> to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">GetGlicButtonForTesting()</code> to restrict internal test-only button access.
             
               <a href="https://github.com/chromium/chromium/commit/86328205444940a7cf346fb79ead13b80a9cfde1" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(8632820)</a>
-            
-            
-          </li>
-        
-      </ul>
-    </div>
-  
-          
-            </div>
-          </div>
-        </article>
-        
-        <article id="summary-2026-08-15" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="2">
-          <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-white">2026-08-15</h2>
-            <a href="./2026-08-15.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
-              <span>Open Standalone Page</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-              </svg>
-            </a>
-          </div>
-          <div class="p-6">
-            <div class="prose prose-invert max-w-none w-full">
-              <h3 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2026-08-15</h3>
-              
-            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
-            <div class="text-gray-300">Analysis of 93 Chromium commits, filtering and focusing on desktop platforms (Windows and macOS). Highlights include extension protocol handler security, DBSC network fetch-metadata enforcement, profile avatar button componentization using BrowserWindowInterface, renderer histogram shared memory reduction, and MediaFoundation seek flush synchronization. Initial commit: <a href="https://github.com/chromium/chromium/commit/7c57bc68e5e91398f759e2abf0fb2d30d71ad68b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(7c57bc6)</a>, latest commit: <a href="https://github.com/chromium/chromium/commit/5d1202201c62f36d9375441a45e520e359425569" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(5d12022)</a>.
-              <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Extensions & Extension Security</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-08-15-0-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-08-15-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Protocol handlers registered via extension JS APIs are now explicitly associated with the registering extension ID. Unloading, disabling, or uninstalling an extension automatically cleans up all registered handlers, and orphan handlers are rejected on startup/reload.
-            
-              <a href="https://github.com/chromium/chromium/commit/4fccde21b042fd9b7487e630c08bda96a3407769" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(4fccde2)</a>
             
             
           </li>
