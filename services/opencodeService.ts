@@ -295,14 +295,16 @@ class OpenCodeAdapter implements PlatformAdapter {
 
         const isRetryable = error.status >= 500 || error.status === 429 || error.status === undefined;
         if (isRetryable && attempt < MAX_API_RETRIES) {
-          if (this.model !== BACKUP_OPENCODE_MODEL) {
-            console.warn(`Switching to backup OpenCode model: ${BACKUP_OPENCODE_MODEL}`);
-            this.model = BACKUP_OPENCODE_MODEL;
-          }
           const delay = Math.min(RETRY_DELAY_MS * 2 ** (attempt - 1), MAX_RETRY_DELAY_MS);
           console.warn(`\n⚠️  Transient OpenCode API error (attempt ${attempt}/${MAX_API_RETRIES})`);
           console.warn(`Error details: ${error.message}`);
           console.warn(`Waiting ${delay / 1000} seconds before retry...`);
+
+          if ( attempt >= (MAX_API_RETRIES / 2) && this.model !== BACKUP_OPENCODE_MODEL) {
+            console.warn(`Switching to backup OpenCode model: ${BACKUP_OPENCODE_MODEL}`);
+            this.model = BACKUP_OPENCODE_MODEL;
+          }
+ 
           await sleep(delay);
           continue;
         }
