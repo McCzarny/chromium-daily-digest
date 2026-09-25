@@ -484,6 +484,7 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
       let pendingReadDate = null;
       function updateReadingPosition() {
         if (summaryArticles.length === 0) return;
+        dismissUnreadToastIfReached();
         syncCurrentIdx();
         const el = getReadingSummary();
         const date = el ? el.id.replace('summary-', '') : null;
@@ -520,15 +521,28 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
 
       // ----- Toast pointing to the next unread summary -----
       let unreadToast = null;
+      let unreadToastTarget = null;
       function dismissUnreadToast() {
         if (unreadToast) {
           unreadToast.remove();
           unreadToast = null;
         }
+        unreadToastTarget = null;
+      }
+
+      // Once the target summary is on screen (or already scrolled past), the jump
+      // button is pointless, so hide the toast.
+      function dismissUnreadToastIfReached() {
+        if (!unreadToast || !unreadToastTarget) return;
+        const rect = unreadToastTarget.getBoundingClientRect();
+        // Summaries hidden by pagination have no size; ignore those.
+        if (rect.width === 0 && rect.height === 0) return;
+        if (rect.top < window.innerHeight) dismissUnreadToast();
       }
 
       function showUnreadToast(count, targetDate) {
         dismissUnreadToast();
+        unreadToastTarget = document.getElementById('summary-' + targetDate);
         unreadToast = document.createElement('div');
         unreadToast.id = 'unread-toast';
         unreadToast.setAttribute('role', 'status');
