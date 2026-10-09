@@ -1,7 +1,7 @@
 import { GitilesCommit } from '../types';
 
 const API_BASE_URL = 'https://api.github.com/repos/chromium/chromium/commits';
-const MAX_PAGES = 10; // Fetch up to 10 pages of commits (1000 total)
+const MAX_PAGES = 20; // Fetch up to 20 pages of commits (2000 total)
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 1000;
 const DETAIL_CONCURRENCY = 10; // Max concurrent detail fetches to avoid rate limiting

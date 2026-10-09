@@ -80,6 +80,17 @@ Create a JSON configuration file to customize the summary generation:
 
 - **`llmModel`** (optional): Override the model used by the selected provider. For example, `"deepseek-v4-pro"` when using `"opencode"`.
 
+**OpenCode model protocols:**
+
+OpenCode Zen serves every model over exactly one protocol, and the generator picks the endpoint from the model id. Sending a model to the wrong endpoint fails with `400 ModelProtocolUnsupported`, so this is resolved automatically:
+
+| Protocol | Endpoint | Models |
+| --- | --- | --- |
+| Chat Completions | `/chat/completions` | `glm-*`, `kimi-*`, `deepseek-*`, `minimax-*`, `qwen3.8-max`, `mimo-*`, `big-pickle`, `space-bunny-free` |
+| Responses | `/responses` | `gpt-*`, `grok-*`, `muse-spark-*` |
+
+`claude-*` and `gemini-*` models are served over the Anthropic Messages and Google generateContent APIs respectively, which this provider does not implement yet. Setting one of them fails fast with an explanatory error rather than an opaque gateway error.
+
 **Environment Variables:**
 
 - `LLM_PROVIDER` (optional): Overrides the `llmProvider` from the config file (or the default). Valid values: `gemini`, `opencode`, `nexos`.
@@ -89,6 +100,8 @@ Create a JSON configuration file to customize the summary generation:
 - `OPENCODE_USER_AGENT` (optional): Override the `User-Agent` header sent to OpenCode (defaults to `chromium-daily-digest/1.0`).
 - `OPENCODE_MODEL` (optional): Override the OpenCode model without a config file.
 - `OPENCODE_CONTEXT_LIMIT` (optional): Set the model context limit in tokens when the OpenCode `/models` endpoint does not provide it. The generator estimates prompt size and warns at 80% of the available context (including a 4,096-token output reserve).
+- `OPENCODE_MAX_OUTPUT_TOKENS` (optional): Cap the response length for Responses-protocol models. If a response is truncated the generator reports the truncation instead of emitting a partial summary.
+- `OPENCODE_STORE_RESPONSES` (optional): Set to `true` to opt in to server-side retention of Responses-protocol requests (defaults to `false`).
 - `SECRET_NEXOS_TOKEN`: Required when using the Nexos provider.
 
 **Example Config Files:**

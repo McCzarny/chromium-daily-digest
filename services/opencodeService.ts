@@ -31,6 +31,62 @@ function getOpenCodeModel(config?: SummaryConfig): string {
   return config?.llmModel || process.env.OPENCODE_MODEL || DEFAULT_OPENCODE_MODEL;
 }
 
+/**
+ * OpenCode Zen serves every model over exactly one protocol. Posting a model to the
+ * wrong endpoint fails with `400 ModelProtocolUnsupported`, so the protocol is
+ * derived from the model id rather than hardcoded.
+ * See https://opencode.ai/docs/zen/#endpoints
+ */
+type OpenCodeProtocol = "chat-completions" | "responses";
+
+/** Model id prefixes Zen serves over the OpenAI Responses API. */
+const RESPONSES_PROTOCOL_PREFIXES = ["gpt-", "grok-", "muse-spark-"];
+
+/**
+ * Models Zen serves over a protocol this adapter does not implement. They are
+ * rejected up front so the failure names the real cause instead of surfacing a
+ * ModelProtocolUnsupported error from the gateway.
+ */
+const UNSUPPORTED_PROTOCOLS: Array<{ match: (id: string) => boolean; endpoint: string }> = [
+  { match: id => id.startsWith("claude-"), endpoint: "the Anthropic Messages API (/v1/messages)" },
+  { match: id => id.startsWith("gemini-"), endpoint: "the Google generateContent API (/v1/models/{id})" },
+  // These share a prefix with Qwen3.8 Max, which is chat/completions, so they are
+  // matched by exact id rather than by prefix.
+  {
+    match: id => ["qwen3.7-max", "qwen3.7-plus", "qwen3.6-plus", "qwen3.5-plus", "qwen3.8-flash"].includes(id),
+    endpoint: "the Anthropic Messages API (/v1/messages)",
+  },
+];
+
+function resolveProtocol(model: string): OpenCodeProtocol {
+  const id = model.trim().toLowerCase();
+
+  for (const { match, endpoint } of UNSUPPORTED_PROTOCOLS) {
+    if (match(id)) {
+      throw new Error(
+        `OpenCode model "${model}" is served over ${endpoint}, which this adapter does not implement. ` +
+        `Use a chat/completions model (e.g. glm-5.3-flash, kimi-k3, deepseek-v4.1-flash) ` +
+        `or a Responses model (e.g. gpt-5.6-luna).`
+      );
+    }
+  }
+
+  return RESPONSES_PROTOCOL_PREFIXES.some(prefix => id.startsWith(prefix))
+    ? "responses"
+    : "chat-completions";
+}
+
+/**
+ * A conversation item in a protocol-neutral shape. The two protocols disagree on how
+ * assistant tool calls and tool results are represented, so the adapter stores one
+ * internal shape and serializes it per request.
+ */
+type ConversationItem =
+  | { kind: "system"; text: string }
+  | { kind: "user"; text: string }
+  | { kind: "assistant"; text: string; toolCalls?: ToolCall[] }
+  | { kind: "tool"; callId: string | null; text: string };
+
 interface OpenCodeMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
@@ -42,6 +98,84 @@ interface OpenCodeMessage {
       arguments: string;
     };
   }>;
+}
+
+/** Serialize the conversation to the OpenAI Chat Completions format. */
+function toChatCompletionsMessages(items: ConversationItem[]): OpenCodeMessage[] {
+  const messages: OpenCodeMessage[] = [];
+  for (const item of items) {
+    switch (item.kind) {
+      case "system":
+        messages.push({ role: "system", content: item.text });
+        break;
+      case "user":
+        messages.push({ role: "user", content: item.text });
+        break;
+      case "assistant":
+        messages.push({
+          role: "assistant",
+          content: item.text,
+          ...(item.toolCalls?.length
+            ? {
+                tool_calls: item.toolCalls.map(call => ({
+                  id: call.id,
+                  type: "function" as const,
+                  function: { name: call.name, arguments: call.arguments },
+                })),
+              }
+            : {}),
+        });
+        break;
+      case "tool":
+        // Chat Completions has no dedicated tool role; results go back as user turns.
+        messages.push({ role: "user", content: item.text });
+        break;
+    }
+  }
+  return messages;
+}
+
+/** Serialize the conversation to the OpenAI Responses format. */
+function toResponsesInput(items: ConversationItem[]): unknown[] {
+  const input: unknown[] = [];
+  for (const item of items) {
+    switch (item.kind) {
+      case "system":
+        input.push({ role: "system", content: [{ type: "input_text", text: item.text }] });
+        break;
+      case "user":
+        input.push({ role: "user", content: [{ type: "input_text", text: item.text }] });
+        break;
+      case "assistant": {
+        // A tool-only turn has no text; Responses rejects empty message items.
+        if (item.text) {
+          input.push({
+            type: "message",
+            role: "assistant",
+            content: [{ type: "output_text", text: item.text }],
+          });
+        }
+        for (const call of item.toolCalls || []) {
+          input.push({
+            type: "function_call",
+            call_id: call.id,
+            name: call.name,
+            arguments: call.arguments,
+          });
+        }
+        break;
+      }
+      case "tool":
+        if (item.callId) {
+          input.push({ type: "function_call_output", call_id: item.callId, output: item.text });
+        } else {
+          // No call id was captured for this result, so replay it as a plain turn.
+          input.push({ role: "user", content: [{ type: "input_text", text: item.text }] });
+        }
+        break;
+    }
+  }
+  return input;
 }
 
 interface OpenCodeTool {
@@ -104,6 +238,11 @@ async function getContextLimit(model: string): Promise<number> {
   const configuredLimit = Number(process.env.OPENCODE_CONTEXT_LIMIT);
   if (Number.isFinite(configuredLimit) && configuredLimit > 0) return configuredLimit;
 
+  // Zen's /models response omits context_length, which would fall through to the
+  // 1M default. Zen bills GPT models at a higher rate above 272K tokens, so treat
+  // that as the effective limit to keep the usage warning meaningful.
+  if (model.trim().toLowerCase().startsWith("gpt-")) return 272000;
+
   const defaultLimit = 1000000000; // 1M tokens
   let lookup = contextLimitCache.get(model);
   if (!lookup) {
@@ -134,13 +273,14 @@ async function getContextLimit(model: string): Promise<number> {
 
 async function warnAboutContextSize(
   model: string,
-  messages: OpenCodeMessage[],
-  tools?: OpenCodeTool[]
+  payload: unknown,
+  tools?: unknown[]
 ): Promise<void> {
   const contextLimit = await getContextLimit(model);
 
   // A rough 4 characters/token estimate, reserving space for the response.
-  const requestCharacters = JSON.stringify(messages).length + (tools ? JSON.stringify(tools).length : 0);
+  const requestCharacters =
+    JSON.stringify(payload)?.length + (tools ? JSON.stringify(tools).length : 0);
   const estimatedPromptTokens = Math.ceil(requestCharacters / 4);
   const reservedOutputTokens = 4096;
   const estimatedContextTokens = estimatedPromptTokens + reservedOutputTokens;
@@ -174,14 +314,188 @@ const getCommitDetailsTool: OpenCodeTool = {
   },
 };
 
+// The same tool in the Responses format, which nests nothing under "function".
+const getCommitDetailsToolResponses = {
+  type: "function" as const,
+  name: getCommitDetailsTool.function.name,
+  description: getCommitDetailsTool.function.description,
+  parameters: getCommitDetailsTool.function.parameters,
+};
+
+interface OpenCodeRequest {
+  /** Endpoint path appended to OPENCODE_API_BASE. */
+  path: string;
+  /** Serialized conversation, used for the context-size estimate. */
+  payload: unknown;
+  tools?: unknown[];
+  body: Record<string, unknown>;
+}
+
+/**
+ * Build the request for the current model, resolving the protocol from the model id.
+ * Rebuilt after a failover because the backup model may speak a different protocol.
+ */
+function buildOpenCodeRequest(
+  model: string,
+  items: ConversationItem[],
+  options: { enableTools?: boolean; requestJson?: boolean }
+): OpenCodeRequest {
+  const maxOutputTokens = Number(process.env.OPENCODE_MAX_OUTPUT_TOKENS);
+
+  if (resolveProtocol(model) === "responses") {
+    const input = toResponsesInput(items);
+    return {
+      path: "/responses",
+      payload: input,
+      ...(options.enableTools && { tools: [getCommitDetailsToolResponses] }),
+      body: {
+        model,
+        input,
+        // These models reject `temperature` with a 400, so it is intentionally omitted.
+        // Opt in to server-side retention with OPENCODE_STORE_RESPONSES=true.
+        store: process.env.OPENCODE_STORE_RESPONSES === "true",
+        ...(options.requestJson && { text: { format: { type: "json_object" } } }),
+        ...(options.enableTools && { tools: [getCommitDetailsToolResponses] }),
+        ...(Number.isFinite(maxOutputTokens) && maxOutputTokens > 0
+          ? { max_output_tokens: maxOutputTokens }
+          : {}),
+      },
+    };
+  }
+
+  const messages = toChatCompletionsMessages(items);
+  return {
+    path: "/chat/completions",
+    payload: messages,
+    ...(options.enableTools && { tools: [getCommitDetailsTool] }),
+    body: {
+      model,
+      messages,
+      temperature: 0.3,
+      ...(options.requestJson && { response_format: { type: "json_object" } }),
+      ...(options.enableTools && { tools: [getCommitDetailsTool] }),
+    },
+  };
+}
+
+/** Log token usage and warn when the prompt approaches the context limit. */
+async function reportUsage(
+  model: string,
+  promptTokens: number,
+  completionTokens: number,
+  totalTokens: number
+): Promise<void> {  console.log(
+    `  Tokens: ${promptTokens} prompt, ${completionTokens} completion, ${totalTokens} total`
+  );
+  const contextLimit = await getContextLimit(model);
+  if (contextLimit && promptTokens / contextLimit >= 0.8) {
+    console.warn(
+      `⚠️  OpenCode context warning: API reported ${promptTokens.toLocaleString()} prompt tokens for a ${contextLimit.toLocaleString()}-token context.`
+    );
+  }
+}
+
+/** Extract assistant text and tool calls from a Responses payload. */
+function parseResponsesPayload(
+  data: any,
+  model: string
+): { content: string; toolCalls?: ToolCall[] } {
+  if (data.status === "failed" || data.error) {
+    const error: any = new Error(
+      `OpenCode API error: ${data.error?.message || JSON.stringify(data.error)}`
+    );
+    error.status = 500;
+    error.apiErrorType = data.error?.type;
+    throw error;
+  }
+
+  // Truncation is reported as HTTP 200 with an "incomplete" status. Retrying the
+  // identical request would truncate again, so this is surfaced as a hard error
+  // rather than silently producing an empty or partial summary.
+  if (data.status === "incomplete") {
+    const reason = data.incomplete_details?.reason || "unknown";
+    const error: any = new Error(
+      `OpenCode returned an incomplete ${model} response (reason: ${reason}). ` +
+        `Raise OPENCODE_MAX_OUTPUT_TOKENS, or use a model with a larger output budget.`
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  const output: any[] = data.output || [];
+  const content = output
+    .filter(item => item.type === "message")
+    .flatMap(item => item.content || [])
+    .filter(part => part.type === "output_text")
+    .map(part => part.text)
+    .join("");
+
+  const toolCalls: ToolCall[] = output
+    .filter(item => item.type === "function_call" && item.name)
+    .map(item => ({
+      id: item.call_id || item.id,
+      name: item.name,
+      arguments: item.arguments || "{}",
+    }));
+
+  if (data.usage) {
+    // Usage reporting is advisory and must never turn a good response into a failure.
+    reportUsage(
+      model,
+      data.usage.input_tokens || 0,
+      data.usage.output_tokens || 0,
+      data.usage.total_tokens || 0
+    ).catch(() => {});
+  }
+
+  return {
+    content,
+    ...(toolCalls.length > 0 && { toolCalls }),
+  };
+}
+
+/** Extract assistant text and tool calls from a Chat Completions payload. */
+function parseChatCompletionsPayload(
+  data: OpenCodeResponse,
+  model: string
+): { content: string; toolCalls?: ToolCall[] } {
+  const message = data.choices?.[0]?.message;
+  const content = message?.content || "";
+
+  const toolCalls: ToolCall[] = (message?.tool_calls || [])
+    .filter(tc => tc.function?.name && tc.function?.arguments)
+    .map(tc => ({
+      id: tc.id,
+      name: tc.function.name,
+      arguments: tc.function.arguments,
+    }));
+
+  if (data.usage) {
+    reportUsage(
+      model,
+      data.usage.prompt_tokens || 0,
+      data.usage.completion_tokens || 0,
+      data.usage.total_tokens || 0
+    ).catch(() => {});
+  }
+
+  return {
+    content,
+    ...(toolCalls.length > 0 && { toolCalls }),
+  };
+}
+
 /**
  * OpenCode Platform Adapter
- * Implements the PlatformAdapter interface for the OpenCode Go API,
- * which exposes an OpenAI-compatible /chat/completions endpoint.
+ * Implements the PlatformAdapter interface for the OpenCode Go API, which serves
+ * each model over either /chat/completions or /responses depending on the model.
  */
 class OpenCodeAdapter implements PlatformAdapter {
-  private messages: OpenCodeMessage[] = [];
+  private items: ConversationItem[] = [];
   private model: string;
+  // Tool call ids from the most recent assistant turn, in order, so that tool
+  // results can be paired with the call they answer.
+  private pendingToolCallIds: string[] = [];
   // Stable identifier for this conversation, used for routing and prompt caching.
   private sessionId: string;
 
@@ -208,25 +522,23 @@ class OpenCodeAdapter implements PlatformAdapter {
 
     const timeoutMs = 900000; // 15 minutes
 
-    // Build messages with optional system prompt
-    const apiMessages: OpenCodeMessage[] = [];
+    // Build the conversation with the optional system prompt, then let
+    // buildOpenCodeRequest encode it for whichever protocol this model uses.
+    const items: ConversationItem[] = [];
     if (options.systemPrompt) {
-      apiMessages.push({ role: "system", content: options.systemPrompt });
+      items.push({ kind: "system", text: options.systemPrompt });
     }
-    apiMessages.push(...this.messages);
+    items.push(...this.items);
 
-    await warnAboutContextSize(
-      this.model,
-      apiMessages,
-      options.enableTools ? [getCommitDetailsTool] : undefined
-    );
+    let request = buildOpenCodeRequest(this.model, items, options);
+    await warnAboutContextSize(this.model, request.payload, request.tools);
 
     for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const response = await fetch(`${OPENCODE_API_BASE}/chat/completions`, {
+        const response = await fetch(`${OPENCODE_API_BASE}${request.path}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -234,13 +546,7 @@ class OpenCodeAdapter implements PlatformAdapter {
             "User-Agent": OPENCODE_USER_AGENT,
             "x-opencode-session": this.sessionId,
           },
-          body: JSON.stringify({
-            model: this.model,
-            messages: apiMessages,
-            temperature: 0.3,
-            ...(options.requestJson && { response_format: { type: "json_object" } }),
-            ...(options.enableTools && { tools: [getCommitDetailsTool] }),
-          }),
+          body: JSON.stringify(request.body),
           signal: controller.signal,
         });
 
@@ -253,39 +559,21 @@ class OpenCodeAdapter implements PlatformAdapter {
           throw error;
         }
 
-        const data = (await response.json()) as OpenCodeResponse;
+        const data = await response.json();
 
         // Some OpenAI-compatible gateways return errors in a 2xx JSON body.
         if (data.error) {
-          const error: any = new Error(`OpenCode API error: ${data.error.message || JSON.stringify(data.error)}`);
+          const error: any = new Error(
+            `OpenCode API error: ${data.error.message || JSON.stringify(data.error)}`
+          );
           error.status = response.status >= 400 ? response.status : 500;
           error.apiErrorType = data.error.type;
           throw error;
         }
 
-        if (data.usage) {
-          console.log(`  Tokens: ${data.usage.prompt_tokens} prompt, ${data.usage.completion_tokens} completion, ${data.usage.total_tokens} total`);
-          const contextLimit = await getContextLimit(this.model);
-          if (contextLimit && data.usage.prompt_tokens / contextLimit >= 0.8) {
-            console.warn(`⚠️  OpenCode context warning: API reported ${data.usage.prompt_tokens.toLocaleString()} prompt tokens for a ${contextLimit.toLocaleString()}-token context.`);
-          }
-        }
-
-        const message = data.choices?.[0]?.message;
-        const content = message?.content || "";
-
-        const toolCalls: ToolCall[] = (message?.tool_calls || [])
-          .filter(tc => tc.function?.name && tc.function?.arguments)
-          .map(tc => ({
-            id: tc.id,
-            name: tc.function.name,
-            arguments: tc.function.arguments,
-          }));
-
-        return {
-          content,
-          ...(toolCalls.length > 0 && { toolCalls }),
-        };
+        return request.path === "/responses"
+          ? parseResponsesPayload(data, this.model)
+          : parseChatCompletionsPayload(data, this.model);
       } catch (error: any) {
         clearTimeout(timeoutId);
 
@@ -303,6 +591,8 @@ class OpenCodeAdapter implements PlatformAdapter {
           if ( attempt >= (MAX_API_RETRIES / 2) && this.model !== BACKUP_OPENCODE_MODEL) {
             console.warn(`Switching to backup OpenCode model: ${BACKUP_OPENCODE_MODEL}`);
             this.model = BACKUP_OPENCODE_MODEL;
+            // The backup model may use a different protocol, so re-encode the request.
+            request = buildOpenCodeRequest(this.model, items, options);
           }
  
           await sleep(delay);
@@ -317,36 +607,29 @@ class OpenCodeAdapter implements PlatformAdapter {
   }
 
   addMessage(role: 'user' | 'assistant' | 'tool', content: string, toolCalls?: ToolCall[]): void {
-    if (role === 'tool') {
-      // Tool responses are added as user messages in OpenAI-compatible APIs
-      this.messages.push({ role: 'user', content });
+    if (role === 'assistant') {
+      this.items.push({ kind: 'assistant', text: content, toolCalls });
+      // Remember the call ids in order; executeToolCalls returns results in the
+      // same order, so a queue lets each result be paired with its call.
+      this.pendingToolCallIds = (toolCalls || []).map(call => call.id);
+    } else if (role === 'tool') {
+      this.items.push({
+        kind: 'tool',
+        callId: this.pendingToolCallIds.shift() ?? null,
+        text: content,
+      });
     } else {
-      const message: OpenCodeMessage = {
-        role: role === 'assistant' ? 'assistant' : 'user',
-        content,
-      };
-
-      if (toolCalls && toolCalls.length > 0) {
-        message.tool_calls = toolCalls.map(tc => ({
-          id: tc.id,
-          type: "function" as const,
-          function: {
-            name: tc.name,
-            arguments: tc.arguments,
-          },
-        }));
-      }
-
-      this.messages.push(message);
+      this.items.push({ kind: 'user', text: content });
     }
   }
 
   getMessages(): any[] {
-    return this.messages;
+    return this.items;
   }
 
   resetMessages(): void {
-    this.messages = [];
+    this.items = [];
+    this.pendingToolCallIds = [];
   }
 }
 
