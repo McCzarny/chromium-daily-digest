@@ -224,6 +224,7 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
     - Review the commit messages and file paths provided
     - Group commits into logical categories like "Performance", "Security", "Blink Engine", "V8 JavaScript Engine", "UI/UX", "Developer Tools", "Bug Fixes", and "Infrastructure"
     - Skip any categories that have no relevant commits
+    - Limit the number of entries to max 25 most important changes.
     
 2.  **Generate JSON:** Create a JSON object with this structure:
     *   **title**: "Chromium Digest: YYYY-MM-DD"
@@ -246,6 +247,7 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
         - Significant behavioral changes to stable features requiring embedder code updates
     *   **DO NOT mark as breaking**: Experimental features, internal changes, deprecation warnings, feature flag changes, or changes only affecting outdated implementations
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
+    *   Limit the number of entries to max 25 most important changes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     ${customInstructionsText}
 
