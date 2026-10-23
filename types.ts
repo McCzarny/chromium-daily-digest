@@ -125,6 +125,9 @@ export interface SummaryConfig {
   // Focus areas for filtering or emphasizing specific parts
   focusAreas?: string[];
   
+  // Maximum number of summary points across all categories (default: 15)
+  maxPoints?: number;
+
   // LLM provider to use for summary generation (default: 'gemini')
   llmProvider?: 'gemini' | 'openai' | 'anthropic' | 'nexos' | 'opencode';
 

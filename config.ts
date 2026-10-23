@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: SummaryConfig = {
   outputPath: '', // Subpath within public/summaries (empty = root)
   ignoredBotEmails: [],
   focusAreas: [],
+  maxPoints: 25, // Keep daily digests focused instead of listing every change
   llmProvider: 'gemini', // Default LLM provider
 };
 
@@ -71,6 +72,13 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
       // Ensure outputPath is set (as subpath of public/summaries)
       outputPath: userConfig.outputPath !== undefined ? userConfig.outputPath : DEFAULT_CONFIG.outputPath,
     };
+
+    // Validate and normalize maxPoints
+    const rawMaxPoints = config.maxPoints ?? DEFAULT_CONFIG.maxPoints!;
+    if (typeof rawMaxPoints !== 'number' || !Number.isFinite(rawMaxPoints) || rawMaxPoints < 1) {
+      throw new Error('maxPoints must be a positive number');
+    }
+    config.maxPoints = Math.floor(rawMaxPoints);
     
     // Apply environment variable overrides
     applyEnvOverrides(config);
@@ -90,6 +98,7 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
     if (config.focusAreas && config.focusAreas.length > 0) {
       console.log(`  - Focus areas: ${config.focusAreas.join(', ')}`);
     }
+    console.log(`  - Max points per summary: ${config.maxPoints}`);
     if (config.ignoredBotEmails && config.ignoredBotEmails.length > 0) {
       console.log(`  - Additional ignored bots: ${config.ignoredBotEmails.length}`);
     }

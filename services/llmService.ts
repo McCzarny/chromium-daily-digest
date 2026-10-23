@@ -1,4 +1,4 @@
-import { GitilesCommit, StructuredSummary, SummaryConfig, CHROMIUM_COMPONENTS } from "../types";
+import { GitilesCommit, StructuredSummary, SummaryConfig, SummaryPoint, CHROMIUM_COMPONENTS } from "../types";
 import { generateSummary as generateGeminiSummary, generateWeeklySummary as generateGeminiWeeklySummary } from "./geminiService";
 import { generateSummary as generateNexosSummary, generateWeeklySummary as generateNexosWeeklySummary } from "./nexosService";
 import { generateSummary as generateOpenCodeSummary, generateWeeklySummary as generateOpenCodeWeeklySummary } from "./opencodeService";
@@ -123,7 +123,7 @@ export class LLMService implements ILLMService {
     lastCommit: GitilesCommit
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
-    const summary = await this.service.generateSummary(
+    const generated = await this.service.generateSummary(
       commits,
       config,
       date,
@@ -133,6 +133,7 @@ export class LLMService implements ILLMService {
       firstCommit,
       lastCommit
     );
+    const summary = limitSummaryPoints(generated, getMaxPoints(config));
     if (!summary.modelUsed) {
       summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
     }
@@ -151,7 +152,7 @@ export class LLMService implements ILLMService {
     week: number
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
-    const summary = await this.service.generateWeeklySummary(
+    const generated = await this.service.generateWeeklySummary(
       dailySummaries,
       config,
       startDate,
@@ -159,6 +160,7 @@ export class LLMService implements ILLMService {
       year,
       week
     );
+    const summary = limitSummaryPoints(generated, getMaxPoints(config));
     if (!summary.modelUsed) {
       summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
     }
@@ -178,6 +180,108 @@ export class LLMService implements ILLMService {
  */
 export function createLLMService(provider: LLMProvider = 'gemini'): LLMService {
   return new LLMService(provider);
+}
+
+/**
+ * Default maximum number of points in a generated summary.
+ * Kept deliberately small so a daily digest highlights the important changes
+ * instead of listing everything that happened.
+ */
+export const DEFAULT_MAX_POINTS = 25;
+
+/**
+ * Resolve the configured point budget, falling back to the default.
+ */
+export function getMaxPoints(config: SummaryConfig): number {
+  const value = config.maxPoints;
+  if (typeof value === 'number' && Number.isFinite(value) && value >= 1) {
+    return Math.floor(value);
+  }
+  return DEFAULT_MAX_POINTS;
+}
+
+/**
+ * Instructions shared by all summary prompts that keep the output focused and
+ * explicitly define what "important" means.
+ */
+export function createPointBudgetInstructions(maxPoints: number): string {
+  const targetLow = Math.max(6, maxPoints - 3);
+  return `
+**POINT BUDGET — HARD LIMIT:**
+- Output at most ${maxPoints} points in TOTAL across all categories. Do not exceed this limit.
+- Aim for ${targetLow}-${maxPoints} points. Most categories should have 1-3 points; skip a category entirely if it has nothing important.
+- Prefer 4-6 categories, not one category per subsystem.
+- Order points within each category from most important to least important.
+- Merge related commits into one synthesized point. Never create one point per commit, per file, or per small fix.
+- If there are more candidates than the budget, drop the least important ones first: test-only changes, mechanical refactors, internal cleanup, low-impact fixes, routine infrastructure, and trivial dependency/migration work.
+
+**IMPORTANCE ORDER (keep the highest available):**
+1. Breaking changes to stable, embedder-facing public APIs.
+2. Security/privacy fixes with real user or embedder impact.
+3. User-visible web platform and browser behavior changes.
+4. Significant performance improvements with measurable impact.
+5. Major architectural or cross-cutting changes.
+6. Developer-facing changes with broad impact.
+
+Only include a point if a Chromium embedder or web developer would plausibly care about it. When in doubt, omit it and fold it into a broader point if necessary.
+`;
+}
+
+/**
+ * Enforce the point budget after generation. This is a safety net for models
+ * that ignore the prompt: breaking changes are preserved first, then the
+ * remaining budget is distributed fairly across categories.
+ */
+export function limitSummaryPoints(
+  summary: StructuredSummary,
+  maxPoints: number = DEFAULT_MAX_POINTS
+): StructuredSummary {
+  const categories = summary.categories || [];
+  const totalPoints = categories.reduce((sum, category) => sum + category.points.length, 0);
+
+  if (totalPoints <= maxPoints) {
+    return summary;
+  }
+
+  const kept = new Set<SummaryPoint>();
+
+  // 1. Preserve breaking changes first, in the model's order.
+  for (const category of categories) {
+    for (const point of category.points) {
+      if (point.isBreaking && kept.size < maxPoints) {
+        kept.add(point);
+      }
+    }
+  }
+
+  // 2. Fill the remaining budget round-robin across categories, preserving
+  // each category's importance order.
+  const queues = categories.map(category =>
+    category.points.filter(point => !point.isBreaking)
+  );
+  let addedInPass = true;
+  while (kept.size < maxPoints && addedInPass) {
+    addedInPass = false;
+    for (const queue of queues) {
+      if (queue.length > 0 && kept.size < maxPoints) {
+        kept.add(queue.shift()!);
+        addedInPass = true;
+      }
+    }
+  }
+
+  const limitedCategories = categories
+    .map(category => ({
+      ...category,
+      points: category.points.filter(point => kept.has(point)),
+    }))
+    .filter(category => category.points.length > 0);
+
+  console.log(
+    `  ✂ Limited summary to ${kept.size} points across ${limitedCategories.length} categories (maxPoints=${maxPoints})`
+  );
+
+  return { ...summary, categories: limitedCategories };
 }
 
 /**
@@ -205,6 +309,7 @@ export function createDailyPrompt(
   const customInstructionsText = config.customInstructions?.trim()
     ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
     : '';
+  const pointBudgetInstructions = createPointBudgetInstructions(getMaxPoints(config));
   
   const commitDataForPrompt = commits.map(c => {
     const filePaths = c.files && c.files.length > 0
@@ -219,12 +324,13 @@ You are an expert software engineer and technical writer creating a daily summar
 **YOUR TASK:**
 Based on the commits from ${date} on the '${branch}' branch, generate a structured summary.
 
+${pointBudgetInstructions}
+
 **Instructions:**
 1.  **Analyze and Categorize:** 
     - Review the commit messages and file paths provided
     - Group commits into logical categories like "Performance", "Security", "Blink Engine", "V8 JavaScript Engine", "UI/UX", "Developer Tools", "Bug Fixes", and "Infrastructure"
     - Skip any categories that have no relevant commits
-    - Limit the number of entries to max 25 most important changes.
     
 2.  **Generate JSON:** Create a JSON object with this structure:
     *   **title**: "Chromium Digest: YYYY-MM-DD"
@@ -247,7 +353,6 @@ Based on the commits from ${date} on the '${branch}' branch, generate a structur
         - Significant behavioral changes to stable features requiring embedder code updates
     *   **DO NOT mark as breaking**: Experimental features, internal changes, deprecation warnings, feature flag changes, or changes only affecting outdated implementations
     *   Focus on user-facing changes, significant architectural shifts, and major bug fixes
-    *   Limit the number of entries to max 25 most important changes
     *   Synthesize and summarize - don't list every commit separately unless necessary
     ${customInstructionsText}
 
@@ -398,7 +503,7 @@ If no additional details needed, respond with "No additional details needed."
  */
 export function createPhase4Prompt(): string {
   return `
-Now that you have all the commit details you requested, create a comprehensive summary of all commits.
+Now that you have all the commit details you requested, create a prioritized summary of the commits.
 
 Group them by logical categories (Performance, Security, Blink, V8, UI/UX, Developer Tools, Bug Fixes, Infrastructure, etc.).
 
@@ -407,7 +512,7 @@ For each category, provide:
 - Which commits are involved (include full hashes)
 - Mark any breaking changes
 
-Provide your summary as structured text.
+Merge related commits into a single point. Focus on the most consequential changes and omit test-only, mechanical, internal-cleanup, and trivial changes. Provide your summary as structured text.
 `;
 }
 
@@ -420,6 +525,7 @@ export function createPhase5Prompt(
   const customInstructionsText = config.customInstructions?.trim()
     ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
     : '';
+  const maxPoints = getMaxPoints(config);
   
   return `
 Using all the information from your previous analysis:
@@ -434,6 +540,8 @@ For each category:
 - Be specific and technical
 - Highlight breaking changes clearly
 - Include relevant commit hashes
+
+Keep the result focused: at most ${maxPoints} points in total across all categories. Drop the least important non-breaking changes first and merge related commits into a single point.
 ${customInstructionsText}
 
 Provide your final summary as well-organized text.
@@ -465,6 +573,7 @@ export function createAgenticPrompt(
   const customInstructionsText = config.customInstructions?.trim()
     ? `\n\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n`
     : '';
+  const pointBudgetInstructions = createPointBudgetInstructions(getMaxPoints(config));
   
   const commitDataForPrompt = commits.map(c => {
     const filePaths = c.files && c.files.length > 0
@@ -495,6 +604,8 @@ Simply call the function with an array of commit hashes when you need more infor
 
 **YOUR TASK:**
 Based on the commits from ${date} on the '${branch}' branch, generate a structured summary.
+
+${pointBudgetInstructions}
 
 **Instructions:**
 1.  **Analyze and Categorize:** 
@@ -578,9 +689,12 @@ export function createWeeklyPrompt(
   
   const totalCommits = dailySummaries.reduce((sum, d) => sum + d.totalCommits, 0);
   const totalRelevantCommits = dailySummaries.reduce((sum, d) => sum + d.relevantCommits, 0);
+  const pointBudgetInstructions = createPointBudgetInstructions(getMaxPoints(config));
 
   return `You are an expert technical writer creating weekly summaries of Chromium development.
 You will be given ${dailySummaries.length} daily summaries covering ${startDate} to ${endDate}.
+
+${pointBudgetInstructions}
 
 Your task is to create a concise weekly summary that:
 1. Highlights the most important changes and breaking changes across the week
@@ -672,12 +786,18 @@ export function createFinalSummaryFromChunksPrompt(
   firstCommit: GitilesCommit,
   lastCommit: GitilesCommit
 ): string {
+  const pointBudgetInstructions = createPointBudgetInstructions(getMaxPoints(config));
+
   return `
 You are creating a final daily summary for Chromium changes on ${date} (${branch} branch).
 
 Below are pre-analyzed summaries of different parts of the day's commits. Synthesize these into a final structured summary.
 Focus on changes that can impact developers working on Chromium-based projects. Use minimal markdown formatting for making text bold or code elements.
 Especially look for BREAKING CHANGES or things that require code updates, or allowing improvements to existing code.
+
+${pointBudgetInstructions}
+
+The chunk summaries below may contain many granular items. Do NOT copy all of them into the final summary. Select the most important themes, merge duplicates and related work across chunks, and keep only what a Chromium embedder or web developer would care about.
 ${config.customInstructions ? `\n**CUSTOM INSTRUCTIONS:**\n${config.customInstructions}\n` : ''}
 
 **Pre-analyzed Summaries:**
@@ -699,7 +819,9 @@ Create a structured JSON summary with the standard format (title, overview, cate
  * Create final JSON generation prompt
  * This is used after the agentic investigation phase to request the final structured output
  */
-export function createFinalJsonPrompt(date: string): string {
+export function createFinalJsonPrompt(date: string, config: SummaryConfig = {}): string {
+  const pointBudgetInstructions = createPointBudgetInstructions(getMaxPoints(config));
+
   return `Now generate the final summary as a JSON object with this exact structure:
 {
   "title": "Chromium Digest: ${date}",
@@ -718,6 +840,10 @@ export function createFinalJsonPrompt(date: string): string {
     }
   ]
 }
+
+${pointBudgetInstructions}
+
+Use the prior analysis as research material, not as a list to copy. Select only the most important changes, merge related commits into single points, and omit anything that is not significant to a Chromium embedder or web developer.
 
 Available component tags (only use from this list): ${CHROMIUM_COMPONENTS.join(', ')}
 Assign 1-3 component tags per point that best describe the affected Chromium subsystems.
@@ -1006,7 +1132,7 @@ export async function generateSummaryWithStrategy(
   }
 
   // Final step: Generate structured JSON output
-  adapter.addMessage('user', createFinalJsonPrompt(date));
+  adapter.addMessage('user', createFinalJsonPrompt(date, config));
 
   const finalResponse = await adapter.callAPI(adapter.getMessages(), {
     systemPrompt: 'You are an expert software engineer and technical writer. Generate valid JSON only.',

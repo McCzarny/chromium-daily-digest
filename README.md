@@ -60,7 +60,8 @@ Create a JSON configuration file to customize the summary generation:
   "interestingKeywords": "keyword1,keyword2,keyword3",
   "outputPath": "subfolder",
   "ignoredBotEmails": ["bot@example.com"],
-  "focusAreas": ["V8", "Blink", "DevTools"]
+  "focusAreas": ["V8", "Blink", "DevTools"],
+  "maxPoints": 15
 }
 ```
 
@@ -75,6 +76,8 @@ Create a JSON configuration file to customize the summary generation:
 - **`ignoredBotEmails`** (optional): Additional bot email addresses to ignore beyond the default list.
 
 - **`focusAreas`** (optional): Array of specific Chromium areas to focus on (e.g., ["V8 JavaScript Engine", "Blink Rendering", "DevTools"]).
+
+- **`maxPoints`** (optional): Hard limit on the total number of points across all categories in a summary. Defaults to `25`. Lower it (e.g., `10`) for a tighter digest. The generator tells the model to merge related commits and drop low-impact changes first, and also enforces the limit in code: breaking changes are preserved first, then the remaining budget is distributed across categories. Points within each category are assumed to be ordered from most to least important.
 
 - **`llmProvider`** (optional): LLM backend to use. Supported values: `"gemini"` (default), `"opencode"`, `"nexos"`. The OpenCode provider uses the [OpenCode Go](https://opencode.ai/docs/go) OpenAI-compatible API and defaults to the **DeepSeek V4.1 Flash** model.
 
