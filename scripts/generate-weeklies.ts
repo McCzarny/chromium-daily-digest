@@ -265,7 +265,7 @@ const createWeeklyHtml = (summary: StructuredSummary, weekData: WeeklyData, allW
 </html>`;
 };
 
-const updateWeekliesIndex = async (outputDir: string, outputSubpath: string) => {
+export const updateWeekliesIndex = async (outputDir: string, outputSubpath: string) => {
   const assetsPath = getAssetsPath(outputSubpath, 'weekly-digest-logo.svg');
   
   const files = await fs.readdir(outputDir);
@@ -273,7 +273,15 @@ const updateWeekliesIndex = async (outputDir: string, outputSubpath: string) => 
   const weeklyPattern = /^\d{4}-W\d{1,2}\.html$/;
   const weeklyPages = files
     .filter(file => weeklyPattern.test(file))
-    .sort()
+    .sort((a, b) => {
+      const parseWeek = (file: string) => {
+        const [year, week] = file.replace('.html', '').split('-W').map(Number);
+        return { year, week };
+      };
+      const aWeek = parseWeek(a);
+      const bWeek = parseWeek(b);
+      return aWeek.year - bWeek.year || aWeek.week - bWeek.week;
+    })
     .reverse();
   
   console.log(`  Found ${weeklyPages.length} weekly summary pages`);
@@ -324,12 +332,9 @@ const updateWeekliesIndex = async (outputDir: string, outputSubpath: string) => 
   );
   
   console.log(`  Processed ${weeklies.length} weekly summaries`);
+  console.log(`  Creating weekly focused reader index with ${weeklies.length} summaries`);
 
-  const ITEMS_PER_PAGE = 10;
-  const totalPages = Math.ceil(weeklies.length / ITEMS_PER_PAGE);
-  console.log(`  Creating weeklies index with ${totalPages} page(s) (${ITEMS_PER_PAGE} items per page)`);
-
-  const indexContent = createWeekliesIndexHtml(weeklies, assetsPath, ITEMS_PER_PAGE, totalPages);
+  const indexContent = createWeekliesIndexHtml(weeklies, assetsPath);
   
   await fs.writeFile(path.join(outputDir, 'weeklies.html'), indexContent);
 };
@@ -349,9 +354,7 @@ interface WeeklySummaryInfo {
 
 const createWeekliesIndexHtml = (
   weeklies: WeeklySummaryInfo[], 
-  assetsPath: string, 
-  ITEMS_PER_PAGE: number, 
-  totalPages: number
+  assetsPath: string
 ): string => {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -362,9 +365,8 @@ const createWeekliesIndexHtml = (
     <title>Chromium Weekly Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .summary-item { display: none; scroll-margin-top: 16px; }
+      .summary-item { display: none; scroll-margin-top: 96px; }
       .summary-item.active { display: block; }
-      .summary-item.current { outline: 2px solid rgba(34, 197, 94, 0.6); outline-offset: 2px; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -379,12 +381,37 @@ const createWeekliesIndexHtml = (
         </div>
       </div>
     </header>
-    <div aria-hidden="true" class="fixed right-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-1 bg-gray-800/90 border border-gray-700 rounded-xl px-2 py-3 shadow-lg pointer-events-none select-none">
+    <div class="sticky top-0 z-30 bg-gray-900/95 backdrop-blur border-b border-gray-700 shadow-lg">
+      <div class="container mx-auto px-4 py-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div class="flex items-center gap-2">
+            <button type="button" class="reader-older reader-nav px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+              ← Older
+            </button>
+            <button type="button" class="reader-newer reader-nav px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white">
+              Newer →
+            </button>
+          </div>
+          <div class="order-first w-full text-center sm:order-none sm:w-auto">
+            <div id="reader-date" aria-live="polite" class="text-lg font-bold text-white leading-tight">Loading…</div>
+            <div id="reader-position" class="text-[11px] text-gray-500"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="summary-jump" aria-label="Jump to a weekly summary" class="bg-gray-800 border border-gray-700 rounded-lg text-sm px-2 py-1.5 text-gray-300 max-w-[11rem]">
+            </select>
+            <button type="button" class="reader-latest reader-nav px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+              Latest
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div aria-hidden="true" class="fixed right-3 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col items-center gap-1 bg-gray-800/90 border border-gray-700 rounded-xl px-2 py-3 shadow-lg pointer-events-none select-none">
       <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">K</kbd>
       <span class="text-sm leading-none text-green-400">&uarr;</span>
-      <span class="text-[10px] text-gray-400">newer</span>
-      <div class="w-6 h-px bg-gray-600"></div>
       <span class="text-[10px] text-gray-400">older</span>
+      <div class="w-6 h-px bg-gray-600"></div>
+      <span class="text-[10px] text-gray-400">newer</span>
       <span class="text-sm leading-none text-green-400">&darr;</span>
       <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">J</kbd>
     </div>
@@ -394,8 +421,8 @@ const createWeekliesIndexHtml = (
       </div>
       <div id="summaries-container" class="space-y-8">
         ${weeklies.length === 0 ? '<p class="text-gray-400">No weekly summaries generated yet.</p>' : 
-          weeklies.map((weekly, idx) => `
-        <article id="week-${weekly.year}-${weekly.week}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-green-800" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
+          weeklies.map(weekly => `
+        <article id="week-${weekly.year}-${weekly.week}" data-sort="${weekly.year}-${String(weekly.week).padStart(2, '0')}" data-label="${weekly.year} Week ${weekly.week}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-green-800">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">${weekly.year} Week ${weekly.week}</h2>
             <a href="./${weekly.page}" class="text-green-400 hover:text-green-300 text-sm flex items-center gap-1">
@@ -416,147 +443,175 @@ const createWeekliesIndexHtml = (
         `).join('')}
       </div>
       
-      ${totalPages > 1 ? `
-      <div class="mt-8 flex justify-center items-center gap-2">
-        <button id="prev-btn" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-          ← Previous
+      <div class="mt-8 flex flex-wrap justify-center items-center gap-3">
+        <button type="button" class="reader-older reader-nav px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+          ← Older
         </button>
-        <span id="page-info" class="text-gray-300 mx-4">Page <span id="current-page">1</span> of ${totalPages}</span>
-        <button id="next-btn" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-          Next →
+        <button type="button" class="reader-latest reader-nav px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+          Latest
+        </button>
+        <button type="button" class="reader-newer reader-nav px-4 py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white">
+          Newer →
         </button>
       </div>
-      ` : ''}
+      <p class="mt-3 text-center text-xs text-gray-500">Use J / K to move between newer and older weekly summaries.</p>
     </main>
     
     <script>
-      const ITEMS_PER_PAGE = ${ITEMS_PER_PAGE};
-      const totalPages = ${totalPages};
-      let currentPage = 1;
-      
-      function showPage(page) {
-        const items = document.querySelectorAll('.summary-item');
-        items.forEach(item => {
-          if (parseInt(item.dataset.page) === page) {
-            item.classList.add('active');
-          } else {
-            item.classList.remove('active');
-          }
-        });
-        
-        const currentPageEl = document.getElementById('current-page');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        
-        if (currentPageEl) currentPageEl.textContent = page;
-        if (prevBtn) prevBtn.disabled = page === 1;
-        if (nextBtn) nextBtn.disabled = page === totalPages;
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      
-      document.getElementById('prev-btn')?.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          showPage(currentPage);
-        }
+      // ----- Focused weekly summary reader -----
+      const summaryArticles = Array.from(document.querySelectorAll('.summary-item')).sort((a, b) => {
+        const aKey = a.dataset.sort || a.id;
+        const bKey = b.dataset.sort || b.id;
+        return aKey.localeCompare(bKey);
       });
-      
-      document.getElementById('next-btn')?.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          showPage(currentPage);
-        }
+      const summaryIndexById = {};
+      summaryArticles.forEach((article, idx) => {
+        summaryIndexById[article.id] = idx;
       });
-      
-      showPage(1);
-      
-      if (window.location.hash) {
-        setTimeout(() => {
-          const element = document.getElementById(window.location.hash.substring(1));
-          if (element) {
-            const article = element.closest('.summary-item');
-            if (article) {
-              const page = parseInt(article.dataset.page);
-              if (page !== currentPage) {
-                currentPage = page;
-                showPage(currentPage);
-              }
-            }
-            
-            setTimeout(() => {
-              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              element.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
-              setTimeout(() => {
-                element.style.backgroundColor = '';
-              }, 1000);
-            }, 100);
-          }
-        }, 100);
+
+      const readerDate = document.getElementById('reader-date');
+      const readerPosition = document.getElementById('reader-position');
+      const jumpSelect = document.getElementById('summary-jump');
+
+      let currentSummaryIdx = -1;
+
+      function summaryLabel(article) {
+        return article.dataset.label || article.id;
       }
 
-      // ----- j / k keyboard navigation between summaries -----
-      const summaryArticles = Array.from(document.querySelectorAll('.summary-item'));
-      let currentSummaryIdx = 0;
-
-      // The summary currently occupying the top of the viewport is the current one.
-      function getReadingSummary() {
-        for (const el of summaryArticles) {
-          if (!el.classList.contains('active')) continue;
-          const rect = el.getBoundingClientRect();
-          if (rect.bottom > 120 && rect.top < window.innerHeight) return el;
-        }
-        return null;
+      if (jumpSelect) {
+        jumpSelect.innerHTML = summaryArticles.map((article, idx) => {
+          const latest = idx === summaryArticles.length - 1 ? ' (latest)' : '';
+          return '<option value="' + article.id + '">' + summaryLabel(article) + latest + '</option>';
+        }).join('');
       }
 
-      function syncCurrentIdx() {
-        const el = getReadingSummary();
-        if (el) currentSummaryIdx = summaryArticles.indexOf(el);
-      }
-
-      function setCurrentSummary(idx) {
-        currentSummaryIdx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
-        summaryArticles.forEach((el, i) => el.classList.toggle('current', i === currentSummaryIdx));
-      }
-
-      // Skip position sync while a programmatic (smooth) scroll is in flight,
-      // so rapid j/k presses are not undone mid-animation.
-      let programmaticScrollTimer = null;
-      function suppressScrollSync() {
-        if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
-        programmaticScrollTimer = setTimeout(() => {
-          programmaticScrollTimer = null;
-          syncCurrentIdx();
-        }, 1500);
-      }
-
-      let scrollTicking = false;
-      window.addEventListener('scroll', () => {
-        if (scrollTicking || programmaticScrollTimer) return;
-        scrollTicking = true;
-        requestAnimationFrame(() => {
-          scrollTicking = false;
-          syncCurrentIdx();
+      function updateReaderControls() {
+        const noSummaries = summaryArticles.length === 0;
+        document.querySelectorAll('.reader-older').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx <= 0;
         });
-      }, { passive: true });
+        document.querySelectorAll('.reader-newer').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx >= summaryArticles.length - 1;
+        });
+        document.querySelectorAll('.reader-latest').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx >= summaryArticles.length - 1;
+        });
+      }
 
-      function gotoSummary(idx) {
+      function updateHash(id, mode) {
+        if (!mode || mode === false) return;
+        const url = window.location.pathname + window.location.search + '#' + id;
+        if (mode === 'replace') {
+          window.history.replaceState({ weekly: id }, '', url);
+        } else {
+          window.history.pushState({ weekly: id }, '', url);
+        }
+      }
+
+      function showWeeklyById(id, options) {
+        options = options || {};
+        const idx = summaryIndexById[id];
+        if (idx === undefined) return false;
+        const article = summaryArticles[idx];
+
+        currentSummaryIdx = idx;
+        summaryArticles.forEach(item => item.classList.remove('active'));
+        article.classList.add('active');
+
+        if (readerDate) readerDate.textContent = summaryLabel(article);
+        if (readerPosition) {
+          readerPosition.textContent = (idx + 1) + ' of ' + summaryArticles.length + (idx === summaryArticles.length - 1 ? ' · latest' : '');
+        }
+        if (jumpSelect) jumpSelect.value = id;
+        updateReaderControls();
+
+        const historyMode = options.history === undefined ? 'push' : options.history;
+        updateHash(id, historyMode);
+
+        if (options.scroll !== false) {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+        return true;
+      }
+
+      function showWeeklyByIndex(idx, options) {
         if (summaryArticles.length === 0) return;
         idx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
-        const el = summaryArticles[idx];
-        const page = parseInt(el.dataset.page);
-        const pageChanged = page !== currentPage;
-        if (pageChanged) {
-          currentPage = page;
-          showPage(page);
-        }
-        setCurrentSummary(idx);
-        suppressScrollSync();
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, pageChanged ? 100 : 0);
+        showWeeklyById(summaryArticles[idx].id, options);
       }
 
+      function goOlder() {
+        showWeeklyByIndex(currentSummaryIdx - 1);
+      }
+
+      function goNewer() {
+        showWeeklyByIndex(currentSummaryIdx + 1);
+      }
+
+      function goLatest() {
+        showWeeklyByIndex(summaryArticles.length - 1);
+      }
+
+      document.querySelectorAll('.reader-older').forEach(button => {
+        button.addEventListener('click', goOlder);
+      });
+      document.querySelectorAll('.reader-newer').forEach(button => {
+        button.addEventListener('click', goNewer);
+      });
+      document.querySelectorAll('.reader-latest').forEach(button => {
+        button.addEventListener('click', goLatest);
+      });
+
+      if (jumpSelect) {
+        jumpSelect.addEventListener('change', () => {
+          showWeeklyById(jumpSelect.value);
+        });
+      }
+
+      // ----- Deep links and browser history -----
+      function hashValue() {
+        return window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
+      }
+
+      function weeklyIdFromHash() {
+        const value = hashValue();
+        if (!value) return null;
+        if (value.indexOf('week-') === 0) return value;
+        const element = document.getElementById(value);
+        const article = element ? element.closest('.summary-item') : null;
+        return article ? article.id : null;
+      }
+
+      function anchorFromHash() {
+        const value = hashValue();
+        if (!value || value.indexOf('week-') === 0) return null;
+        return document.getElementById(value);
+      }
+
+      function highlightAnchor(element) {
+        if (!element) return;
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+        setTimeout(() => {
+          element.style.backgroundColor = '';
+        }, 1000);
+      }
+
+      function copyUpdateLink(anchorId) {
+        const url = window.location.origin + window.location.pathname + '#' + anchorId;
+        navigator.clipboard.writeText(url).then(() => {
+          const element = document.getElementById(anchorId);
+          if (element) {
+            element.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+            }, 500);
+          }
+        });
+      }
+
+      // ----- Keyboard navigation -----
       document.addEventListener('keydown', (event) => {
         if (event.metaKey || event.ctrlKey || event.altKey) return;
         const target = event.target;
@@ -565,14 +620,45 @@ const createWeekliesIndexHtml = (
         const key = event.key ? event.key.toLowerCase() : '';
         if (key === 'j') {
           event.preventDefault();
-          gotoSummary(currentSummaryIdx + 1);
+          goNewer();
         } else if (key === 'k') {
           event.preventDefault();
-          gotoSummary(currentSummaryIdx - 1);
+          goOlder();
         }
       });
 
-      syncCurrentIdx();
+      // ----- Init -----
+      if (summaryArticles.length === 0) {
+        if (readerDate) readerDate.textContent = 'No summaries';
+        if (readerPosition) readerPosition.textContent = '';
+        updateReaderControls();
+      } else {
+        const hashId = weeklyIdFromHash();
+        const hashAnchor = anchorFromHash();
+
+        if (hashId) {
+          // Keep update anchors intact, but normalize weekly links.
+          showWeeklyById(hashId, { history: hashAnchor ? false : 'replace' });
+          if (hashAnchor) {
+            setTimeout(() => highlightAnchor(hashAnchor), 150);
+          }
+        } else {
+          showWeeklyByIndex(summaryArticles.length - 1, { history: false });
+        }
+      }
+
+      window.addEventListener('popstate', () => {
+        const hashId = weeklyIdFromHash();
+        if (hashId) {
+          showWeeklyById(hashId, { history: false });
+        } else if (summaryArticles.length > 0) {
+          showWeeklyByIndex(summaryArticles.length - 1, { history: false });
+        }
+        const hashAnchor = anchorFromHash();
+        if (hashAnchor) {
+          setTimeout(() => highlightAnchor(hashAnchor), 100);
+        }
+      });
     </script>
 </body>
 </html>`;
@@ -706,4 +792,6 @@ const run = async () => {
   }
 };
 
-run();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  run();
+}

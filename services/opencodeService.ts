@@ -10,7 +10,7 @@ import {
 
 const OPENCODE_TOKEN = process.env.SECRET_OPENCODE_API_KEY || process.env.OPENCODE_API_KEY;
 const OPENCODE_API_BASE = process.env.OPENCODE_API_BASE || "https://opencode.ai/zen/go/v1";
-const DEFAULT_OPENCODE_MODEL = "glm-5.3-flash"; // GLM-5.3-Flash
+const DEFAULT_OPENCODE_MODEL = "deepseek-v4.1-flash";
 const BACKUP_OPENCODE_MODEL = "gpt-5.6-luna";
 // Identify ourselves with a dedicated user agent rather than the default SDK/HTTP one.
 const OPENCODE_USER_AGENT = process.env.OPENCODE_USER_AGENT || "chromium-daily-digest/1.0";

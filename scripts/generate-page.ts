@@ -152,7 +152,7 @@ const createHtmlPage = (
 </html>`;
 };
 
-const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
+export const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     // Calculate relative path to assets based on subdirectory depth
     const depth = outputSubpath ? outputSubpath.split('/').filter(p => p).length : 0;
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
@@ -193,10 +193,8 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     
     console.log(`  Processed ${summaries.length} summaries`);
 
-    const ITEMS_PER_PAGE = 20;
-    const totalPages = Math.ceil(summaries.length / ITEMS_PER_PAGE);
     const pageVersion = `${new Date().toISOString()}-${summaries[0]?.date ?? 'no-summaries'}-${summaries.length}`;
-    console.log(`  Creating index with ${totalPages} page(s) (${ITEMS_PER_PAGE} items per page)`);
+    console.log(`  Creating focused reader index with ${summaries.length} summaries`);
 
     const indexContent = `<!DOCTYPE html>
 <html lang="en">
@@ -208,9 +206,8 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      .summary-item { display: none; scroll-margin-top: 16px; }
+      .summary-item { display: none; scroll-margin-top: 96px; }
       .summary-item.active { display: block; }
-      .summary-item.current { outline: 2px solid rgba(14, 165, 233, 0.6); outline-offset: 2px; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-200 font-sans">
@@ -225,12 +222,37 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         </div>
       </div>
     </header>
-    <div aria-hidden="true" class="fixed right-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-1 bg-gray-800/90 border border-gray-700 rounded-xl px-2 py-3 shadow-lg pointer-events-none select-none">
+    <div class="sticky top-0 z-30 bg-gray-900/95 backdrop-blur border-b border-gray-700 shadow-lg">
+      <div class="container mx-auto px-4 py-2.5">
+        <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div class="flex items-center gap-2">
+            <button type="button" class="reader-older reader-nav px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+              ← Older
+            </button>
+            <button type="button" class="reader-newer reader-nav px-3 py-1.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white">
+              Newer →
+            </button>
+          </div>
+          <div class="order-first w-full text-center sm:order-none sm:w-auto">
+            <div id="reader-date" aria-live="polite" class="text-lg font-bold text-white leading-tight">Loading…</div>
+            <div id="reader-position" class="text-[11px] text-gray-500"></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="summary-jump" aria-label="Jump to a summary" class="bg-gray-800 border border-gray-700 rounded-lg text-sm px-2 py-1.5 text-gray-300 max-w-[11rem]">
+            </select>
+            <button type="button" class="reader-latest reader-nav px-3 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+              Latest
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div aria-hidden="true" class="fixed right-3 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col items-center gap-1 bg-gray-800/90 border border-gray-700 rounded-xl px-2 py-3 shadow-lg pointer-events-none select-none">
       <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">K</kbd>
       <span class="text-sm leading-none text-sky-400">&uarr;</span>
-      <span class="text-[10px] text-gray-400">newer</span>
-      <div class="w-6 h-px bg-gray-600"></div>
       <span class="text-[10px] text-gray-400">older</span>
+      <div class="w-6 h-px bg-gray-600"></div>
+      <span class="text-[10px] text-gray-400">newer</span>
       <span class="text-sm leading-none text-sky-400">&darr;</span>
       <kbd class="w-7 h-7 flex items-center justify-center rounded-md bg-gray-700 border border-gray-600 text-xs font-bold text-white">J</kbd>
     </div>
@@ -239,8 +261,8 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         <a href="./weeklies.html" class="text-green-500 hover:text-green-300 text-lg font-semibold">📅 View Weekly Summaries →</a>
       </div>
       <div id="summaries-container" class="space-y-8">
-        ${summaries.length === 0 ? '<p class="text-gray-400">No summaries generated yet.</p>' : summaries.map((summary, idx) => `
-        <article id="summary-${summary.date}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700" data-page="${Math.floor(idx / ITEMS_PER_PAGE) + 1}">
+        ${summaries.length === 0 ? '<p class="text-gray-400">No summaries generated yet.</p>' : summaries.map(summary => `
+        <article id="summary-${summary.date}" data-date="${summary.date}" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
             <h2 class="text-2xl font-bold text-white">${summary.date}</h2>
              ${summary.modelUsed ? `<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-sky-900/70 border border-sky-700 text-sky-200 text-xs font-medium">Summarized by ${summary.modelUsed}</span>` : ''}
@@ -261,25 +283,23 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         </article>
         `).join('')}
       </div>
-      
-      ${totalPages > 1 ? `
-      <div class="mt-8 flex justify-center items-center gap-2">
-        <button id="prev-btn" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-          ← Previous
+
+      <div class="mt-8 flex flex-wrap justify-center items-center gap-3">
+        <button type="button" class="reader-older reader-nav px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+          ← Older
         </button>
-        <span id="page-info" class="text-gray-300 mx-4">Page <span id="current-page">1</span> of ${totalPages}</span>
-        <button id="next-btn" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-          Next →
+        <button type="button" class="reader-latest reader-nav px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-medium">
+          Latest
+        </button>
+        <button type="button" class="reader-newer reader-nav px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg text-sm font-semibold text-white">
+          Newer →
         </button>
       </div>
-      ` : ''}
+      <p class="mt-3 text-center text-xs text-gray-500">Use J / K to move between newer and older summaries.</p>
     </main>
     
     <script>
-      const ITEMS_PER_PAGE = ${ITEMS_PER_PAGE};
-      const totalPages = ${totalPages};
       const currentDigestVersion = document.querySelector('meta[name="digest-version"]')?.getAttribute('content') || '';
-      let currentPage = 1;
       let updateBannerVisible = false;
 
       function showUpdateBanner() {
@@ -342,63 +362,200 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
           // Ignore update check failures in the background.
         }
       }
-      
-      function showPage(page) {
-        const items = document.querySelectorAll('.summary-item');
-        items.forEach(item => {
-          if (parseInt(item.dataset.page) === page) {
-            item.classList.add('active');
-          } else {
-            item.classList.remove('active');
-          }
-        });
-        
-        // Only update pagination controls if they exist
-        const currentPageEl = document.getElementById('current-page');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        
-        if (currentPageEl) currentPageEl.textContent = page;
-        if (prevBtn) prevBtn.disabled = page === 1;
-        if (nextBtn) nextBtn.disabled = page === totalPages;
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // ----- Focused summary reader -----
+      const summaryArticles = Array.from(document.querySelectorAll('.summary-item'));
+      const summaryDates = summaryArticles
+        .map(el => el.id.replace('summary-', ''))
+        .sort();
+      const summaryByDate = {};
+      summaryArticles.forEach(el => {
+        summaryByDate[el.id.replace('summary-', '')] = el;
+      });
+
+      const readerDate = document.getElementById('reader-date');
+      const readerPosition = document.getElementById('reader-position');
+      const jumpSelect = document.getElementById('summary-jump');
+
+      let currentSummaryIdx = -1;
+      let readMarkTimer = null;
+      let fallbackSummaryDate = null;
+
+      const LAST_READ_KEY = 'digest-last-read-date';
+      let lastReadDate = null;
+      try {
+        lastReadDate = localStorage.getItem(LAST_READ_KEY);
+      } catch (err) {
+        lastReadDate = null;
       }
-      
-      document.getElementById('prev-btn')?.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          showPage(currentPage);
-        }
-      });
-      
-      document.getElementById('next-btn')?.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          showPage(currentPage);
-        }
-      });
-      
-      // Initialize
-      showPage(1);
 
-      setTimeout(() => {
-        checkForNewerIndexVersion();
-        setInterval(checkForNewerIndexVersion, 5 * 60 * 1000);
-      }, 30 * 1000);
+      if (jumpSelect) {
+        jumpSelect.innerHTML = summaryDates.map(date => {
+          const latest = date === summaryDates[summaryDates.length - 1] ? ' (latest)' : '';
+          return '<option value="' + date + '">' + date + latest + '</option>';
+        }).join('');
+      }
 
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          checkForNewerIndexVersion();
-        }
-      });
+      function markSummaryRead(date) {
+        if (!date) return;
+        if (lastReadDate && date <= lastReadDate) return;
+        lastReadDate = date;
+        try {
+          localStorage.setItem(LAST_READ_KEY, date);
+        } catch (err) {}
+      }
 
-      function copySummaryLink(date) {
-        const url = \`\${window.location.origin}\${window.location.pathname}#summary-\${date}\`;
-        navigator.clipboard.writeText(url).then(() => {
-          // Optionally show a toast or feedback
+      function scheduleReadMark(date) {
+        if (readMarkTimer) clearTimeout(readMarkTimer);
+        readMarkTimer = setTimeout(() => markSummaryRead(date), 2000);
+      }
+
+      function updateReaderControls() {
+        const noSummaries = summaryDates.length === 0;
+        document.querySelectorAll('.reader-older').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx <= 0;
         });
+        document.querySelectorAll('.reader-newer').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx >= summaryDates.length - 1;
+        });
+        document.querySelectorAll('.reader-latest').forEach(button => {
+          button.disabled = noSummaries || currentSummaryIdx >= summaryDates.length - 1;
+        });
+      }
+
+      function updateHash(date, mode) {
+        if (!mode || mode === false) return;
+        const url = window.location.pathname + window.location.search + '#summary-' + date;
+        if (mode === 'replace') {
+          window.history.replaceState({ summary: date }, '', url);
+        } else {
+          window.history.pushState({ summary: date }, '', url);
+        }
+      }
+
+      function showSummaryByDate(date, options) {
+        options = options || {};
+        const idx = summaryDates.indexOf(date);
+        if (idx === -1) return false;
+        const article = summaryByDate[date];
+        if (!article) return false;
+
+        currentSummaryIdx = idx;
+        summaryArticles.forEach(item => item.classList.remove('active'));
+        article.classList.add('active');
+
+        if (readerDate) readerDate.textContent = date;
+        if (readerPosition) {
+          readerPosition.textContent = (idx + 1) + ' of ' + summaryDates.length + (idx === summaryDates.length - 1 ? ' · latest' : '');
+        }
+        if (jumpSelect) jumpSelect.value = date;
+        updateReaderControls();
+
+        const historyMode = options.history === undefined ? 'push' : options.history;
+        updateHash(date, historyMode);
+
+        if (idx === summaryDates.length - 1) {
+          dismissUnreadToast();
+        }
+
+        if (options.scroll !== false) {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        scheduleReadMark(date);
+        return true;
+      }
+
+      function showSummaryByIndex(idx, options) {
+        if (summaryDates.length === 0) return;
+        idx = Math.max(0, Math.min(summaryDates.length - 1, idx));
+        showSummaryByDate(summaryDates[idx], options);
+      }
+
+      function goOlder() {
+        showSummaryByIndex(currentSummaryIdx - 1);
+      }
+
+      function goNewer() {
+        showSummaryByIndex(currentSummaryIdx + 1);
+      }
+
+      function goLatest() {
+        showSummaryByIndex(summaryDates.length - 1);
+      }
+
+      document.querySelectorAll('.reader-older').forEach(button => {
+        button.addEventListener('click', goOlder);
+      });
+      document.querySelectorAll('.reader-newer').forEach(button => {
+        button.addEventListener('click', goNewer);
+      });
+      document.querySelectorAll('.reader-latest').forEach(button => {
+        button.addEventListener('click', goLatest);
+      });
+
+      if (jumpSelect) {
+        jumpSelect.addEventListener('change', () => {
+          showSummaryByDate(jumpSelect.value);
+        });
+      }
+
+      // ----- Unread notification -----
+      let unreadToast = null;
+
+      function dismissUnreadToast() {
+        if (unreadToast) {
+          unreadToast.remove();
+          unreadToast = null;
+        }
+      }
+
+      function showUnreadToast(count) {
+        dismissUnreadToast();
+        unreadToast = document.createElement('div');
+        unreadToast.id = 'unread-toast';
+        unreadToast.setAttribute('role', 'status');
+        unreadToast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-40 max-w-[94vw] bg-sky-900/95 border border-sky-600 text-white rounded-lg shadow-2xl px-4 py-3 flex flex-wrap items-center gap-3';
+        const label = count === 1 ? 'new summary' : 'new summaries';
+        unreadToast.innerHTML =
+          '<span class="text-sm">' + count + ' ' + label + ' since your last visit</span>' +
+          '<button id="goto-latest-btn" class="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded whitespace-nowrap">Go to latest</button>' +
+          '<button id="dismiss-unread-btn" class="text-gray-400 hover:text-white text-xl leading-none px-1" aria-label="Dismiss">&times;</button>';
+        document.body.appendChild(unreadToast);
+        document.getElementById('goto-latest-btn').addEventListener('click', () => {
+          dismissUnreadToast();
+          goLatest();
+        });
+        document.getElementById('dismiss-unread-btn').addEventListener('click', dismissUnreadToast);
+      }
+
+      // ----- Deep links and browser history -----
+      function hashValue() {
+        return window.location.hash ? decodeURIComponent(window.location.hash.slice(1)) : '';
+      }
+
+      function dateFromHash() {
+        const value = hashValue();
+        if (!value) return null;
+        if (value.indexOf('summary-') === 0) return value.slice('summary-'.length);
+        const element = document.getElementById(value);
+        const article = element ? element.closest('.summary-item') : null;
+        return article ? article.id.replace('summary-', '') : null;
+      }
+
+      function anchorFromHash() {
+        const value = hashValue();
+        if (!value || value.indexOf('summary-') === 0) return null;
+        return document.getElementById(value);
+      }
+
+      function highlightAnchor(element) {
+        if (!element) return;
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
+        setTimeout(() => {
+          element.style.backgroundColor = '';
+        }, 1000);
       }
 
       function copyUpdateLink(anchorId) {
@@ -414,180 +571,8 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
           }
         });
       }
-      
-      // Scroll to anchor if present in URL
-      if (window.location.hash) {
-        setTimeout(() => {
-          const element = document.getElementById(window.location.hash.substring(1));
-          if (element) {
-            // Find which page this element is on
-            const article = element.closest('.summary-item');
-            if (article) {
-              const page = parseInt(article.dataset.page);
-              if (page !== currentPage) {
-                currentPage = page;
-                showPage(currentPage);
-              }
-            }
-            
-            setTimeout(() => {
-              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              element.style.backgroundColor = 'rgba(14, 165, 233, 0.1)';
-              setTimeout(() => {
-                element.style.backgroundColor = '';
-              }, 1000);
-            }, 100);
-          }
-        }, 100);
-      }
 
-      // ----- Track the last read summary in localStorage -----
-      const LAST_READ_KEY = 'digest-last-read-date';
-      const summaryArticles = Array.from(document.querySelectorAll('.summary-item'));
-      const summaryDates = summaryArticles.map(el => el.id.replace('summary-', ''));
-
-      let lastReadDate = null;
-      try {
-        lastReadDate = localStorage.getItem(LAST_READ_KEY);
-      } catch (err) {
-        lastReadDate = null;
-      }
-
-      function markSummaryRead(date) {
-        if (!date) return;
-        if (lastReadDate && date <= lastReadDate) return;
-        lastReadDate = date;
-        try {
-          localStorage.setItem(LAST_READ_KEY, date);
-        } catch (err) {}
-      }
-
-      // The summary currently occupying the top of the viewport is the one being read.
-      const READING_TOP_THRESHOLD = 120;
-      function getReadingSummary() {
-        for (const el of summaryArticles) {
-          if (!el.classList.contains('active')) continue;
-          const rect = el.getBoundingClientRect();
-          if (rect.bottom > READING_TOP_THRESHOLD && rect.top < window.innerHeight) return el;
-        }
-        return null;
-      }
-
-      let currentSummaryIdx = 0;
-      function syncCurrentIdx() {
-        const el = getReadingSummary();
-        if (el) currentSummaryIdx = summaryArticles.indexOf(el);
-      }
-
-      // Mark a summary as read only after it has stayed in the reading position for a while.
-      let readMarkTimer = null;
-      let pendingReadDate = null;
-      function updateReadingPosition() {
-        if (summaryArticles.length === 0) return;
-        dismissUnreadToastIfReached();
-        syncCurrentIdx();
-        const el = getReadingSummary();
-        const date = el ? el.id.replace('summary-', '') : null;
-        if (date === pendingReadDate) return;
-        pendingReadDate = date;
-        if (readMarkTimer) clearTimeout(readMarkTimer);
-        if (!date) return;
-        readMarkTimer = setTimeout(() => {
-          if (pendingReadDate === date) markSummaryRead(date);
-        }, 2000);
-      }
-
-      // Skip position tracking while a programmatic (smooth) scroll triggered by
-      // navigation is still in flight, so j/k presses are not undone mid-animation.
-      let programmaticScrollTimer = null;
-      function suppressScrollSync() {
-        if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
-        programmaticScrollTimer = setTimeout(() => {
-          programmaticScrollTimer = null;
-          updateReadingPosition();
-        }, 1500);
-      }
-
-      let scrollTicking = false;
-      window.addEventListener('scroll', () => {
-        if (scrollTicking || programmaticScrollTimer) return;
-        scrollTicking = true;
-        requestAnimationFrame(() => {
-          scrollTicking = false;
-          updateReadingPosition();
-        });
-      }, { passive: true });
-      window.addEventListener('resize', updateReadingPosition);
-
-      // ----- Toast pointing to the next unread summary -----
-      let unreadToast = null;
-      let unreadToastTarget = null;
-      function dismissUnreadToast() {
-        if (unreadToast) {
-          unreadToast.remove();
-          unreadToast = null;
-        }
-        unreadToastTarget = null;
-      }
-
-      // Once the target summary is on screen (or already scrolled past), the jump
-      // button is pointless, so hide the toast.
-      function dismissUnreadToastIfReached() {
-        if (!unreadToast || !unreadToastTarget) return;
-        const rect = unreadToastTarget.getBoundingClientRect();
-        // Summaries hidden by pagination have no size; ignore those.
-        if (rect.width === 0 && rect.height === 0) return;
-        if (rect.top < window.innerHeight) dismissUnreadToast();
-      }
-
-      function showUnreadToast(count, targetDate) {
-        dismissUnreadToast();
-        unreadToastTarget = document.getElementById('summary-' + targetDate);
-        unreadToast = document.createElement('div');
-        unreadToast.id = 'unread-toast';
-        unreadToast.setAttribute('role', 'status');
-        unreadToast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-sky-900/95 border border-sky-600 text-white rounded-lg shadow-2xl px-4 py-3 flex items-center gap-3';
-        const label = count === 1 ? 'new summary' : 'new summaries';
-        unreadToast.innerHTML =
-          '<span class="text-sm whitespace-nowrap">' + count + ' ' + label + ' since your last visit</span>' +
-          '<button id="goto-unread-btn" class="px-3 py-1.5 bg-sky-500 hover:bg-sky-400 text-sm font-semibold rounded whitespace-nowrap">Go to next unread summary</button>' +
-          '<button id="dismiss-unread-btn" class="text-gray-400 hover:text-white text-xl leading-none px-1" aria-label="Dismiss">&times;</button>';
-        document.body.appendChild(unreadToast);
-        document.getElementById('goto-unread-btn').addEventListener('click', () => {
-          dismissUnreadToast();
-          gotoSummaryByDate(targetDate);
-        });
-        document.getElementById('dismiss-unread-btn').addEventListener('click', dismissUnreadToast);
-      }
-
-      // ----- j / k keyboard navigation between summaries -----
-      function setCurrentSummary(idx) {
-        currentSummaryIdx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
-        summaryArticles.forEach((el, i) => el.classList.toggle('current', i === currentSummaryIdx));
-      }
-
-      function gotoSummary(idx) {
-        if (summaryArticles.length === 0) return;
-        idx = Math.max(0, Math.min(summaryArticles.length - 1, idx));
-        const el = summaryArticles[idx];
-        const page = parseInt(el.dataset.page);
-        const pageChanged = page !== currentPage;
-        if (pageChanged) {
-          currentPage = page;
-          showPage(page);
-        }
-        setCurrentSummary(idx);
-        suppressScrollSync();
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, pageChanged ? 100 : 0);
-      }
-
-      function gotoSummaryByDate(date) {
-        const idx = summaryDates.indexOf(date);
-        if (idx >= 0) gotoSummary(idx);
-      }
-
+      // ----- Keyboard navigation -----
       document.addEventListener('keydown', (event) => {
         if (event.metaKey || event.ctrlKey || event.altKey) return;
         const target = event.target;
@@ -596,27 +581,76 @@ const updateIndexPage = async (outputDir: string, outputSubpath: string) => {
         const key = event.key ? event.key.toLowerCase() : '';
         if (key === 'j') {
           event.preventDefault();
-          gotoSummary(currentSummaryIdx + 1);
+          goNewer();
         } else if (key === 'k') {
           event.preventDefault();
-          gotoSummary(currentSummaryIdx - 1);
+          goOlder();
         }
       });
 
       // ----- Init -----
-      if (summaryDates.length > 0 && lastReadDate) {
-        const unreadDates = summaryDates.filter(d => d > lastReadDate);
-        if (unreadDates.length > 0) {
-          showUnreadToast(unreadDates.length, unreadDates[unreadDates.length - 1]);
+      if (summaryDates.length === 0) {
+        if (readerDate) readerDate.textContent = 'No summaries';
+        if (readerPosition) readerPosition.textContent = '';
+        updateReaderControls();
+      } else {
+        const hashDate = dateFromHash();
+        const hashAnchor = anchorFromHash();
+
+        if (hashDate) {
+          // Keep update anchors intact, but normalize summary links.
+          showSummaryByDate(hashDate, { history: hashAnchor ? false : 'replace' });
+          if (hashAnchor) {
+            setTimeout(() => highlightAnchor(hashAnchor), 150);
+          }
+        } else {
+          const unreadDates = lastReadDate ? summaryDates.filter(date => date > lastReadDate) : [];
+          if (unreadDates.length > 0) {
+            // Resume at the first unread summary so the reader can continue
+            // forward in time from where they left off.
+            showSummaryByDate(unreadDates[0], { history: false });
+            fallbackSummaryDate = unreadDates[0];
+            if (unreadDates[0] !== summaryDates[summaryDates.length - 1]) {
+              showUnreadToast(unreadDates.length);
+            }
+          } else {
+            showSummaryByIndex(summaryDates.length - 1, { history: false });
+            fallbackSummaryDate = summaryDates[summaryDates.length - 1];
+          }
         }
       }
-      updateReadingPosition();
+
+      window.addEventListener('popstate', () => {
+        const hashDate = dateFromHash();
+        if (hashDate) {
+          showSummaryByDate(hashDate, { history: false });
+        } else if (fallbackSummaryDate) {
+          showSummaryByDate(fallbackSummaryDate, { history: false });
+        } else if (summaryDates.length > 0) {
+          showSummaryByIndex(summaryDates.length - 1, { history: false });
+        }
+        const hashAnchor = anchorFromHash();
+        if (hashAnchor) {
+          setTimeout(() => highlightAnchor(hashAnchor), 100);
+        }
+      });
+
+      setTimeout(() => {
+        checkForNewerIndexVersion();
+        setInterval(checkForNewerIndexVersion, 5 * 60 * 1000);
+      }, 30 * 1000);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkForNewerIndexVersion();
+        }
+      });
     </script>
 </body>
 </html>`;
 
     await fs.writeFile(path.join(outputDir, 'index.html'), indexContent);
-    console.log('✓ Index page updated with inline summaries and pagination');
+    console.log('✓ Index page updated with focused reader');
 };
 
 
@@ -758,4 +792,6 @@ const run = async () => {
   }
 };
 
-run();
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  run();
+}
