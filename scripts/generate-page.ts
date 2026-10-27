@@ -157,6 +157,15 @@ export const updateIndexPage = async (outputDir: string, outputSubpath: string) 
     const depth = outputSubpath ? outputSubpath.split('/').filter(p => p).length : 0;
     const prefix = depth > 0 ? '../'.repeat(depth) : '';
     const assetsPath = `${prefix}assets/daily-digest-logo.svg`;
+
+    // Base summaries are paused, but the on-top-of-chromium variant keeps running.
+    const disabledBanner = outputSubpath ? '' : `    <div class="bg-amber-900/40 border-b border-amber-600/60">
+      <div class="container mx-auto px-4 py-3">
+        <p class="text-sm text-amber-100">
+          <span aria-hidden="true" class="mr-2">⚠️</span>Summarisation has been disabled to avoid unnecessary token burning. Please let me know if you need this page to be updated here: <a href="https://github.com/McCzarny/chromium-daily-digest/issues" target="_blank" rel="noopener noreferrer" class="font-semibold text-amber-200 underline hover:text-white">https://github.com/McCzarny/chromium-daily-digest/issues</a>
+        </p>
+      </div>
+    </div>`;
     
     const files = await fs.readdir(outputDir);
     // Only include daily summaries matching YYYY-MM-DD.html pattern
@@ -222,6 +231,7 @@ export const updateIndexPage = async (outputDir: string, outputSubpath: string) 
         </div>
       </div>
     </header>
+${disabledBanner}
     <div class="sticky top-0 z-30 bg-gray-900/95 backdrop-blur border-b border-gray-700 shadow-lg">
       <div class="container mx-auto px-4 py-2.5">
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
