@@ -940,6 +940,11 @@ export async function executeToolCalls(toolCalls: ToolCall[]): Promise<string[]>
         console.error(`    ✗ Error fetching commit details:`, error);
         responses.push(`Tool call error for ${toolCall.name}: ${error}`);
       }
+    } else {
+      // Every tool call must get exactly one response, even for an unknown tool.
+      // Otherwise the assistant tool_calls turn is left unanswered on the next request.
+      console.warn(`    ⚠️  Unknown tool requested: ${toolCall.name}`);
+      responses.push(`Tool call error for ${toolCall.name}: unknown tool`);
     }
   }
 

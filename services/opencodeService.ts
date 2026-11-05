@@ -90,6 +90,8 @@ type ConversationItem =
 interface OpenCodeMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string | null;
+  /** Present on tool-role messages; ties the result to its assistant tool call. */
+  tool_call_id?: string;
   tool_calls?: Array<{
     id: string;
     type: "function";
@@ -127,8 +129,15 @@ function toChatCompletionsMessages(items: ConversationItem[]): OpenCodeMessage[]
         });
         break;
       case "tool":
-        // Chat Completions has no dedicated tool role; results go back as user turns.
-        messages.push({ role: "user", content: item.text });
+        // Every assistant tool_call must be answered by a tool message carrying the
+        // same tool_call_id. Sending results as user turns leaves the call unanswered,
+        // which upstream gateways reject with "insufficient tool messages".
+        if (item.callId) {
+          messages.push({ role: "tool", tool_call_id: item.callId, content: item.text });
+        } else {
+          // No call id was captured for this result, so replay it as a plain turn.
+          messages.push({ role: "user", content: item.text });
+        }
         break;
     }
   }
@@ -243,7 +252,7 @@ async function getContextLimit(model: string): Promise<number> {
   // that as the effective limit to keep the usage warning meaningful.
   if (model.trim().toLowerCase().startsWith("gpt-")) return 272000;
 
-  const defaultLimit = 1000000000; // 1M tokens
+  const defaultLimit = 1000000; // 1M tokens
   let lookup = contextLimitCache.get(model);
   if (!lookup) {
     lookup = (async () => {
