@@ -131,7 +131,13 @@ export interface SummaryConfig {
   // LLM provider to use for summary generation (default: 'gemini')
   llmProvider?: 'gemini' | 'openai' | 'anthropic' | 'nexos' | 'opencode';
 
+  // Provider to switch to if the primary provider fails during generation
+  llmFallbackProvider?: 'gemini' | 'openai' | 'anthropic' | 'nexos' | 'opencode';
+
   // Optional model override for the selected provider
   // (defaults to the provider's default, e.g. 'deepseek-v4.1-flash' for opencode)
   llmModel?: string;
+
+  // Optional model override for the fallback provider
+  llmFallbackModel?: string;
 }

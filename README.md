@@ -12,7 +12,7 @@ To check the daily and weekly summaries go to: https://mcczarny.github.io/chromi
 
 1. Install dependencies:
    `npm install`
-2. Set the `SECRET_GEMINI_API_KEY` and `SECRET_GITHUB_TOKEN` in [.env.local](.env.local) to your Gemini API key and GitHub token respectively. To use the OpenCode provider, also set `SECRET_OPENCODE_API_KEY` to your [OpenCode Zen](https://opencode.ai/auth) API key.
+2. Set the `SECRET_GEMINI_API_KEY` and `SECRET_GITHUB_TOKEN` in [.env.local](.env.local) to your Gemini API key and GitHub token respectively. If using OpenCode directly or as a Gemini fallback, also set `SECRET_OPENCODE_API_KEY` to your [OpenCode Zen](https://opencode.ai/auth) API key.
 3. Run the generator:
    ```bash
    # Generate daily summaries
@@ -61,7 +61,10 @@ Create a JSON configuration file to customize the summary generation:
   "outputPath": "subfolder",
   "ignoredBotEmails": ["bot@example.com"],
   "focusAreas": ["V8", "Blink", "DevTools"],
-  "maxPoints": 15
+  "maxPoints": 15,
+  "llmProvider": "gemini",
+  "llmFallbackProvider": "opencode",
+  "llmFallbackModel": "deepseek-v4.1-flash"
 }
 ```
 
@@ -81,7 +84,11 @@ Create a JSON configuration file to customize the summary generation:
 
 - **`llmProvider`** (optional): LLM backend to use. Supported values: `"gemini"` (default), `"opencode"`, `"nexos"`. The OpenCode provider uses the [OpenCode Go](https://opencode.ai/docs/go) OpenAI-compatible API and defaults to the **DeepSeek V4.1 Flash** model.
 
-- **`llmModel`** (optional): Override the model used by the selected provider. For example, `"deepseek-v4-pro"` when using `"opencode"`.
+- **`llmFallbackProvider`** (optional): Select a different implemented provider (`"gemini"`, `"opencode"`, or `"nexos"`) to continue generation if the primary provider fails. Any of these providers can be primary or fallback. Completed conversation turns are replayed so prior analysis is retained.
+
+- **`llmModel`** (optional): Override the model used by the primary provider.
+
+- **`llmFallbackModel`** (optional): Override the model used by `llmFallbackProvider`. For example, use `"deepseek-v4-pro"` when the fallback provider is `"opencode"`. If omitted, the fallback provider's default or provider-specific environment setting is used. This requires `llmFallbackProvider`.
 
 **OpenCode model protocols:**
 
@@ -97,6 +104,7 @@ OpenCode Zen serves every model over exactly one protocol, and the generator pic
 **Environment Variables:**
 
 - `LLM_PROVIDER` (optional): Overrides the `llmProvider` from the config file (or the default). Valid values: `gemini`, `opencode`, `nexos`.
+- `LLM_FALLBACK_PROVIDER` (optional): Overrides `llmFallbackProvider`. Supports `gemini`, `opencode`, or `nexos`, and must differ from the primary provider.
 - `SECRET_GEMINI_API_KEY`: Required when using the Gemini provider.
 - `SECRET_OPENCODE_API_KEY` (or `OPENCODE_API_KEY`): Required when using the OpenCode provider. Get it from [opencode.ai/auth](https://opencode.ai/auth).
 - `OPENCODE_API_BASE` (optional): Override the OpenCode API base URL (defaults to `https://opencode.ai/zen/go/v1`).

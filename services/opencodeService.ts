@@ -27,7 +27,7 @@ function sleep(ms: number): Promise<void> {
 /**
  * Resolve the model to use, allowing override via config or environment.
  */
-function getOpenCodeModel(config?: SummaryConfig): string {
+export function getOpenCodeModel(config?: SummaryConfig): string {
   return config?.llmModel || process.env.OPENCODE_MODEL || DEFAULT_OPENCODE_MODEL;
 }
 
@@ -499,7 +499,7 @@ function parseChatCompletionsPayload(
  * Implements the PlatformAdapter interface for the OpenCode Go API, which serves
  * each model over either /chat/completions or /responses depending on the model.
  */
-class OpenCodeAdapter implements PlatformAdapter {
+export class OpenCodeAdapter implements PlatformAdapter {
   private items: ConversationItem[] = [];
   private model: string;
   // Tool call ids from the most recent assistant turn, in order, so that tool
@@ -653,12 +653,13 @@ export async function generateSummary(
   totalCommitsCount: number,
   relevantCommitsCount: number,
   firstCommit: GitilesCommit,
-  lastCommit: GitilesCommit
+  lastCommit: GitilesCommit,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   const model = getOpenCodeModel(config);
   console.log(`  Using OpenCode (${model}) for summary generation...`);
 
-  const adapter = new OpenCodeAdapter(model);
+  const adapter = adapterOverride || new OpenCodeAdapter(model);
   const summary = await generateSummaryWithStrategy(
     adapter,
     commits,
@@ -670,7 +671,7 @@ export async function generateSummary(
     firstCommit,
     lastCommit
   );
-  summary.modelUsed = adapter.getModel();
+  summary.modelUsed = adapter instanceof OpenCodeAdapter ? adapter.getModel() : model;
   return summary;
 }
 
@@ -683,12 +684,13 @@ export async function generateWeeklySummary(
   startDate: string,
   endDate: string,
   year: number,
-  week: number
+  week: number,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   const model = getOpenCodeModel(config);
   console.log(`  Generating weekly summary for ${year} Week ${week} using OpenCode (${model})...`);
 
-  const adapter = new OpenCodeAdapter(model);
+  const adapter = adapterOverride || new OpenCodeAdapter(model);
   const prompt = createWeeklyPrompt(
     dailySummaries,
     config,
@@ -707,7 +709,7 @@ export async function generateWeeklySummary(
   });
 
   const summary = JSON.parse(response.content) as StructuredSummary;
-  summary.modelUsed = adapter.getModel();
+  summary.modelUsed = adapter instanceof OpenCodeAdapter ? adapter.getModel() : model;
   console.log(`  ✓ Weekly summary generated with ${summary.categories.length} categories`);
 
   return summary;

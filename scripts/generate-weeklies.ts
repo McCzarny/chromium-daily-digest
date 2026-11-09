@@ -141,7 +141,7 @@ const aggregateWeeklyData = (dailySummaries: DailySummaryData[]): WeeklyData[] =
 };
 
 const generateWeeklySummaryWithAI = async (weekData: WeeklyData, config: SummaryConfig): Promise<StructuredSummary> => {
-  const llmService = createLLMService(config.llmProvider || 'gemini');
+  const llmService = createLLMService(config.llmProvider || 'gemini', config.llmFallbackProvider);
   return llmService.generateWeeklySummary(
     weekData.dailySummaries,
     config,

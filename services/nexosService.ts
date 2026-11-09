@@ -88,8 +88,10 @@ const getCommitDetailsTool: NexosTool = {
  * Nexos Platform Adapter
  * Implements the PlatformAdapter interface for Nexos.ai API
  */
-class NexosAdapter implements PlatformAdapter {
+export class NexosAdapter implements PlatformAdapter {
   private messages: NexosMessage[] = [];
+
+  constructor(private readonly model: string = NEXOS_MODEL) {}
 
   async callAPI(
     _messages: any[],
@@ -122,7 +124,7 @@ class NexosAdapter implements PlatformAdapter {
           "Authorization": `Bearer ${NEXOS_TOKEN}`,
         },
         body: JSON.stringify({
-          model: NEXOS_MODEL,
+          model: this.model,
           messages: apiMessages,
           temperature: 0.3,
           response_format: options.requestJson ? { type: "json_object" } : undefined,
@@ -278,11 +280,12 @@ export async function generateSummary(
   totalCommitsCount: number,
   relevantCommitsCount: number,
   firstCommit: GitilesCommit,
-  lastCommit: GitilesCommit
+  lastCommit: GitilesCommit,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   console.log("  Using Nexos.ai for summary generation...");
   
-  const adapter = new NexosAdapter();
+  const adapter = adapterOverride || new NexosAdapter(config.llmModel);
   return generateSummaryWithStrategy(
     adapter,
     commits,
@@ -305,11 +308,12 @@ export async function generateWeeklySummary(
   startDate: string,
   endDate: string,
   year: number,
-  week: number
+  week: number,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   console.log(`  Generating weekly summary for ${year} Week ${week} using Nexos.ai...`);
 
-  const adapter = new NexosAdapter();
+  const adapter = adapterOverride || new NexosAdapter(config.llmModel);
   const prompt = createWeeklyPrompt(
     dailySummaries,
     config,

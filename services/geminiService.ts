@@ -2,6 +2,7 @@ import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 import { GitilesCommit, StructuredSummary, SummaryConfig } from "../types";
 import { 
   DailySummaryData,
+  ConversationMessage,
   PlatformAdapter,
   ToolCall,
   generateSummaryWithStrategy,
@@ -39,9 +40,10 @@ const RETRY_DELAY_MS = 60000;
 async function generateContentWithRetry(
   contents: any[],
   config: any,
-  operationName: string = 'API call'
+  operationName: string = 'API call',
+  initialModel: string = model
 ): Promise<any> {
-  let currentModel = model;
+  let currentModel = initialModel;
   
   for (let attempt = 1; attempt <= MAX_API_RETRIES; attempt++) {
     try {
@@ -63,7 +65,7 @@ async function generateContentWithRetry(
       let delay = RETRY_DELAY_MS;
       if (isRateLimitError && attempt < MAX_API_RETRIES) {
         // Switch to backup model if RequestsPerDay error is detected
-        if (isRequestsPerDayError && currentModel === model) {
+        if (isRequestsPerDayError && currentModel === initialModel) {
           console.warn(`\n⚠️  REQUESTS_PER_DAY LIMIT during ${operationName}, switching to backup model...`);
           currentModel = backupModel;
           delay = 0; // No need to wait if we're switching models
@@ -123,8 +125,10 @@ const getCommitDetailsTool: FunctionDeclaration = {
  * Gemini Platform Adapter
  * Implements the PlatformAdapter interface for Google Gemini API
  */
-class GeminiAdapter implements PlatformAdapter {
+export class GeminiAdapter implements PlatformAdapter {
   private chatHistory: any[] = [];
+
+  constructor(private readonly modelName: string = model) {}
 
   async callAPI(
     _messages: any[],
@@ -186,7 +190,8 @@ class GeminiAdapter implements PlatformAdapter {
     const response = await generateContentWithRetry(
       this.chatHistory,
       config,
-      'API call'
+      'API call',
+      this.modelName
     );
 
     // Add AI response to history
@@ -246,6 +251,30 @@ class GeminiAdapter implements PlatformAdapter {
   resetMessages(): void {
     this.chatHistory = [];
   }
+
+  restoreMessages(messages: ConversationMessage[]): void {
+    this.resetMessages();
+    for (const message of messages) {
+      if (message.role === 'user' || message.role === 'tool') {
+        this.addMessage(message.role, message.content, message.toolCalls);
+        continue;
+      }
+
+      const parts: any[] = [];
+      if (message.content) {
+        parts.push({ text: message.content });
+      }
+      for (const call of message.toolCalls || []) {
+        parts.push({
+          functionCall: {
+            name: call.name,
+            args: JSON.parse(call.arguments),
+          },
+        });
+      }
+      this.chatHistory.push({ role: 'model', parts });
+    }
+  }
 }
 
 /**
@@ -259,13 +288,13 @@ export async function generateSummary(
   totalCommitsCount: number,
   relevantCommitsCount: number,
   firstCommit: GitilesCommit,
-  lastCommit: GitilesCommit
+  lastCommit: GitilesCommit,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   console.log("  Using Gemini for summary generation...");
 
-  const adapter = new GeminiAdapter();
   return generateSummaryWithStrategy(
-    adapter,
+    adapterOverride || new GeminiAdapter(config.llmModel),
     commits,
     config,
     date,
@@ -286,11 +315,12 @@ export async function generateWeeklySummary(
   startDate: string,
   endDate: string,
   year: number,
-  week: number
+  week: number,
+  adapterOverride?: PlatformAdapter
 ): Promise<StructuredSummary> {
   console.log(`  Generating weekly summary for ${year} Week ${week} using Gemini...`);
 
-  const adapter = new GeminiAdapter();
+  const adapter = adapterOverride || new GeminiAdapter(config.llmModel);
   const prompt = createWeeklyPrompt(
     dailySummaries,
     config,

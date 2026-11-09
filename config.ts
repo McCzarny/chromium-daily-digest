@@ -13,17 +13,19 @@ const DEFAULT_CONFIG: SummaryConfig = {
   focusAreas: [],
   maxPoints: 25, // Keep daily digests focused instead of listing every change
   llmProvider: 'gemini', // Default LLM provider
+  llmFallbackProvider: undefined,
+  llmFallbackModel: undefined,
 };
 
 /**
  * Valid LLM providers that can be selected via config or the LLM_PROVIDER env variable
  */
-export const VALID_LLM_PROVIDERS = ['gemini', 'openai', 'anthropic', 'nexos', 'opencode'] as const;
+export const VALID_LLM_PROVIDERS = ['gemini', 'nexos', 'opencode'] as const;
+const IMPLEMENTED_LLM_PROVIDERS = ['gemini', 'nexos', 'opencode'] as const;
 
 /**
  * Apply environment variable overrides on top of a loaded configuration.
- * Currently supports:
- * - LLM_PROVIDER: overrides the configured llmProvider
+ * Currently supports LLM_PROVIDER and LLM_FALLBACK_PROVIDER.
  */
 export function applyEnvOverrides(config: SummaryConfig): SummaryConfig {
   const envProvider = process.env.LLM_PROVIDER?.trim();
@@ -34,6 +36,33 @@ export function applyEnvOverrides(config: SummaryConfig): SummaryConfig {
       );
     }
     config.llmProvider = envProvider as SummaryConfig['llmProvider'];
+  }
+
+  const envFallbackProvider = process.env.LLM_FALLBACK_PROVIDER?.trim();
+  if (envFallbackProvider) {
+    if (!(VALID_LLM_PROVIDERS as readonly string[]).includes(envFallbackProvider)) {
+      throw new Error(
+        `Invalid LLM_FALLBACK_PROVIDER "${envFallbackProvider}". Valid values: ${VALID_LLM_PROVIDERS.join(', ')}`
+      );
+    }
+    config.llmFallbackProvider = envFallbackProvider as SummaryConfig['llmFallbackProvider'];
+  }
+
+  if (config.llmFallbackProvider &&
+      !(IMPLEMENTED_LLM_PROVIDERS as readonly string[]).includes(config.llmFallbackProvider)) {
+    throw new Error(`Fallback provider "${config.llmFallbackProvider}" is not implemented`);
+  }
+  if (config.llmFallbackProvider && config.llmFallbackProvider === config.llmProvider) {
+    throw new Error('llmFallbackProvider must be different from llmProvider');
+  }
+  if (config.llmFallbackModel !== undefined) {
+    if (typeof config.llmFallbackModel !== 'string' || !config.llmFallbackModel.trim()) {
+      throw new Error('llmFallbackModel must be a non-empty string');
+    }
+    if (!config.llmFallbackProvider) {
+      throw new Error('llmFallbackModel requires llmFallbackProvider');
+    }
+    config.llmFallbackModel = config.llmFallbackModel.trim();
   }
   return config;
 }
@@ -82,7 +111,7 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
     
     // Apply environment variable overrides
     applyEnvOverrides(config);
-    
+
     // Validate outputPath doesn't try to escape public/summaries
     if (config.outputPath && (config.outputPath.includes('..') || path.isAbsolute(config.outputPath))) {
       throw new Error('outputPath must be a relative subpath within public/summaries (no ".." or absolute paths allowed)');
@@ -109,6 +138,15 @@ export async function loadConfig(configPath?: string): Promise<SummaryConfig> {
     }
     if (config.llmModel) {
       console.log(`  - LLM model: ${config.llmModel}`);
+    }
+    if (config.llmFallbackProvider) {
+      console.log(`  - LLM fallback provider: ${config.llmFallbackProvider}`);
+      if (process.env.LLM_FALLBACK_PROVIDER?.trim()) {
+        console.log('    (overridden by LLM_FALLBACK_PROVIDER env variable)');
+      }
+    }
+    if (config.llmFallbackModel) {
+      console.log(`  - LLM fallback model: ${config.llmFallbackModel}`);
     }
     
     return config;

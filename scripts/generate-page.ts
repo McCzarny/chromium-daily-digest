@@ -758,7 +758,7 @@ const run = async () => {
     console.log('Step 3/5: Generating summary with AI...');
 
     // Create LLM service with configured provider (defaults to Gemini)
-    const llmService = createLLMService(config.llmProvider || 'gemini');
+    const llmService = createLLMService(config.llmProvider || 'gemini', config.llmFallbackProvider);
     const summaryContent = await llmService.generateSummary(
       filteredCommits, 
       config,

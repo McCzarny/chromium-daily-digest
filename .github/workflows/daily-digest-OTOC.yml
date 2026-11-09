@@ -2,7 +2,7 @@ name: Daily Summary for On-Top-Of-Chromium configuration
 
 on:
   schedule:
-    - cron: '0 5,9 * * *'
+    - cron: '0 5,9,13 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -47,6 +47,8 @@ jobs:
       - name: Generate summary page
         if: steps.check-file.outputs.exists == 'false'
         env:
+          LLM_PROVIDER: gemini
+          LLM_FALLBACK_PROVIDER: opencode
           SECRET_GEMINI_API_KEY: ${{ secrets.SECRET_GEMINI_API_KEY }}
           SECRET_GITHUB_TOKEN: ${{ secrets.SECRET_GITHUB_TOKEN }}
           SECRET_NEXOS_TOKEN: ${{ secrets.SECRET_NEXOS_TOKEN }}

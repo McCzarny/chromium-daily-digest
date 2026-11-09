@@ -1,7 +1,20 @@
 import { GitilesCommit, StructuredSummary, SummaryConfig, SummaryPoint, CHROMIUM_COMPONENTS } from "../types";
-import { generateSummary as generateGeminiSummary, generateWeeklySummary as generateGeminiWeeklySummary } from "./geminiService";
-import { generateSummary as generateNexosSummary, generateWeeklySummary as generateNexosWeeklySummary } from "./nexosService";
-import { generateSummary as generateOpenCodeSummary, generateWeeklySummary as generateOpenCodeWeeklySummary } from "./opencodeService";
+import {
+  GeminiAdapter,
+  generateSummary as generateGeminiSummary,
+  generateWeeklySummary as generateGeminiWeeklySummary,
+} from "./geminiService";
+import {
+  NexosAdapter,
+  generateSummary as generateNexosSummary,
+  generateWeeklySummary as generateNexosWeeklySummary,
+} from "./nexosService";
+import {
+  OpenCodeAdapter,
+  getOpenCodeModel,
+  generateSummary as generateOpenCodeSummary,
+  generateWeeklySummary as generateOpenCodeWeeklySummary,
+} from "./opencodeService";
 import { fetchMultipleCommitDetails } from "./commitDetailService";
 
 const SECRET_GITHUB_TOKEN = process.env.SECRET_GITHUB_TOKEN;
@@ -43,7 +56,8 @@ export interface ILLMService {
     totalCommitsCount: number,
     relevantCommitsCount: number,
     firstCommit: GitilesCommit,
-    lastCommit: GitilesCommit
+    lastCommit: GitilesCommit,
+    adapter?: PlatformAdapter
   ): Promise<StructuredSummary>;
   
   generateWeeklySummary(
@@ -52,7 +66,8 @@ export interface ILLMService {
     startDate: string,
     endDate: string,
     year: number,
-    week: number
+    week: number,
+    adapter?: PlatformAdapter
   ): Promise<StructuredSummary>;
 }
 
@@ -74,10 +89,18 @@ export interface ILLMService {
 export class LLMService implements ILLMService {
   private provider: LLMProvider;
   private service: ILLMService;
+  private fallbackProvider?: LLMProvider;
 
-  constructor(provider: LLMProvider = 'gemini') {
+  constructor(provider: LLMProvider = 'gemini', fallbackProvider?: LLMProvider) {
     this.provider = provider;
     this.service = this.getService(provider);
+    this.fallbackProvider = fallbackProvider;
+    if (fallbackProvider) {
+      if (fallbackProvider === provider) {
+        throw new Error('Fallback LLM provider must be different from the primary provider');
+      }
+      this.getService(fallbackProvider);
+    }
   }
 
   /**
@@ -123,6 +146,7 @@ export class LLMService implements ILLMService {
     lastCommit: GitilesCommit
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
+    const adapter = this.createFailoverAdapter(config);
     const generated = await this.service.generateSummary(
       commits,
       config,
@@ -131,10 +155,14 @@ export class LLMService implements ILLMService {
       totalCommitsCount,
       relevantCommitsCount,
       firstCommit,
-      lastCommit
+      lastCommit,
+      adapter
     );
     const summary = limitSummaryPoints(generated, getMaxPoints(config));
-    if (!summary.modelUsed) {
+    if (adapter) {
+      const activeProvider = adapter.getActiveProvider(this.provider);
+      summary.modelUsed = this.getModelName(activeProvider, config, activeProvider !== this.provider);
+    } else if (!summary.modelUsed) {
       summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
     }
     return summary;
@@ -152,16 +180,21 @@ export class LLMService implements ILLMService {
     week: number
   ): Promise<StructuredSummary> {
     console.log(`  Using LLM provider: ${this.provider}`);
+    const adapter = this.createFailoverAdapter(config);
     const generated = await this.service.generateWeeklySummary(
       dailySummaries,
       config,
       startDate,
       endDate,
       year,
-      week
+      week,
+      adapter
     );
     const summary = limitSummaryPoints(generated, getMaxPoints(config));
-    if (!summary.modelUsed) {
+    if (adapter) {
+      const activeProvider = adapter.getActiveProvider(this.provider);
+      summary.modelUsed = this.getModelName(activeProvider, config, activeProvider !== this.provider);
+    } else if (!summary.modelUsed) {
       summary.modelUsed = config.llmModel || (this.provider === 'gemini' ? 'gemini-3.7-flash' : this.provider);
     }
     return summary;
@@ -173,13 +206,57 @@ export class LLMService implements ILLMService {
   getProvider(): LLMProvider {
     return this.provider;
   }
+
+  private createFailoverAdapter(config: SummaryConfig): FailoverPlatformAdapter | undefined {
+    const fallbackProvider = config.llmFallbackProvider || this.fallbackProvider;
+    if (!fallbackProvider) return undefined;
+    if (fallbackProvider === this.provider) {
+      throw new Error('Fallback LLM provider must be different from the primary provider');
+    }
+
+    return new FailoverPlatformAdapter(
+      this.createPlatformAdapter(this.provider, config),
+      this.createPlatformAdapter(fallbackProvider, config),
+      fallbackProvider
+    );
+  }
+
+  private createPlatformAdapter(provider: LLMProvider, config: SummaryConfig): PlatformAdapter {
+    const isFallback = provider !== this.provider;
+    const model = isFallback ? config.llmFallbackModel : config.llmModel;
+    switch (provider) {
+      case 'gemini':
+        return new GeminiAdapter(model);
+      case 'nexos':
+        return new NexosAdapter(model);
+      case 'opencode':
+        return new OpenCodeAdapter(getOpenCodeModel({ llmModel: model }));
+      case 'openai':
+        throw new Error('OpenAI provider not yet implemented');
+      case 'anthropic':
+        throw new Error('Anthropic provider not yet implemented');
+      default:
+        throw new Error(`Unknown LLM provider: ${provider}`);
+    }
+  }
+
+  private getModelName(provider: LLMProvider, config: SummaryConfig, isFallback: boolean): string {
+    const model = isFallback ? config.llmFallbackModel : config.llmModel;
+    if (provider === 'opencode') {
+      return getOpenCodeModel({ llmModel: model });
+    }
+    return model || (provider === 'gemini' ? 'gemini-3.7-flash' : provider);
+  }
 }
 
 /**
  * Factory function to create LLM service with specified provider
  */
-export function createLLMService(provider: LLMProvider = 'gemini'): LLMService {
-  return new LLMService(provider);
+export function createLLMService(
+  provider: LLMProvider = 'gemini',
+  fallbackProvider?: LLMProvider
+): LLMService {
+  return new LLMService(provider, fallbackProvider);
 }
 
 /**
@@ -898,6 +975,117 @@ export interface PlatformAdapter {
    * Reset the message history
    */
   resetMessages(): void;
+
+  /** Restore a neutral conversation history when switching providers. */
+  restoreMessages?(messages: ConversationMessage[]): void;
+}
+
+export interface ConversationMessage {
+  role: 'user' | 'assistant' | 'tool';
+  content: string;
+  toolCalls?: ToolCall[];
+}
+
+/**
+ * Retry a failed conversation turn on a backup adapter without discarding the
+ * successful turns already completed by the primary provider.
+ */
+export class FailoverPlatformAdapter implements PlatformAdapter {
+  private activeAdapter: PlatformAdapter;
+  private readonly history: ConversationMessage[] = [];
+  private switchedToFallback = false;
+
+  constructor(
+    private readonly primaryAdapter: PlatformAdapter,
+    private readonly fallbackAdapter: PlatformAdapter,
+    private readonly fallbackProvider: LLMProvider
+  ) {
+    this.activeAdapter = primaryAdapter;
+  }
+
+  async callAPI(
+    messages: any[],
+    options: { systemPrompt?: string; enableTools?: boolean; requestJson?: boolean }
+  ): Promise<{ content: string; toolCalls?: ToolCall[] }> {
+    try {
+      const response = await this.activeAdapter.callAPI(messages, options);
+      this.validateResponse(response, options.requestJson);
+      this.recordAssistantResponse(response);
+      return response;
+    } catch (primaryError) {
+      if (this.switchedToFallback) {
+        throw primaryError;
+      }
+
+      console.warn(
+        `Primary LLM provider failed; continuing with ${this.fallbackProvider}. ` +
+        `Previous successful conversation turns will be replayed.`
+      );
+      console.warn(`Primary provider error: ${primaryError instanceof Error ? primaryError.message : primaryError}`);
+
+      this.switchedToFallback = true;
+      this.activeAdapter = this.fallbackAdapter;
+      this.activeAdapter.resetMessages();
+      if (this.activeAdapter.restoreMessages) {
+        this.activeAdapter.restoreMessages(this.history);
+      } else {
+        for (const message of this.history) {
+          this.activeAdapter.addMessage(message.role, message.content, message.toolCalls);
+        }
+      }
+
+      try {
+        const response = await this.activeAdapter.callAPI(this.activeAdapter.getMessages(), options);
+        this.validateResponse(response, options.requestJson);
+        this.recordAssistantResponse(response);
+        return response;
+      } catch (fallbackError) {
+        throw new AggregateError(
+          [primaryError, fallbackError],
+          `Both the primary LLM provider and fallback provider (${this.fallbackProvider}) failed`
+        );
+      }
+    }
+  }
+
+  addMessage(role: 'user' | 'assistant' | 'tool', content: string, toolCalls?: ToolCall[]): void {
+    const last = this.history[this.history.length - 1];
+    if (role === 'assistant' && last?.role === 'assistant' &&
+        last.content === content && JSON.stringify(last.toolCalls) === JSON.stringify(toolCalls)) {
+      return;
+    }
+
+    this.history.push({ role, content, toolCalls });
+    this.activeAdapter.addMessage(role, content, toolCalls);
+  }
+
+  getMessages(): any[] {
+    return this.activeAdapter.getMessages();
+  }
+
+  resetMessages(): void {
+    this.history.length = 0;
+    this.activeAdapter.resetMessages();
+  }
+
+  getActiveProvider(primaryProvider: LLMProvider): LLMProvider {
+    return this.switchedToFallback ? this.fallbackProvider : primaryProvider;
+  }
+
+  private recordAssistantResponse(response: { content: string; toolCalls?: ToolCall[] }): void {
+    this.history.push({
+      role: 'assistant',
+      content: response.content,
+      toolCalls: response.toolCalls,
+    });
+    this.activeAdapter.addMessage('assistant', response.content, response.toolCalls);
+  }
+
+  private validateResponse(response: { content: string }, requestJson?: boolean): void {
+    if (requestJson) {
+      JSON.parse(response.content);
+    }
+  }
 }
 
 /**

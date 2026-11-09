@@ -73,6 +73,17 @@ jobs:
             export LLM_PROVIDER="$PROVIDER"
           fi
 
+          PRIMARY_PROVIDER="$PROVIDER"
+          if [ "$PRIMARY_PROVIDER" = "default" ]; then
+            PRIMARY_PROVIDER="${LLM_PROVIDER:-gemini}"
+            if [ -z "$LLM_PROVIDER" ] && [ -n "$CONFIG" ]; then
+              PRIMARY_PROVIDER=$(node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));process.stdout.write(c.llmProvider||'gemini')" "$CONFIG")
+            fi
+          fi
+          if [ "$PRIMARY_PROVIDER" != "opencode" ]; then
+            export LLM_FALLBACK_PROVIDER=opencode
+          fi
+
           if ! [[ "$DAYS" =~ ^[0-9]+$ ]] || [ "$DAYS" -lt 1 ]; then
             echo "::error::'days' must be a positive integer (got '$DAYS')"
             exit 1
