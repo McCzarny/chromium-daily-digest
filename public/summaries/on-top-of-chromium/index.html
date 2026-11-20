@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="../assets/daily-digest-logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="digest-version" content="2026-11-19T15:00:40.929Z-2026-11-18-30" />
+    <meta name="digest-version" content="2026-11-20T14:51:30.410Z-2026-11-19-30" />
     <title>Chromium Summaries</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -64,6 +64,440 @@
         <a href="./weeklies.html" class="text-green-500 hover:text-green-300 text-lg font-semibold">📅 View Weekly Summaries →</a>
       </div>
       <div id="summaries-container" class="space-y-8">
+        
+        <article id="summary-2026-11-19" data-date="2026-11-19" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700">
+          <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-white">2026-11-19</h2>
+             <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-sky-900/70 border border-sky-700 text-sky-200 text-xs font-medium">Summarized by deepseek-v4.1-flash</span>
+             <a href="./2026-11-19.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
+              <span>Open Standalone Page</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+          <div class="p-6">
+            <div class="prose prose-invert max-w-none w-full">
+              <h3 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2026-11-19</h3>
+              
+            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
+            <div class="text-gray-300">On 2026-11-19 the main branch received 1240 commits, of which roughly 960 were judged relevant to Chromium embedders. The range runs from <a href="https://chromium.googlesource.com/chromium/src/+/14597784b773b658575ba3017cf4b8a6317e2e86" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(1459778)</a> to <a href="https://chromium.googlesource.com/chromium/src/+/88225bfcf753e287c3cfecd8203ddfdae93508d6" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(88225bf)</a>. Five confirmed breaking changes land in embedder-facing interfaces (extension response payloads, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NavigationUIData</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStripModelObserver</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ComponentUpdateService::Cancel</code>, and the system proxy resolver switch), alongside several security hardening fixes, Windows/macOS browser UI work, measurable performance wins in bookmark menus and text layout, and build-level changes around C23 and PartitionAlloc.
+              <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Breaking Changes & Required Migrations</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-0-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span><strong class="text-red-400 font-bold">Breaking:</strong> <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">extensions::ExtensionFunction::ResponseCallback</code> now carries <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">extensions::mojom::ResponseWrapperPtr</code> instead of <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::ListValue</code>, and the same substitution ripples through <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LocalFrameHost.Request()</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ServiceWorkerHost.RequestWorker()</code> via a new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ResponseWrapper</code> union. Embedders that subclass <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ExtensionFunction</code>, install a custom <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">response_callback_</code>, or implement those mojom methods must migrate. This is CL 1/3 moving <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">declarativeNetRequest.getDynamicRules()</code> serialization off the browser UI thread (up to 30,000 rules per call).
+            
+              <a href="https://github.com/chromium/chromium/commit/af69b748a42f35e44bcbf6eb0a162c7a1bf12326" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(af69b74)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-0-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-0-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span><strong class="text-red-400 font-bold">Breaking:</strong> <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">content::NavigationUIData::CloneForNewNavigation()</code> is renamed to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">MaybeCreateForRedispatchedNavigation()</code> with a clarified contract (subclasses may return <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">nullptr</code> when all caller-supplied fields are default). Any embedder overriding the virtual or calling the redispatch clone in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OpenURLParams::FromNavigationHandle()</code> fails to compile until migrated.
+            
+              <a href="https://github.com/chromium/chromium/commit/797a1d893b4a7d8b124c5f36f6d2cbb04a283e52" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(797a1d8)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Navigation</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-0-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-0-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span><strong class="text-red-400 font-bold">Breaking:</strong> <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TabStripModelObserver::OnTabBlockedStateChanged(tabs::TabInterface*)</code> becomes <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnTabBlockedStateChanged(tabs::TabHandle)</code>, and the newer <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnTabChanged(tabs::TabHandle, TabChangeType)</code> hook is added (defaulting to forward to the deprecated <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnTabChangedAt</code>, with in-tree observers migrated). Downstream browser forks implementing either observer member must update.
+            
+              <a href="https://github.com/chromium/chromium/commit/749b032def73761e494bcb32fba4861e4a211858" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(749b032)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/ad58ca33e3a8f1c8c78ad0171ff3e11ca285e87d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(ad58ca3)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/c2fa9e1729b4311b6a2b95a68dbedfa3a63a0228" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(c2fa9e1)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/7f054396df01302c826d165007307217b620ea6b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7f05439)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Tabs</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-0-3" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-0-3')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span><strong class="text-red-400 font-bold">Breaking:</strong> <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ComponentUpdateService::Cancel(id)</code> becomes <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Cancel(id, update_client::CancelMode)</code>, a new pure virtual on the exported, commonly-mocked updater interface. All embedder implementations and mocks break. Runtime behavior is deliberately unchanged for now (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">UrlFetcherDownloader::Cancel</code> ignores <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kKeepPartialDownload</code>), and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CrxUpdateService::CancelMeteredDownloads()</code> now picks the mode per component.
+            
+              <a href="https://github.com/chromium/chromium/commit/03e4b71614c84c9c9c2eae55b9fe8bba1cc6eca6" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(03e4b71)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Updater</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-0-4" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-0-4')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-900 text-red-200 border border-red-700 mr-2" title="Breaking Change">⚠️</span><strong class="text-red-400 font-bold">Breaking:</strong> <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">switches::kUseSystemProxyResolver</code> is deleted. Native system proxy resolution (WinHTTP on Windows, CFNetwork on macOS) is now gated by <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BASE_FEATURE(kSystemProxyResolver, FEATURE_DISABLED_BY_DEFAULT)</code> enabled via <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--enable-features=SystemProxyResolver</code>, with legacy <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">--winhttp-proxy-resolver</code> taking precedence. Proxy-service construction — including the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">URLRequestContextBuilderMojo</code> path — always routes through <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver()</code>, so out-of-tree system-resolver implementations are affected, and macOS PAC execution is still unsupported in the utility-process resolver.
+            
+              <a href="https://github.com/chromium/chromium/commit/8a813b92f16688f1d60cce60f836ca67c585c373" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(8a813b9)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">macOS</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Windows</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Security & Privacy</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-1-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-1-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">getDisplayMedia</code> frame-rate constraints can no longer crash the browser process: an ideal <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">frameRate</code> of 0, negative or subnormal produced a 0 fps value that passed <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">VideoCaptureFormat::IsValid()</code> and hit a <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">DCHECK_GT</code>/divide-by-zero in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">DesktopCaptureDevice</code>. Constraint selection now enforces a 1/1024 fps minimum, non-positive rates are rejected before reaching the device, and the device-level check is a <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CHECK_GT</code>.
+            
+              <a href="https://github.com/chromium/chromium/commit/580ea91df97e1550120fd39040c2a63fe1710f18" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(580ea91)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Media</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-1-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-1-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            GWP-ASan and on-demand heap profiling are restored in release/official builds. An over-broad <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">EXPENSIVE_TEST_LOGIC_IS_ON()</code> guard had disabled GWP-ASan in production and flipped <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">PoissonAllocationSamplerInclusion</code> to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kDynamic</code>, breaking Perfetto <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">HeapProfilingDataSource</code> and DevTools <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Memory.startSampling</code>; <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kEnforce</code> is now unconditional with hooks deferred until sampling starts.
+            
+              <a href="https://github.com/chromium/chromium/commit/0bece1a5014e8ae94a56c12ec47199df85a8ca01" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(0bece1a)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-sky-900 text-sky-200 border-sky-700 mr-1">Base</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-teal-900 text-teal-200 border-teal-700 mr-1">DevTools</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-1-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-1-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            IDN spoof-check hardening: the whole-script-confusable loop in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IDNSpoofChecker::SafeToDisplayAsUnicode()</code> now runs for all <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">USPOOF_SINGLE_SCRIPT_RESTRICTIVE</code> labels before the kana/combining-mark exception gate, closing a bypass where one added combining mark (U+0301/U+0326) suppressed the check on Cyrillic/Greek lookalikes. Relatedly, dragged <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">.url</code> shortcuts now sanitize Windows reserved device names (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">COM1.url</code> → <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">_COM1.url</code>) and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::IsReservedNameOnWindows()</code> also matches superscript device digits and trailing-space variants.
+            
+              <a href="https://github.com/chromium/chromium/commit/ba5d1b8f13f3a81fc9688af42dabbdb51c5de4fc" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(ba5d1b8)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/952223dc1f0d38fbe36f24ba06f416a4977ed43c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(952223d)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Windows</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-1-3" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-1-3')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Origin validation tightened in two user-visible surfaces: persistent notification click/close events are only dispatched to a service-worker registration that is live and whose storage key matches the notification's origin (including notifications already persisted with attacker-supplied registration IDs), and PiP/always-on-top title bars resolve non-standard and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">filesystem:</code> URLs from the committed or precursor origin tuple with <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ELIDE_HEAD</code> restricted to hierarchical HTTP(S), blocking origin spoofing in the window title.
+            
+              <a href="https://github.com/chromium/chromium/commit/0e75955bff053836c4d62d737887dc348728f686" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(0e75955)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/cb1367d9f0510767f64bd2660987f8d1183463d4" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(cb1367d)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-amber-900 text-amber-200 border-amber-700 mr-1">Notifications</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Networking & Authentication</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-2-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-2-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            All Windows SSPI work (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">AcquireCredentialsHandle</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">InitializeSecurityContext</code>) is serialized on a single shared sequence, still off the network thread. Overlapping calls against the same typed credentials previously failed with <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">SEC_E_INVALID_TOKEN</code>, breaking NTLM/Negotiate authentication. Gated by <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kSerializeSspiCalls</code> in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">net/base/features</code>, restoring branch-156 serialization semantics.
+            
+              <a href="https://github.com/chromium/chromium/commit/c4a99be50fd3434bbd1c1b862398c330a4aef1b0" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(c4a99be)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Windows</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-2-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-2-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">HostResolverManager</code> no longer aborts in-flight DNS transactions when configuration arrives or refreshes, except for transactions that genuinely depended on the configuration. On Windows and macOS, where the platform resolver owns nameserver and Private DNS selection, this removes spurious early/concurrent lookup failures during network transitions.
+            
+              <a href="https://github.com/chromium/chromium/commit/b45ed08313c295ab0e9749dd709eb5ceb02c2a69" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(b45ed08)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-2-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-2-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Device Bound Session Credentials now reject cross-site refresh session configs by default (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kDeviceBoundSessionsRequireSameSiteRefresh</code>, shipped enabled): a refresh response whose final registration URL is not same-site with the fetcher endpoint fails fatally (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">SessionError::kCrossSiteRefreshSessionConfig</code>) and the existing session is deleted. Separately, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CacheStorageCache</code> truncates stale stream bytes, so an opaque response body can no longer remain readable after an empty put (both the response header and blob paths were fixed).
+            
+              <a href="https://github.com/chromium/chromium/commit/d296a634c3693ca9e103ec03a460d5c43d508bc3" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(d296a63)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/47f720b0e1b8f3e9b7cd6c1e1f4c9a4e5f0e6c11" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(47f720b)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-green-900 text-green-200 border-green-700 mr-1">Storage</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Browser UI & Lifecycle (Windows/macOS)</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-3-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-3-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            macOS status tray rework: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">StatusIconMac</code> keeps <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NSMenu</code> populated across all modes, swizzles <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">-[NSStatusBarButton mouseDown:]</code> alongside <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">rightMouseDown:</code> so plain left-clicks dispatch click events when <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">open_menu_with_secondary_click()</code> is set (Control-click, right-click and VoiceOver <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">AXPress</code> open the menu), defers mid-tracking menu rebuilds to <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NSMenuDidEndTrackingNotification</code>, and keeps <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">accessibilityLabel</code> in sync with the tooltip. Custom <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">StatusIconMac</code> consumers should be re-tested.
+            
+              <a href="https://github.com/chromium/chromium/commit/0786bf21bf1680abbbd85cf64b2a418952760863" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(0786bf2)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">macOS</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">Accessibility</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-3-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-3-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            App menu behavior: browser shortcuts no longer leave the App menu open (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BrowserNativeWidgetMac::ExecuteCommand</code> cancels the owning Views menu after <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">WillExecuteCommand</code> confirms the command runs, leaving textfield editing shortcuts untouched), and app-menu search now scores multi-word queries word-by-word across title, secondary text and synonyms with cross-field discounts, adds zoom/fullscreen/light-dark-mode synonyms, and fixes zoom tooltip casing.
+            
+              <a href="https://github.com/chromium/chromium/commit/3ba677956ea455d7608dd0ed334e9b350fe23d50" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(3ba6779)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/60cb8bb4c646d982518421ed49c24ccfea18320b" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(60cb8bb)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/b926ccd33d887abccd3cc56f4f967bf0b6d1fd99" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(b926ccd)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/f19aa5b9b03c95f08728a02b20eb149ffd182f08" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(f19aa5b)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">macOS</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-3-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-3-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Startup/shutdown lifetime fixes: the profile picker is shown before its profile's windows close so its process keep-alive is registered (previously cancelling device-signals consent could shut the app down with the picker open); <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RenderWidgetHostViewAura</code> retains its <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">LocalSurfaceId</code> across the first navigation while no content has been shown (fixes an empty first paint such as the startup WebUI toolbar); and spare renderer creation is once again scaled by memory pressure when <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kKillSpareRenderOnMemoryPressure</code> is off.
+            
+              <a href="https://github.com/chromium/chromium/commit/edf9bd8833ca94b9e6a30b86635a3b3ce07ab106" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(edf9bd8)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/77cd8852234e01827a02de58bf0bd9e3e6e796be" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(77cd885)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/c5f520da8a089ac75a0e73c59c59b3916aee493d" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(c5f520d)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Profiles</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-sky-900 text-sky-200 border-sky-700 mr-1">Compositor</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-3-3" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-3-3')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Windows-specific fixes: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BrowserWindowPropertyManager::UpdateWindowProperties()</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ProfileShortcutManagerWin::OnProfileIconCreateSuccess()</code> now skip work when a profile has no <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ProfileAttributesEntry</code> (previously a <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NotFatalUntil::M162</code> CHECK followed by a null dereference in multi-profile builds), and the recovery image writer issues <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IOCTL_DISK_DELETE_DRIVE_LAYOUT</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IOCTL_DISK_UPDATE_PROPERTIES</code> before raw writes so Windows can no longer remount stale partitions over a verified image.
+            
+              <a href="https://github.com/chromium/chromium/commit/992ab8af158a0c1c1f63a8808080cf0d86870e79" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(992ab8a)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/bc63579eaa7bcc08ec2aa3a37d6a42a574126288" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(bc63579)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">Windows</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Profiles</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Extensions, Enterprise & Policy</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-4-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-4-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Extension accelerator registration for off-the-record windows is now gated on <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IsExtensionAllowedInContext()</code>, with defense-in-depth in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ExecuteCommands()</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CommandExecuted()</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">DispatchCommandEvent()</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ActiveTabPermissionGranter::GrantIfRequested()</code>. This fixes both a focus-steal with incognito-split extension windows and a cross-incognito <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">activeTab</code> grant / <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">commands.onCommand</code> leak; <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnExtensionUnloaded()</code> stays unguarded so revoking incognito access still unregisters accelerators.
+            
+              <a href="https://github.com/chromium/chromium/commit/d637beb092a17f814d036fec65809dcab257f00e" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(d637beb)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-4-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-4-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">InstallPromptData</code> gains <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">GetNonHostPermissions()</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">GetNonHostPermissionCount()</code>, site-access header/option/subtext getters, and visible plus collapsed bulleted site lists, with new <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">extensions_strings.grd</code> entries. <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">GetPermissions()</code> is intentionally unchanged, so the install dialog is unaffected until the follow-up Views/Android CLs.
+            
+              <a href="https://github.com/chromium/chromium/commit/99647db64df3580924710d7f77f7f9adc4d49aee" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(99647db)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-4-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-4-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Enterprise policy changes: OIDC policy and client registration are preserved across profile switches (only reset when the store lacks valid policy or the connected client uses a different DM token), the Azure AD workplace-join escape hatch <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kFilterSensitivePoliciesOnWorkplaceJoinedDevices</code> is removed (default behavior unchanged, but the runtime rollback lever is gone), and Indigo gains disabled-by-default client-side country/locale eligibility filtering that records the would-be result once per session.
+            
+              <a href="https://github.com/chromium/chromium/commit/0412f45f34bd5d236b9ad08ca40255a9d7c6ed88" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(0412f45)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/856b651a5d5f0e5a9e6e5a1c0b8f8a4b0b7e5f1c" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(856b651)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/eb21c12c8a6bb8cb69f2b477ee499b75eba581d9" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(eb21c12)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-fuchsia-900 text-fuchsia-200 border-fuchsia-700 mr-1">Enterprise</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-slate-700 text-slate-200 border-slate-500 mr-1">Policy</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Profiles</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Performance</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-5-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-5-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            macOS bookmark menus defer title elision and favicon loading to an interactive <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">NSMenu</code> tracking session under <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kBookmarkMenuOptimizations</code>: AppKit traversal of 210K bookmarks drops from ~23 s to under 1 s, profile teardown from ~19 s to ~1 s, and opening a 100-item folder costs ~25–40 ms. (Help-menu search still finalizes eagerly.)
+            
+              <a href="https://github.com/chromium/chromium/commit/25ba7ca183aafe2247743fbc2c0f4102994d6d01" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(25ba7ca)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-zinc-700 text-zinc-200 border-zinc-500 mr-1">Bookmarks</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-rose-900 text-rose-200 border-rose-700 mr-1">macOS</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-5-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-5-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            Latency and allocation wins: Safe Browsing page-activation callbacks now run on the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">BrowserTaskType::kNavigationNetworkResponse</code> UI runner (feature-flagged) instead of congested default-priority tasks, and DevTools <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Fetch</code> request interception replaces <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::flat_set&lt;ResourceType&gt;</code> with a 4-byte <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::EnumSet</code> bitmask, removing per-pattern heap allocation and shrinking <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Pattern::Matches()</code> to an inline test.
+            
+              <a href="https://github.com/chromium/chromium/commit/8476cd80e1abccbba6e0332eb217a60089b81c97" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(8476cd8)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/44f204d7f52191b61129eb3e2aa93a6542f08f67" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(44f204d)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-teal-900 text-teal-200 border-teal-700 mr-1">DevTools</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-5-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-5-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">OnDeviceTailModelService</code> now stores delivered model files but defers <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">TFLite</code> interpreter construction (reusing the existing memory-pressure unload/load-on-demand path) until the first <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RunTailModelExecutor()</code> request, so clients no longer keep the interpreter resident when the model is never used.
+            
+              <a href="https://github.com/chromium/chromium/commit/e3163ac495dd6deea2ef791cb3a2c296eb8bfb57" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(e3163ac)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">AI</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+    <div>
+      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Build, Base & I18n</h3>
+      <ul class="list-disc list-inside space-y-3">
+        
+          <li id="update-2026-11-19-6-0" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-6-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            C and Objective-C compilation moves to C23 (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">/std:clatest</code> on clang-cl, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">-std=c23</code> elsewhere); <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">.m</code> files inherit it. Downstream <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">.c</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">.m</code> code that uses <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">unreachable</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">deprecated</code> as identifiers or type-positioned attributes may need fixes — the reland had to pin weston to C11 for exactly that reason.
+            
+              <a href="https://github.com/chromium/chromium/commit/7332e81b7d98dcc188ff31c1946a39e7a6137bda" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7332e81)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Build</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-6-1" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-6-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">USING_FAST_MALLOC</code> is now a no-op under <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">USE_PARTITION_ALLOC_AS_MALLOC</code> (no class-level <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">operator new/delete</code>; sized and over-aligned allocation preserved), and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">raw_ptr</code> enforcement widens: the plugin now enforces <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">raw_ptr</code> inside <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">std::vector</code> and the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">VectorExperimental</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">SetExperimental</code>/<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">CtnExperimental</code> container traits are dropped from <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">chrome/browser/ui</code> containers, enabling PartitionAlloc dangling-pointer detection — expect new diagnostics or dangling-pointer crashes in debug/ASan configurations.
+            
+              <a href="https://github.com/chromium/chromium/commit/75365f0081a95265fbf6d2a40dfab504938df4bc" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(75365f0)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/018e5bebe293f78dbfdd5168e8717f770c1ea4ed" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(018e5be)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/7de023f4d810b04d73ac55eaef2bddee0555d603" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(7de023f)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-sky-900 text-sky-200 border-sky-700 mr-1">Base</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Build</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span></div>
+          </li>
+        
+          <li id="update-2026-11-19-6-2" class="text-gray-300 group relative">
+            <button onclick="copyUpdateLink('update-2026-11-19-6-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+            </button>
+            I18n and resource plumbing: <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">IcuBridge::ListFormatter</code> adds a thread-safe, locale-bound formatter with <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">FormatStandardList()</code>, <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">FormatNarrowList()</code> and <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">FormatUnitList()</code> behind an 8-entry LRU cache; <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">base::i18n::LanguageTag::IsUndefined()</code> is added to detect <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">&quot;und&quot;</code> tags from <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">PrefService::GetLanguageTag()</code>; and Windows string-resource generation now fails closed with a <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">RuntimeError</code> when a requested string ID or active-brand mode-specific string is missing from the <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">.grd</code> inputs.
+            
+              <a href="https://github.com/chromium/chromium/commit/13ff688820d00db250f690e2590dd1709959b35e" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(13ff688)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/59862293c39c0ee6b7f1e4d1c0e0c3e5b98a4a1f" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(5986229)</a>
+            
+              <a href="https://github.com/chromium/chromium/commit/4e3a53b5fba709d3f63a9003c777f7a50bc576bc" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(4e3a53b)</a>
+            
+            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-stone-700 text-stone-200 border-stone-500 mr-1">I18n</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-sky-900 text-sky-200 border-sky-700 mr-1">Base</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Build</span></div>
+          </li>
+        
+      </ul>
+    </div>
+  
+          
+            </div>
+          </div>
+        </article>
         
         <article id="summary-2026-11-18" data-date="2026-11-18" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700">
           <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
@@ -12596,180 +13030,6 @@
               <a href="https://github.com/chromium/chromium/commit/c1f557d4e4b39d28dd91ea83b6be20b64e134391" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(c1f557d)</a>
             
             <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-sky-900 text-sky-200 border-sky-700 mr-1">Base</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span></div>
-          </li>
-        
-      </ul>
-    </div>
-  
-          
-            </div>
-          </div>
-        </article>
-        
-        <article id="summary-2026-10-18" data-date="2026-10-18" class="summary-item bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-          <div class="bg-gray-900/50 p-4 rounded-t-lg border-b border-gray-700 flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-white">2026-10-18</h2>
-             <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-sky-900/70 border border-sky-700 text-sky-200 text-xs font-medium">Summarized by gemini-3.7-flash</span>
-             <a href="./2026-10-18.html" class="text-sky-400 hover:text-sky-300 text-sm flex items-center gap-1">
-              <span>Open Standalone Page</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-              </svg>
-            </a>
-          </div>
-          <div class="p-6">
-            <div class="prose prose-invert max-w-none w-full">
-              <h3 class="text-3xl font-bold text-white mb-6">Chromium Digest: 2026-10-18</h3>
-              
-            <h3 class="text-xl font-semibold text-white mb-2">Overview</h3>
-            <div class="text-gray-300">Reviewed 17 commits across Chromium branches. Filtered down to key changes impacting desktop embedders and browser architecture across security, extensions, networking, UI, developer tools, and history infrastructure, with no breaking changes identified. First commit: <a href="https://chromium.googlesource.com/chromium/src/+/d6712da95c165266b1aca73f60d947e7e5fb243e" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(d6712da)</a>, last commit: <a href="https://chromium.googlesource.com/chromium/src/+/820c012271c1080b701916027b56acb6848da9ef" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 font-mono">(820c012)</a>.
-              <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Extensions & Security</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-10-18-0-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-0-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Reverted strict initiator validation in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ExtensionURLLoaderFactory::CreateLoaderAndStart()</code> that checked renderer-supplied <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">request_initiator</code> against <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ChildProcessSecurityPolicy::HostsOrigin()</code>, resolving production crashes.
-            
-              <a href="https://github.com/chromium/chromium/commit/8de7ce3e84e59d8c1ec7f6fafda91d6d81977046" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(8de7ce3)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span></div>
-          </li>
-        
-          <li id="update-2026-10-18-0-1" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-0-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Enabled enterprise download reporting to attribute extension initiators on download events (<code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Event.initiator.chrome_extension</code>) initiated through <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">chrome.downloads</code>, guarded behind <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kEnterpriseExtensionActorAttribution</code>.
-            
-              <a href="https://github.com/chromium/chromium/commit/d6712da95c165266b1aca73f60d947e7e5fb243e" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(d6712da)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-fuchsia-900 text-fuchsia-200 border-fuchsia-700 mr-1">Enterprise</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Extensions</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-yellow-900 text-yellow-200 border-yellow-700 mr-1">Downloads</span></div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Networking</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-10-18-1-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-1-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Fixed credential stripping for cross-origin requests with <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kSameOrigin</code> credentials mode when running under <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">URLLoaderFactoryParams::disable_web_security</code>, guarded by feature flag <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">kAllowSameOriginCredentialsWithDisableWebSecurity</code>.
-            
-              <a href="https://github.com/chromium/chromium/commit/643bad1f8f8df2ec5c9a14cc2da49b9887a4dffc" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(643bad1)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Network</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Security</span></div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Developer Tools & Automation</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-10-18-2-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-2-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Implemented the WebDriver BiDi <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">autofill.trigger</code> command mapping to CDP <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">Autofill.trigger</code>, deferring response delivery until target form fields receive and apply input values across frames.
-            
-              <a href="https://github.com/chromium/chromium/commit/dc8635a2f695774318fc36c49ef7868d8bc11883" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(dc8635a)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-teal-900 text-teal-200 border-teal-700 mr-1">DevTools</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-violet-900 text-violet-200 border-violet-700 mr-1">Autofill</span></div>
-          </li>
-        
-          <li id="update-2026-10-18-2-1" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-2-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Preserved and scaled CSS pixel wheel deltas by browser zoom, CSS zoom, and pinch scale factors during CDP input dispatching, ensuring correct scroll distances in zoomed frames.
-            
-              <a href="https://github.com/chromium/chromium/commit/b6291517908abb64a348cfdcc140dbd5ec16a867" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(b629151)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-teal-900 text-teal-200 border-teal-700 mr-1">DevTools</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span></div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">Browser UI</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-10-18-3-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-3-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Refactored <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">SiteSettingsMixinLit::toUrl()</code> to gracefully return <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">null</code> on invalid URLs using <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">try/catch</code> wrapping and consolidated pattern wildcard filtering.
-            
-              <a href="https://github.com/chromium/chromium/commit/04aeb5d27656b1a3d652be3d6b7dca42d4985cf1" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(04aeb5d)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Privacy</span></div>
-          </li>
-        
-          <li id="update-2026-10-18-3-1" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-3-1')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Cleaned up unused member state and includes in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ReadAnythingController</code>, replacing unnecessary header dependencies with forward declarations.
-            
-              <a href="https://github.com/chromium/chromium/commit/ce164a5d693e08768979fff2720546ff89377b51" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(ce164a5)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-red-900 text-red-200 border-red-700 mr-1">Browser</span></div>
-          </li>
-        
-          <li id="update-2026-10-18-3-2" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-3-2')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Optimized compilation dependencies in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">ui/display/display.h</code> by replacing <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">#include &quot;ui/display/display_color_spaces.h&quot;</code> with a forward declaration.
-            
-              <a href="https://github.com/chromium/chromium/commit/820c012271c1080b701916027b56acb6848da9ef" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(820c012)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">UI</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-pink-900 text-pink-200 border-pink-700 mr-1">Build</span></div>
-          </li>
-        
-      </ul>
-    </div>
-  
-    <div>
-      <h3 class="text-2xl font-semibold text-sky-400 mt-6 mb-4">History & Storage</h3>
-      <ul class="list-disc list-inside space-y-3">
-        
-          <li id="update-2026-10-18-4-0" class="text-gray-300 group relative">
-            <button onclick="copyUpdateLink('update-2026-10-18-4-0')" class="absolute -left-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-sky-400" title="Copy link to this update">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-              </svg>
-            </button>
-            Introduced unified SQL lookup queries in <code class="bg-gray-700 text-pink-400 rounded px-2 py-1 text-sm font-mono">JourneysDatabase</code> to join journey records directly with visits and URLs in a single roundtrip.
-            
-              <a href="https://github.com/chromium/chromium/commit/038174a1fe85619abb469bffd3493a84702a46b5" target="_blank" rel="noopener noreferrer" class="text-sky-500 hover:text-sky-300 text-xs ml-2 font-mono">(038174a)</a>
-            
-            <div class="flex flex-wrap items-center gap-1 mt-1"><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-blue-900 text-blue-200 border-blue-700 mr-1">History</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-green-900 text-green-200 border-green-700 mr-1">Storage</span><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-lime-900 text-lime-200 border-lime-700 mr-1">Performance</span></div>
           </li>
         
       </ul>
